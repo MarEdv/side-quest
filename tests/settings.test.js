@@ -124,3 +124,30 @@ test('corrupt stored settings load as empty', () => {
   b.m.set('sidequest.v1.settings', JSON.stringify({ v: 1, flags: { wifeMode: 'zzz', sound: false } }));
   assert.deepEqual(createSettingsStore(createStorage(b)).load(), { sound: false });
 });
+
+test('each control kind matches its flag type, and every flag is documented in FLAGS.md (D-24)', async () => {
+  const { ENUMS, NUMBERS, BOOLS } = await import('../src/config.js');
+  const { readFileSync } = await import('node:fs');
+  for (const i of SETTING_ITEMS) {
+    const want = ENUMS[i.key] ? 'select' : NUMBERS[i.key] ? 'number' : BOOLS.includes(i.key) ? 'toggle' : i.key === 'seed' ? 'seed' : '?';
+    assert.equal(i.kind, want, i.key);
+    if (i.kind === 'select') assert.deepEqual(Object.keys(i.options).sort(), [...ENUMS[i.key]].sort(), i.key);
+  }
+  const doc = readFileSync(new URL('../docs/FLAGS.md', import.meta.url), 'utf8');
+  const rows = [...doc.matchAll(/^\| `(\w+)` \|/gm)].map((m) => m[1]).sort();
+  assert.deepEqual(rows, Object.keys(DEFAULT_FLAGS).sort());
+});
+
+test('seed round-trips: a number survives save/load and shows back as text, "random" is forgotten (D-24)', () => {
+  const b = memBackend();
+  const store = createSettingsStore(createStorage(b));
+  let saved = withSetting({}, 'seed', checkInput('seed', '42').value);
+  store.save(saved);
+  const loaded = createSettingsStore(createStorage(b)).load();
+  assert.deepEqual(loaded, { seed: 42 });
+  assert.equal(checkInput('seed', String(resolveFlags(DEFAULT_FLAGS, loaded, '').flags.seed)).value, 42);
+  saved = withSetting(loaded, 'seed', checkInput('seed', 'random').value);
+  assert.deepEqual(saved, {});
+  assert.equal(resolveFlags(DEFAULT_FLAGS, { seed: -7 }, '?seed=random').flags.seed, 'random');
+  assert.equal(resolveFlags(DEFAULT_FLAGS, { seed: 'random' }, '?seed=9').flags.seed, 9);
+});

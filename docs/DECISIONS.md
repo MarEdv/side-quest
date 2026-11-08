@@ -320,4 +320,11 @@ Independent review and headless-Chrome check of Feature 2 (S-1..S-4) under `/sid
   Verified in the browser: dayLength 10, debug on, debug switched off from pause, day 1 "Debug run: not recorded", R, day 2 recorded.
 - **`window.__state` stayed exposed after debug was switched off** in Settings. It is now deleted when debug goes off (the hook is
   for debug runs only; turning debug back on re-exposes it).
+- **Checked and fine:** all 13 FLAGS.md flags have a control of the right kind with config.js clamps (new test also pins FLAGS.md
+  rows = `DEFAULT_FLAGS` and select options = `ENUMS`); `resolveFlags` precedence and locking; saved values go through
+  `parseFlagValue`; seed "random" / number round trip (new test); "Clear link overrides" goes to `/side-quest/#frag` (path and
+  hash kept, query dropped); malicious URL and stored values (`?wifeMode=<img src=x onerror=alert(1)>`, `<svg onload>`, `<script>`,
+  an HTML-named param) neither apply nor lock, nothing injected, no dialog; the lock note only ever shows validated values, as text;
+  logic modules have no DOM access; 1280x720 and 844x390 layouts readable, no console errors. Known: on macOS, arrow keys on a
+  closed select open the native popup instead of stepping (platform behaviour).
 
