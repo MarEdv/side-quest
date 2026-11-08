@@ -194,6 +194,7 @@ function drawPerson(c, x, y, shirt, hair, facing, moving, t, skirt) {
   c.fillStyle = 'rgba(0,0,0,0.22)'; c.beginPath(); c.ellipse(x, y + 12, 9, 4, 0, 0, 7); c.fill();
   c.fillStyle = skirt ? '#7a5aa6' : '#2f4b7c';
   const step = moving ? Math.sin(t * 14) * 3 : 0;
+  if (skirt && moving) { c.fillStyle = '#f2c9a0'; c.fillRect(x - 5, y + 11, 3.5, 3 + step * 0.6); c.fillRect(x + 1.5, y + 11, 3.5, 3 - step * 0.6); c.fillStyle = '#7a5aa6'; }
   if (skirt) { c.beginPath(); c.moveTo(x - 7, y); c.lineTo(x + 7, y); c.lineTo(x + 10, y + 11); c.lineTo(x - 10, y + 11); c.fill(); }
   else { c.fillRect(x - 5, y + 2, 4, 10 + step); c.fillRect(x + 1, y + 2, 4, 10 - step); }
   c.fillStyle = shirt; rr(c, x - 7, y - 9 + bob, 14, 14, 4); c.fill();
@@ -208,7 +209,7 @@ function drawWife(c, s, t) {
   if (w.phase === 'out') {
     if (s.flags.showVisionCone) {
       const a0 = w.dir - WIFE.fov / 2, a1 = w.dir + WIFE.fov / 2;
-      const g = c.createRadialGradient(w.x, w.y, 10, w.x, w.y, WIFE.range);
+      const g = c.createRadialGradient(w.x, w.y, 10, w.x, w.y, w.range ?? WIFE.range);
       g.addColorStop(0, w.spotted ? 'rgba(255,80,60,0.38)' : 'rgba(255,240,120,0.32)');
       g.addColorStop(1, w.spotted ? 'rgba(255,80,60,0.05)' : 'rgba(255,240,120,0.04)');
       c.fillStyle = g;
@@ -221,7 +222,7 @@ function drawWife(c, s, t) {
       }
       c.closePath(); c.fill();
     }
-    drawPerson(c, w.x, w.y, '#e86a9a', '#5a3825', 1, false, t, true);
+    drawPerson(c, w.x, w.y, '#e86a9a', '#5a3825', Math.cos(w.dir) >= 0 ? 1 : -1, !!w.moving, t, true); // legs bob while she walks (wifeRoam)
   } else if (w.phase === 'warning') {
     const blink = Math.floor(t * 6) % 2 === 0;
     // y=50 keeps the badge below the 34 px HUD bar (it was half hidden at y=40).
@@ -367,7 +368,7 @@ function drawDebug(c, s, info) {
   for (const ch of s.chores) { c.beginPath(); c.arc(ch.x, ch.y, 3, 0, 7); c.stroke(); }
   const lines = [
     `fps ${info.fps.toFixed(0)}  phase ${s.phase}  t ${s.time.toFixed(1)}/${s.dayLength}  seed ${s.seed}`,
-    `wife ${s.wife.phase} timer ${s.wife.timer.toFixed(1)} dir ${(s.wife.dir * 57.3).toFixed(0)}deg spotted ${s.wife.spotted}`,
+    `wife ${s.wife.phase} timer ${s.wife.timer.toFixed(1)} dir ${(s.wife.dir * 57.3).toFixed(0)}deg spotted ${s.wife.spotted} leg ${s.wife.leg}`,
     `player ${p.x.toFixed(0)},${p.y.toFixed(0)} carry ${s.carry} quests ${s.quests.length}  harmony ${s.harmony.toFixed(1)}`,
   ];
   c.fillStyle = 'rgba(0,0,0,0.7)'; c.fillRect(0, H - 56, 620, 56);
