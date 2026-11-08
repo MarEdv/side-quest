@@ -15,7 +15,7 @@ export const DEFAULT_FLAGS = Object.freeze({
   touchScheme: 'joystick',
 });
 
-const ENUMS = {
+export const ENUMS = {
   wifeMode: ['vision', 'random'],
   difficulty: ['easy', 'normal', 'hard'],
   touch: ['auto', 'on', 'off'],
@@ -23,14 +23,14 @@ const ENUMS = {
 };
 
 // [min, max] inclusive bounds for numeric flags; `int` flags must be whole numbers.
-const NUMBERS = {
+export const NUMBERS = {
   dayLength: { min: 10, max: 3600, int: false },
   maxActiveQuests: { min: 0, max: 5, int: true },
   questInterval: { min: 3, max: 300, int: false },
   visionRange: { min: 50, max: 1200, int: false },
 };
 
-const BOOLS = ['showVisionCone', 'wifeRoam', 'sound', 'debug'];
+export const BOOLS = ['showVisionCone', 'wifeRoam', 'sound', 'debug'];
 
 export function parseBool(v) {
   const s = String(v).trim().toLowerCase();
@@ -39,29 +39,43 @@ export function parseBool(v) {
   return undefined;
 }
 
-export function parseFlags(queryString = '') {
-  const flags = { ...DEFAULT_FLAGS };
-  const params = new URLSearchParams(String(queryString || ''));
-  for (const [key, raw] of params) {
-    if (!Object.prototype.hasOwnProperty.call(DEFAULT_FLAGS, key)) continue; // unknown flags ignored
-    if (ENUMS[key]) {
-      const v = raw.trim().toLowerCase();
-      if (ENUMS[key].includes(v)) flags[key] = v;
-    } else if (NUMBERS[key]) {
-      const { min, max, int } = NUMBERS[key];
-      if (raw.trim() === '') continue;
-      const n = Number(raw);
-      if (Number.isFinite(n) && n >= min && n <= max && (!int || Number.isInteger(n))) flags[key] = n;
-    } else if (BOOLS.includes(key)) {
-      const b = parseBool(raw);
-      if (b !== undefined) flags[key] = b;
-    } else if (key === 'seed') {
-      const t = raw.trim();
-      if (t.toLowerCase() === 'random') flags.seed = 'random';
-      else if (t !== '' && Number.isInteger(Number(t))) flags.seed = Number(t);
-    }
+// Validate one flag value (string from a URL, or a typed value from storage). Returns the clean value, or undefined
+// when it is not acceptable. The single source of truth for URL parsing and for sanitising saved settings.
+export function parseFlagValue(key, raw) {
+  if (!Object.prototype.hasOwnProperty.call(DEFAULT_FLAGS, key)) return undefined;
+  if (typeof raw !== 'string' && typeof raw !== 'number' && typeof raw !== 'boolean') return undefined;
+  const text = String(raw);
+  if (ENUMS[key]) {
+    const v = text.trim().toLowerCase();
+    return ENUMS[key].includes(v) ? v : undefined;
   }
-  return flags;
+  if (NUMBERS[key]) {
+    const { min, max, int } = NUMBERS[key];
+    if (text.trim() === '') return undefined;
+    const n = Number(text);
+    return Number.isFinite(n) && n >= min && n <= max && (!int || Number.isInteger(n)) ? n : undefined;
+  }
+  if (BOOLS.includes(key)) return parseBool(text);
+  if (key === 'seed') {
+    const t = text.trim();
+    if (t.toLowerCase() === 'random') return 'random';
+    return t !== '' && Number.isInteger(Number(t)) ? Number(t) : undefined;
+  }
+  return undefined;
+}
+
+// Only the flags a query string sets to a valid value, e.g. {wifeMode: 'random'}. Later duplicates win; junk is dropped.
+export function parseFlagEntries(queryString = '') {
+  const out = {};
+  for (const [key, raw] of new URLSearchParams(String(queryString || ''))) {
+    const v = parseFlagValue(key, raw);
+    if (v !== undefined) out[key] = v;
+  }
+  return out;
+}
+
+export function parseFlags(queryString = '') {
+  return { ...DEFAULT_FLAGS, ...parseFlagEntries(queryString) };
 }
 
 // Short human-readable summary of the gameplay flags, stored with each high score, e.g. "vision·roam·normal".
