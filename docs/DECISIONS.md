@@ -567,3 +567,9 @@ Cache-Control, so heuristic freshness hid some effects and showed others that Gi
   scores and progress keys and the confirmation says so; Arcade sets `mode = null` and reads Settings as before; PRECACHE lists every
   `src/*.js` (also checked by `tests/pwa.test.js`); the logic modules have no DOM access; all text goes in through `h()` (no `innerHTML`); the
   level list and intro are pushed sub-screens, so `menus.modal` blocks game input (R on an intro opened from an end screen did nothing).
+- **Defect (fixed, `index.html`): a full-page menu over the pause or end screen showed the controls hint and the rotate chip through its
+  78 % backdrop.** In portrait (390x844) "Level 4 of 4" on the intro opened by Next level sat on top of the ghosted "Rotate your phone" chip;
+  Settings over pause had the same ghosting. `main.js` only hides them on the title phase. Fix: a CSS rule hides `#hint` and `#rotate`
+  while a `page`-kind screen is open (`body:has(...)`, `!important` to beat the inline style main.js sets; `:has` is in every evergreen
+  browser). Alternative: a callback from ui.js to main.js on every push/back, more code for the same result. Regression test in
+  `tests/pwa.test.js`; browser: hidden on Settings-over-pause and intro-over-end, visible again after Back.

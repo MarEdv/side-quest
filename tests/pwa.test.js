@@ -65,3 +65,10 @@ test('manifest: required fields, relative paths, icons exist and match their dec
   assert.ok(manifest.icons.some((i) => i.purpose === 'any' && i.sizes === '192x192'));
   assert.ok(manifest.icons.some((i) => i.purpose === 'any' && i.sizes === '512x512'));
 });
+
+test('a full-page menu hides the controls hint and the rotate chip behind it (intro over an end screen, Settings over pause, D-28)', () => {
+  const html = read('index.html').toString();
+  const rule = html.split('\n').find((l) => l.includes('.ui[data-kind="page"]:not([hidden])') && l.includes('#hint') && l.includes('#rotate'));
+  assert.ok(rule, 'rule present');
+  assert.match(rule, /visibility:\s*hidden\s*!important/); // must beat main.js's inline style.visibility
+});

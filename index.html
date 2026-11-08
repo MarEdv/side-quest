@@ -72,6 +72,9 @@
       color: #cde; font: 16px system-ui, -apple-system, "Segoe UI", sans-serif; touch-action: manipulation; }
     .ui[hidden] { display: none; }
     .ui[data-kind="page"] { background: rgba(10,14,20,.78); }
+    /* A full-page menu (Settings, level intro...) pushed over the pause or end screen: the controls hint and the rotate chip
+       would show through the dimmed backdrop and collide with the page text in portrait (D-28). */
+    body:has(.ui[data-kind="page"]:not([hidden])) #hint, body:has(.ui[data-kind="page"]:not([hidden])) #rotate { visibility: hidden !important; }
     .ui[data-kind="dock"] { display: block; pointer-events: none; }
     .ui-panel { pointer-events: auto; box-sizing: border-box; max-width: 100%; max-height: 100%; }
     .ui[data-kind="dock"] .ui-panel { position: absolute; left: 50%; transform: translateX(-50%); width: max-content; max-width: calc(100% - 24px); }
