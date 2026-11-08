@@ -1,0 +1,19 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Side Quest</title>
+  <style>
+    html, body { margin: 0; height: 100%; background: #14161a; color: #9aa; font: 13px system-ui, sans-serif; overflow: hidden; }
+    body { display: flex; flex-direction: column; align-items: center; justify-content: center; }
+    #game { display: block; background: #000; box-shadow: 0 0 30px #000a; }
+    #hint { margin-top: 6px; height: 18px; text-align: center; }
+  </style>
+</head>
+<body>
+  <canvas id="game" width="960" height="540"></canvas>
+  <div id="hint">WASD / arrows: move &middot; hold Space or E: work / interact &middot; P or Esc: pause &middot; R: restart</div>
+  <script type="module" src="src/main.js"></script>
+</body>
+</html>
