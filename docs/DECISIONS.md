@@ -187,3 +187,7 @@
 - **Rotation drops held pointers** (`touch.setLayout`). In emulation a stick held through a rotate kept its old-orientation origin, and the next
   move made the player run off. Real browsers usually send `pointercancel` here, but that isn't guaranteed. When `portrait` flips, all pointers are
   forgotten, so a finger that stays down is inert until lifted (the same rule as the start tap).
+- **Rotate hint no longer swallows taps.** In portrait it sits mid-screen, and a tap on its text never reached the overlay, so it neither started,
+  restarted, resumed nor steered. That dead zone showed up when a start tap landed on it in emulation. Now `#rotate` is `pointer-events: none`
+  except its ✕, whose padding grew to a ~38 px target. Alternative: a tap anywhere on the hint dismisses it (rejected: it would eat the first
+  start tap).
