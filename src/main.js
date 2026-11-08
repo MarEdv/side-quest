@@ -3,7 +3,7 @@ import { parseFlags } from './config.js';
 import { createGame, update } from './game.js';
 import { createInput } from './input.js';
 import { createTouch } from './touch.js';
-import { computeLayout, mergeInput } from './touchmath.js';
+import { computeLayout, chromeLayout, mergeInput } from './touchmath.js';
 import { createAudio } from './audio.js';
 import { render } from './render.js';
 import { W, H } from './world.js';
@@ -44,17 +44,18 @@ function resize() {
   // Keyboard players get the hint line under the canvas. Touch players only see it in portrait (free space there).
   const showHint = !isTouch || portrait;
   const L = computeLayout(vw, vh, { insets, hintH: isTouch ? 0 : 30 });
-  touch.setLayout(L);
+  const ui = chromeLayout(L, isTouch);
+  touch.setLayout(L, ui);
   canvas.style.left = `${L.left}px`; canvas.style.top = `${L.top}px`;
   canvas.style.width = `${L.width}px`; canvas.style.height = `${L.height}px`;
   canvas.width = Math.round(L.width * dpr);
   canvas.height = Math.round(L.height * dpr);
   hintEl.textContent = isTouch ? HINT_TOUCH[flags.touchScheme] : HINT_KEYS;
   hintEl.style.display = showHint ? '' : 'none';
-  hintEl.style.top = `${L.top + L.height + 6}px`;
+  hintEl.style.top = `${ui.hintTop}px`;
   const showRotate = isTouch && portrait && !rotateDismissed;
   rotateEl.style.display = showRotate ? 'flex' : 'none';
-  rotateEl.style.top = `${L.top + L.height + 34}px`;
+  rotateEl.style.top = `${ui.rotateTop}px`;
 }
 rotateEl.querySelector('button').addEventListener('click', () => { rotateDismissed = true; resize(); });
 window.addEventListener('resize', resize);

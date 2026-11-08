@@ -1,7 +1,8 @@
 import { test } from 'node:test';
+import { readFileSync } from 'node:fs';
 import assert from 'node:assert/strict';
 import {
-  computeLayout, screenToGame, joystickVector, clampOffset, tapWalkVector, tapIntent, mergeInput, touchActive,
+  computeLayout, chromeLayout, PAUSE_SIZE, screenToGame, joystickVector, clampOffset, tapWalkVector, tapIntent, mergeInput, touchActive,
   STICK_RADIUS, STICK_DEAD,
 } from '../src/touchmath.js';
 import { update, PLAYER_SPEED } from '../src/game.js';
@@ -146,4 +147,30 @@ test('touchActive follows the touch flag', () => {
   assert.equal(touchActive('off', true), false);
   assert.equal(touchActive('auto', true), true);
   assert.equal(touchActive('auto', false), false);
+});
+
+test('portrait touch: pause button sits below the canvas (not over the HUD), hint and rotate hint below it (D-19)', () => {
+  const L = computeLayout(390, 844, { insets: { top: 47, bottom: 34 } });
+  const ui = chromeLayout(L, true);
+  assert.ok(ui.pauseTop >= L.top + L.height, 'pause button must not overlap the canvas');
+  assert.ok(ui.hintTop >= ui.pauseTop + PAUSE_SIZE, 'hint line below the pause button');
+  assert.ok(ui.rotateTop > ui.hintTop);
+  assert.ok(ui.rotateTop + 60 < 844 - 34 - 118, 'rotate hint stays above the WORK button');
+});
+
+test('landscape / keyboard: pause stays in the CSS corner, hint right under the canvas', () => {
+  const L = computeLayout(844, 390);
+  const ui = chromeLayout(L, true);
+  assert.equal(ui.pauseTop, null);
+  near(ui.hintTop, L.top + L.height + 6);
+  // the corner button (right: 6px, 44 px wide) lands in the side letterbox on a phone
+  assert.ok(844 - 6 - PAUSE_SIZE >= L.left + L.width);
+  assert.equal(chromeLayout(computeLayout(390, 844), false).pauseTop, null);
+});
+
+test('logic modules stay DOM-free (CLAUDE.md)', () => {
+  for (const f of ['game', 'chores', 'quests', 'wife', 'world', 'geometry', 'rng', 'config', 'touchmath']) {
+    const src = readFileSync(new URL(`../src/${f}.js`, import.meta.url), 'utf8').replace(/\/\/.*$/gm, '');
+    assert.doesNotMatch(src, /\b(document|window|navigator|innerWidth|innerHeight|matchMedia|performance)\b/, f);
+  }
 });

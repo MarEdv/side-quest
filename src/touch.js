@@ -108,7 +108,13 @@ export function createTouch({ mode = 'auto', scheme = 'joystick', root = documen
     read,
     ack() { pulse.pause = pulse.start = pulse.restart = false; },
     clear() { ptrs.clear(); pulse.pause = pulse.start = pulse.restart = false; },
-    setLayout(l) { layout = l; },
+    setLayout(l, ui = {}) {
+      // Rotation re-maps client coordinates: a held stick's origin would be stale and make the player run off
+      // (seen in emulation). Drop all pointers; the fingers still down simply become inert until lifted (D-19).
+      if (l.portrait !== layout.portrait) { ptrs.clear(); }
+      layout = l;
+      pauseBtn.style.top = ui.pauseTop == null ? '' : `${ui.pauseTop}px`;
+    },
     // Position helper for main.js: dock the rotate hint etc. is done in CSS; nothing to do here.
     refresh: sync,
   };

@@ -175,3 +175,15 @@
 - **`window.__state`** is exposed when `debug=1`, used by the headless-Chrome self-check.
 - **Verification:** headless Chrome via CDP (mobile emulation 844x390 / 390x844, DPR 3, `Input.dispatchTouchEvent`); no real devices.
 
+### D-19 — Mobile verification fixes (2026-11-08) — amends D-18
+- **Verification:** headless Chrome over CDP, served under `/side-quest/` like GitHub Pages: 844x390 and 390x844 at DPR 3, a 1024x768 tablet,
+  desktop 1280x720 without touch (`touch=auto`) and with `touch=on` plus the mouse. Every screenshot was looked at. No console errors.
+- **Portrait pause button moved below the game** (`chromeLayout` in `touchmath.js`). Top-right of the viewport is on top of the HUD's
+  side-quest panel in portrait, so it hid the countdown seconds. It now sits right-aligned just under the canvas, and the hint line and the rotate
+  hint move down by one button height. Landscape keeps the corner (the side letterbox on phones, the top letterbox on tablets).
+  Alternatives: draw the button inside the canvas HUD (rejected: hit-testing in game coordinates, and it would still take HUD space) and
+  shrinking it (rejected: 44 px is the minimum comfortable touch target). Known limit: a landscape phone at exactly 16:9 has no side letterbox,
+  so the corner button overlaps the HUD's top-right corner there.
+- **Rotation drops held pointers** (`touch.setLayout`). In emulation a stick held through a rotate kept its old-orientation origin, and the next
+  move made the player run off. Real browsers usually send `pointercancel` here, but that isn't guaranteed. When `portrait` flips, all pointers are
+  forgotten, so a finger that stays down is inert until lifted (the same rule as the start tap).

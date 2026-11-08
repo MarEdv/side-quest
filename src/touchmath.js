@@ -22,6 +22,18 @@ export function computeLayout(vw, vh, { insets = {}, hintH = 0 } = {}) {
   return { left, top, width, height, scale, portrait };
 }
 
+// Where the touch pause button and the text lines go relative to the canvas (CSS px; D-19). Portrait + touch: the
+// pause button sits right-aligned just BELOW the canvas, because the viewport's top-right corner is on top of the
+// HUD's side-quest countdowns there; the hint line moves below the button. Landscape: pauseTop = null (CSS keeps
+// it in the top-right corner, i.e. the side letterbox), hint directly under the canvas.
+export const PAUSE_SIZE = 44, PAUSE_GAP = 6;
+export function chromeLayout(L, touch) {
+  const below = L.top + L.height;
+  const pauseTop = touch && L.portrait ? below + PAUSE_GAP : null;
+  const hintTop = below + 6 + (pauseTop == null ? 0 : PAUSE_SIZE + PAUSE_GAP);
+  return { pauseTop, hintTop, rotateTop: hintTop + 28 };
+}
+
 // Client (CSS px) -> game coordinates. Clamped to the playfield so a touch in the letterbox aims at the edge.
 export function screenToGame(px, py, layout) {
   const x = (px - layout.left) / layout.scale, y = (py - layout.top) / layout.scale;
