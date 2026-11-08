@@ -169,7 +169,7 @@ export function createUI(ctx, root = document.body) {
   api.register('pause', {
     phase: 'paused', kind: 'dock',
     build: () => h('div', { class: 'endp' },
-      ctx.mode() ? h('p', { class: 'small' }, `Level ${ctx.mode().index + 1}: ${ctx.mode().name}`) : null,
+      ctx.mode() ? h('p', { class: 'small lvlname' }, `Level ${ctx.mode().index + 1}: ${ctx.mode().name}`) : null,
       h('div', { class: 'row' },
         btn('Resume', () => A.resume(), { primary: true, autofocus: true }),
         btn('Settings', () => api.push('settings')),
@@ -192,7 +192,7 @@ export function createUI(ctx, root = document.body) {
       menu: () => btn('Menu', () => A.quit(), { guard: true }),
     };
     return h('div', { class: 'endp' },
-      h('p', { class: 'small' }, `Level ${lvl.index + 1}: ${lvl.name}`),
+      h('p', { class: 'small lvlname' }, `Level ${lvl.index + 1}: ${lvl.name}`),
       line ? h('p', { class: `banner${r && r.isBest ? ' hi' : ''}` }, line) : null,
       h('div', { class: 'row' }, kinds.map((k) => mk[k]())));
   }

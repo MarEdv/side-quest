@@ -9,9 +9,15 @@ on this device (`localStorage` key `sidequest.v1.settings`). Precedence: **URL q
 "Clear link overrides" reloads without the query string, "Reset to defaults" forgets the saved choices. Saved values go through the
 same validation and clamps as URL values; unusable ones are ignored. Two kinds of flag:
 
-- **Control / display / debug** (`touch`, `touchScheme`, `showVisionCone`, `sound`, `debug`): apply immediately and will also apply in Levels.
+- **Control / display / debug** (`touch`, `touchScheme`, `showVisionCone`, `sound`, `debug`): apply immediately and also apply in Levels (from Settings and from the URL).
 - **Gameplay** (`wifeMode`, `wifeRoam`, `difficulty`, `dayLength`, `maxActiveQuests`, `questInterval`, `visionRange`, `seed`): apply when the next day
-  starts, never to a day in progress; Levels will ignore them (`GAMEPLAY_FLAGS` / `CONTROL_FLAGS` in `src/settings.js`).
+  starts, never to a day in progress. **They apply to Arcade only.** Levels use fixed gameplay settings (`src/levels.js`, D-27): a flag a level
+  does not list uses `DEFAULT_FLAGS`, never your saved Settings, and **URL gameplay parameters are ignored in levels** (so a level plays the same for
+  everyone; `?wifeMode=random` only changes Arcade). `seed` is random in levels unless `debug` is on, then the Settings / URL seed is used
+  (`GAMEPLAY_FLAGS` / `CONTROL_FLAGS` in `src/settings.js`).
+
+**Levels.** 1 Saturday Morning (vision, patio, easy, 1 quest, interval 24) · 2 Honey-Do List (random, normal, 2 quests, interval 20) ·
+3 Eyes Everywhere (vision + roam, normal, range 500, 2 quests, interval 14) · 4 The Inspection (hybrid, hard, 3 quests, interval 26, range 420, 170 s day).
 
 Booleans accept `1/0/true/false`. Unknown flags are ignored. **Any new flag must be added here and in REQUIREMENTS.md.**
 

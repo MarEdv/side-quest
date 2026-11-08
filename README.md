@@ -22,7 +22,19 @@ then open http://localhost:8000 in Chrome (ES modules need HTTP, not `file://`).
 - **WASD / arrow keys**: walk
 - **Hold Space or E** next to a chore: work on it; next to a quest spot: pick up / deliver
 - **P / Esc**: pause (menu: Resume / Quit to menu) · **R**: play again on the end screen
-- **Menus**: Tab / arrow keys move focus, **Enter / Space** activate, **Esc** goes back. The main menu has **Play**, **Settings** and **High scores** (top 10 on this device, stored in `localStorage`)
+- **Menus**: Tab / arrow keys move focus, **Enter / Space** activate, **Esc** goes back. The main menu has **Levels**, **Arcade**, **Settings** and **High scores** (Arcade top 10 plus the best score per level, stored in `localStorage`)
+
+## Levels and Arcade
+
+- **Levels:** four levels with rising difficulty, each a fixed mix of the game's modes: *Saturday Morning* (she only sees you from the patio, easy),
+  *Honey-Do List* (she calls errands wherever you are), *Eyes Everywhere* (she roams the garden and sees farther), *The Inspection*
+  (new `hybrid` mode: she roams with vision and may call an errand even if she misses you; hard, a shorter day). Level 1 is open; winning a level
+  unlocks the next. Each level has an intro card, a best score and a won mark. Levels ignore your gameplay Settings and URL gameplay flags; control and
+  display settings still apply.
+- **Arcade:** the original game, configured by Settings (and URL flags), with its own top-10 board.
+- **Balance check** (L-4): `node tools/level-balance.mjs [seedsPerLevel=200]` runs a greedy bot that never hides through every level and prints win rate,
+  slack, quests and harmony per level; it exits non-zero if difficulty stops rising. `tests/levels.test.js` runs a 20-seed version. Numbers in
+  [docs/DECISIONS.md](docs/DECISIONS.md) (D-27).
 
 ## Mobile / touch
 
@@ -66,4 +78,4 @@ Runs Node's built-in test runner (`node --test`) over `tests/*.test.js`. Game lo
 ## Layout
 
 `src/` game code (`config`, `rng`, `geometry`, `world`, `chores`, `quests`, `wife`, `game` are pure logic;
-`touchmath`, `storage`, `scores`, `uimodel`, `installmodel` are pure too; `main`, `render`, `input`, `touch`, `audio`, `ui`, `installui`, `install` touch the browser) · `sw.js` service worker · `icons/` + `tools/make-icons.mjs` · `tests/` · `docs/` (requirements, decisions, flags).
+`levels`, `settings`, `touchmath`, `storage`, `scores`, `uimodel`, `installmodel` are pure too; `main`, `render`, `input`, `touch`, `audio`, `ui`, `levelsui`, `settingsui`, `installui`, `install` touch the browser) · `sw.js` service worker · `icons/` + `tools/make-icons.mjs` · `tools/level-balance.mjs` + `tools/level-bot.mjs` · `tests/` · `docs/` (requirements, decisions, flags).

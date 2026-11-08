@@ -176,6 +176,8 @@
     .ui .btn small { display: block; font-size: 12px; font-weight: normal; opacity: .8; }
     .ui .col { flex-wrap: wrap; }
     .ui .menu .warn { max-width: 30em; }
+    /* Short (landscape phone) viewports: the HUD already names the level, and a taller dock panel would cover the stats. */
+    @media (max-height: 500px) { .ui .lvlname { display: none; } }
     .ui .shead { margin: 10px 10px 2px; text-align: left; color: #ffd23f; font-size: 16px; }
     .ui .spad { padding: 6px 10px 10px; text-align: left; }
     @media (max-width: 600px) { .ui .lgrid { grid-template-columns: minmax(0, 1fr); } }

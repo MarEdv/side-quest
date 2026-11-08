@@ -450,3 +450,64 @@ Cache-Control, so heuristic freshness hid some effects and showed others that Gi
   fullscreen and the snooze cap.
 - **Not done:** no real device (Android install, iOS Add to Home Screen, Samsung Internet, Firefox) and no gzip in the test
   server. Header copying under gzip is the widely deployed Workbox pattern, but it was not observed here.
+
+### D-27 — Levels, Arcade and the `hybrid` wife mode (2026-11-08) — implements D-20 for Features 4 & 5 (L-1..L-6)
+- **Flag sets.** `levelFlags(level, settings)` in `src/levels.js`: `DEFAULT_FLAGS` gameplay flags, overridden by the level's own, plus
+  the control/display flags (`touch`, `touchScheme`, `sound`, `showVisionCone`, `debug`) from the player's resolved settings. Saved
+  gameplay settings and URL gameplay parameters therefore never reach a level (documented in FLAGS.md); control flags from the URL still do
+  (`?touch=on`, `?debug=1`). `seed` is `random` unless `debug` is on, then the Settings / URL seed is used so a debug run can be replayed.
+  Alternative (let URL flags override levels, for testing): rejected, it would make "level 3" mean different things in shared links.
+  `main.js` keeps one `mode` (null = Arcade, or a level) and `applyGameplay()` picks the flag source from it, so R on the end screen
+  (which restarts inside `game.js` on the same `flags` object) replays the same level. `render.js` gets the level through its `info` argument,
+  no new game state.
+- **Progress is derived**, not stored: level N+1 is open when level N's record has `won: true` (`isUnlocked`), so there is no extra key to
+  migrate or desync, and Clear scores (which removes the level records) relocks everything. Debug runs are never recorded, so they cannot unlock.
+  The level end screen offers Next level only if the next level is actually unlocked (a debug win therefore shows only Retry / Menu).
+  Clear scores now says so: "Clear all saved scores AND level progress? Every level you unlocked locks again" (the D-21 follow-up).
+- **`hybrid`** (L-6). In `wife.js`: roaming is implied (`roams()` is true for hybrid whatever `wifeRoam` says; Settings shows `wifeRoam`
+  disabled with "Hybrid mode always roams", and `visionRange` stays active; the summary reads `hybrid·hard`). When a trip ends at the
+  door without having spotted the player, she rolls `WIFE.hybridCallChance` = 0.4 and emits `forced` instead of `avoided`; `game.js` then gives
+  a quest with a bubble, exactly as for `spotted`. The roll only happens if the quest cap allows (`ctx.canCall`), so a full cap neither
+  wastes an RNG draw nor counts anything; the test hook is `ctx.hybridChance`. Counting rule: a forced trip is not "avoided"; a missed roll is.
+  A spotted trip is unchanged (one quest, no second roll). The 0.4 gives hiding partial value: about 60 % of unspotted trips still earn a pause.
+- **Menus.** Main menu: Levels (focused first), Arcade (labelled with the mode summary, replaces Play), Settings, High scores, Install app.
+  Level select = four cards (name, briefing, best, won tick, lock; locked cards are disabled, so arrow keys and Tab skip them, and say what
+  to win). Intro card on every start; Esc / Back returns. The pause screen and HUD name the level (the pause label hides on short landscape
+  phones where it would push the end/pause panel over the stats). New files `src/levels.js`, `src/levelsui.js`, both in the service worker's
+  PRECACHE; cache name not bumped (network-first).
+- **Balance tool** (L-4): `tools/level-bot.mjs` is a greedy bot using the real game logic: an 8-neighbour Dijkstra distance field on a
+  10 px grid (obstacles inflated by the player's half size + 2), nearest chore by path length, quests first (most urgent, skipped if it cannot
+  be made in time), never hides. `tools/level-balance.mjs` prints the table and exits non-zero if win rate or slack rises from one level to the next,
+  or L1 < 95 % / L4 < 30 %. Slack = seconds left when the last chore finishes (0 for a loss) and its fraction of the day. 200 seeds take about 3 s.
+  `tests/levels.test.js` runs seeds 1..20 per level (~0.4 s) and asserts non-increasing win rate, strictly falling slack, L1 >= 95 %, L4 >= 30 %.
+- **Final numbers** (`node tools/level-balance.mjs 200`, seeds 1..200):
+
+  | Level | Win rate | Slack s (fraction of day) | Quests given | Failed | Avoided | Harmony losses | Final harmony |
+  |---|---|---|---|---|---|---|---|
+  | 1 Saturday Morning | 100.0 % | 87.7 (0.487) | 1.3 | 0.00 | 1.54 | 0.0 % | 78.6 |
+  | 2 Honey-Do List | 100.0 % | 34.3 (0.191) | 5.3 | 0.00 | 0.00 | 0.0 % | 100.0 |
+  | 3 Eyes Everywhere | 96.0 % | 28.7 (0.159) | 6.5 | 0.00 | 1.43 | 0.0 % | 99.8 |
+  | 4 The Inspection | 58.0 % | 5.2 (0.031) | 5.2 | 0.00 | 1.12 | 0.0 % | 99.9 |
+
+  Tuning path (200 seeds each unless noted): L4 at 165 s / interval 14 won 15 % (40 seeds); 180 s / 14 won 35 %; 170 s / 20 won 34 %; 170 s / 26
+  won 58 %, taken. L3 interval 18 / range 420 left more slack than L2; interval 14 / range 500 fixed the order. L2 interval 24 -> 20.
+  Levels: L1 `easy`, 1 quest, interval 24, patio; L2 `random`, 2, 20; L3 vision + roam, range 500, 2, 14; L4 hybrid, `hard`, 3, 26, range 420, day 170 s.
+- **Caveats, honestly.** (1) The bot never fails a quest (it always delivers in time), so *harmony* never limits it and the "Failed" and
+  "Harmony losses" columns are zero: the bot measures time pressure only. Humans will fail quests; harmony pressure rises with quest count and
+  the harder deadlines (easy x1.3 -> hard x0.75) but is untuned. (2) Slack and win rate falling is the L-4 criterion, but L2 -> L3 is only
+  0.03 of the day apart for a bot that does not hide, and L3's pressure comes mostly from range and frequency; a player who hides will find L3
+  easier than the bot does (L2 gives no hiding at all). (3) L4's "frequent" is relative: with hybrid roaming the inside wait is x0.55 like vision
+  roaming, so its cycle (~25 s) is longer than L3's (~18 s); it is harder through `hard`, 3 quests, forced calls and a 170 s day, and tuning it
+  to interval 14 would drop the bot below the 30 % floor. (4) A human is slower than the bot; nobody has played the levels.
+- **Browser verification** (headless Chrome over CDP, served from a `mktemp -d` dir with a `side-quest` symlink). Scripts were throwaway, in `/tmp`.
+  *Recorded wins without a real day:* `window.__state` only exists while `debug` is on, and debug runs are not recorded. So the check
+  saved `{debug: true}` into `sidequest.v1.settings`, loaded the page, kept `window.__keep = window.__state`, switched debug off in Settings
+  (the hook disappears but the reference stays valid and it is the live state object), started the level and set every chore done via the kept
+  reference: that is a real, recorded, non-debug win. A `?debug=1` run was used to check the opposite (not recorded, no Next level).
+  Seeding `localStorage` `sidequest.v1.progress` also works for the unlock screens. Results: see REQUIREMENTS L-1..L-6; desktop keyboard
+  (menu, Levels with only L1 open, arrows skip locked cards, intro, Esc, Start, pause label, debug win, recorded win -> "Honey-Do List
+  unlocked!" -> Next level -> intro -> L2 flags verified, loss, R replays the same level, Quit, level cards with Won/Best, Arcade day with
+  unchanged end screen, High scores Levels section, Clear scores confirmation and wipe) and touch 390x844 / 844x390 (menu, level select, tap on a
+  locked card does nothing, intro, Start, HUD, recorded-win end screen, Next level). One defect found and fixed: the extra level line made the
+  end panel cover the Score row at 844x390. Console: no errors; the only warning is Chrome's "AudioContext was not allowed to start" caused by
+  the script's synthetic `click()`s (real key/tap gestures unlock it).

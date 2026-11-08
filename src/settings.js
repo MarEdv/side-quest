@@ -1,5 +1,5 @@
 // Settings model (pure, no DOM): which flags the Settings screen edits, how URL / saved / default values combine,
-// and the split between gameplay flags and control/display flags (Levels will ignore the gameplay ones, D-20/D-23).
+// and the split between gameplay flags and control/display flags (Levels ignore the gameplay ones, src/levels.js, D-20/D-23/D-27).
 import { DEFAULT_FLAGS, ENUMS, NUMBERS, parseFlagValue, parseFlagEntries } from './config.js';
 
 export const SETTINGS_KEY = 'settings'; // stored as sidequest.v1.settings = { v: 1, flags: { ...only the player's choices } }
