@@ -136,3 +136,7 @@
 - **Unsure:** the 3–5 target is met only on average, and with a bot that never reacts; a human who hides reacts to
   the warning and sees which way she turns, so real counts will be lower.
 
+### D-16 — Hosting on GitHub Pages from `main` root (2026-11-08)
+- **Chosen:** public repo `MarEdv/side-quest`, Pages source = branch `main`, folder `/`. Every push to `main` redeploys.
+- **Alternatives:** a GitHub Actions deploy workflow (unneeded — no build step); a `gh-pages` branch (extra branch to keep in sync); `docs/` folder (would mix docs and site).
+- **Assumptions:** repo is public (Pages on private repos needs a paid plan; the code has nothing secret). All asset paths are relative, so the site works under the `/side-quest/` sub-path. A `.nojekyll` file disables Jekyll processing so files are served as-is.

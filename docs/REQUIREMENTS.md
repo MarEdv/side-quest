@@ -100,6 +100,7 @@ before sunset while completing — or sneakily avoiding — the side quests.
 | NF-2 | Game logic is DOM-free and unit-tested with Node's built-in test runner (`node --test`). | ✅ |
 | NF-3 | 60 fps target; fixed-timestep simulation (1/60 s) independent of frame rate; frame dt clamped to [0, 0.25 s]. Canvas re-sizes on window resize and on devicePixelRatio change (D-13). | ✅ |
 | NF-4 | Deterministic seeded RNG (flag `seed`) so runs are reproducible. | ✅ |
+| NF-5 | Published on GitHub Pages at https://maredv.github.io/side-quest/ straight from `main` (repo root, no build/CI). Flags work via the URL query there too. | ✅ |
 
 ## 7. Out of scope (for now)
 - Touch/mobile controls, gamepad, multiple levels/days, save games, localisation, multiplayer.
