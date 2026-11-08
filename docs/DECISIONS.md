@@ -559,3 +559,11 @@ Cache-Control, so heuristic freshness hid some effects and showed others that Gi
   Making failures cost more (`HARMONY.onFail`) or lowering the start harmony would change Arcade too, so it is left as a design question.
 - **Caveats.** Bots path perfectly and react instantly; humans are slower, so real win rates will be lower, most of all in L4. Nobody has played
   the re-tuned levels.
+- **Code review** (`git diff c28c484..386428a`). Checked and fine: hybrid forced quests are not counted as avoided, the roll only happens with a
+  free cap (so a full cap makes no RNG draw and the sequence stays the same as vision mode; new regression test in `tests/wife.test.js`);
+  `levelFlags` takes control flags from Settings / URL, fixes gameplay flags, ignores URL gameplay flags, seed random unless debug; unlock is
+  derived from sticky `won`, debug runs are not recorded so cannot unlock, Next level only when the next level is unlocked; R replays the same
+  level (same `flags` object, `mode` unchanged); Quit from pause records nothing (`shouldRecord` needs playing -> won/lost); Clear wipes the
+  scores and progress keys and the confirmation says so; Arcade sets `mode = null` and reads Settings as before; PRECACHE lists every
+  `src/*.js` (also checked by `tests/pwa.test.js`); the logic modules have no DOM access; all text goes in through `h()` (no `innerHTML`); the
+  level list and intro are pushed sub-screens, so `menus.modal` blocks game input (R on an intro opened from an end screen did nothing).

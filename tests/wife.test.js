@@ -412,3 +412,20 @@ test('hybrid: a spotted trip behaves like vision (quest at the spot, no extra fo
   assert.equal(s.quests.length, 1);
   assert.ok(s.events.some((e) => e.type === 'spotted'));
 });
+
+test('hybrid: the call roll is the only extra RNG draw, and none is made with the cap full (determinism, D-28)', () => {
+  // Same seed, same trip: with the cap full hybrid leaves the RNG exactly where vision mode leaves it; with a free cap it
+  // draws exactly one number more.
+  const after = (mode, canCall) => {
+    const flags = mkFlags({ wifeMode: mode });
+    const rng = createRng(11);
+    const w = createWife(world, rng, flags);
+    w.phase = 'out'; w.leg = 'back'; w.route = world.wifeRoutes[1]; w.stop = 0; w.x = 480; w.y = 140; w.spotted = false;
+    for (let i = 0; i < 30 && w.phase === 'out'; i++) updateWife(w, { player: { x: 40, y: 520 }, obstacles: world.obstacles, rng, flags, world, canCall }, 0.05);
+    return { next: rng.next(), timer: w.timer };
+  };
+  const vision = after('vision', true), full = after('hybrid', false), free = after('hybrid', true);
+  assert.deepEqual(full, vision);
+  assert.notEqual(free.next, vision.next);
+  assert.notEqual(free.timer, vision.timer); // the extra draw shifts the inside timer's draw by one
+});
