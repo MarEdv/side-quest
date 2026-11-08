@@ -328,3 +328,53 @@ Independent review and headless-Chrome check of Feature 2 (S-1..S-4) under `/sid
   logic modules have no DOM access; 1280x720 and 844x390 layouts readable, no console errors. Known: on macOS, arrow keys on a
   closed select open the native popup instead of stepping (platform behaviour).
 
+
+### D-25 — Install as an app: icons, service worker, invitation (2026-11-08) — implements D-20 for Feature 3 (I-1..I-4)
+**Research basis** (docs lookup, not re-verified on devices): Chrome Android installability = manifest with name/short_name, `start_url`,
+`display` standalone/fullscreen and **real PNG icons at 192 and 512** (data-URI / SVG icons are unverified, so M-10's inline icon is replaced),
+over HTTPS, with some user engagement. A service worker with a fetch handler is no longer required for the menu "Install app" entry but is
+still reported as required for the automatic `beforeinstallprompt`, so we ship one. `beforeinstallprompt`: `preventDefault()` + stash,
+`prompt()` from a user gesture, `await userChoice`, each event usable once; `appinstalled` fires for any install route. iOS/iPadOS has no
+prompt API: Share > Add to Home Screen (other iOS browsers can do it from their share menu since iOS 16.4/17). "Already installed" =
+`navigator.standalone` **or** display-mode standalone **or** fullscreen (a WebKit bug reports fullscreen where standalone is expected).
+- **Icons:** `tools/make-icons.mjs` (Node, `node:zlib` PNG encoder, 4x4 supersampling) draws the old SVG design: 192 and 512 `any` (rounded
+  corners, transparent outside), 512 `maskable` (full-bleed lawn and roof, figure scaled to 60% so it sits inside the 80% safe zone) and a
+  180 opaque square for `apple-touch-icon` (iOS rounds it itself). PNGs are committed (no build step). Alternative: keep generating icons at
+  runtime with a canvas - rejected, crawlers / the installer cannot see them. Manifest got `id: "./"`; all paths relative (works under `/side-quest/`).
+- **Service worker `sw.js`** at the root (scope = the game's folder), registered with the relative URL `sw.js` after `load`. **Network-first,
+  cache fallback** for same-origin GETs: the fetch uses `cache: 'no-cache'` so it revalidates instead of being answered by the HTTP cache
+  (GitHub Pages sends `max-age=600`), and the good response is copied into the cache. So **a deploy shows up on the next online load; the
+  cache is only ever read offline** and cannot go stale while online. Install precaches the shell (index, manifest, icons, every `src/*.js`;
+  `cache: 'reload'`); `skipWaiting` + `clients.claim` so a new worker takes over at once; activate deletes any other `sidequest-*` cache; the
+  cache name `sidequest-v1` is bumped only to force-purge. Offline lookups use `ignoreSearch` so `?wifeMode=random` links work. Cross-origin
+  and non-GET requests are not touched. Alternatives: cache-first with a version bump per deploy (stale until the bump, needs a build step to
+  automate) and stale-while-revalidate (one visit behind) - rejected. Local dev is unaffected (network-first); to drop a dev worker use
+  DevTools > Application > Unregister. **PRECACHE is hand-listed** (no build step) and `tests/pwa.test.js` fails if it differs from `src/*.js`,
+  `icons/*.png`, index and manifest or names a missing file (the first run of that test caught `installui.js` missing).
+- **Decision logic** is pure (`installmodel.js`): `installKind` (`native` | `ios-instructions` | `none`; none when standalone or `installed`),
+  `inviteKind` (adds: touch device, >= 1 finished day, not `neverAsk`, snooze over), `detectIOS` (UA iPhone/iPad/iPod, or a Mac UA / platform
+  `MacIntel` with `maxTouchPoints > 1` = iPadOS in desktop mode; a real Mac has 0), `detectStandalone`. State `sidequest.v1.install` =
+  `{v, finishedDays, dismissedUntil, neverAsk, installed}` (sanitised on load). `installed` (set by `appinstalled`, cleared when the browser
+  offers the prompt again) is an extra fact beyond the brief: it hides the UI on iOS-less / non-standalone revisits after an install.
+- **UI:** the main-menu "Install app" button (shown iff `installKind != none`; also on desktop Chrome, harmless) and an **inline invitation**
+  inside the end panel (not a modal sub-screen, so Play again, R and the touch tap-to-restart keep working; focus stays on Play again).
+  One invitation per page visit, opened when a day finishes and the rules allow; ignoring it leaves the stored state untouched, so it can
+  return next visit until the player picks Not now (7 days) / Don't ask again / Install. A native prompt the player dismisses counts as Not
+  now; the single-use event is dropped. iOS "Install" opens the `install-ios` screen (inline SVG share glyph, 3 steps, Back, Esc). It is a
+  sub-screen, so the game takes no input while it is open. In short landscape viewports the invitation buttons join the end screen's button row
+  (CSS only, `:has`) because a stacked invitation covered the stats at 844x390.
+- **Firefox Android / Samsung Internet / others without the event:** the Install item and the invitation are hidden (I-2). A generic "use
+  your browser menu > Install / Add to Home screen" fallback was considered and rejected: we cannot tell which browsers have such an entry
+  (desktop Firefox and Safari do not), so it would send some players on a hunt. Those browsers still install via their own menu; Samsung
+  shows the button whenever it does fire the event.
+- **Not done / unsure:** `display-mode: fullscreen` also matches F11 browser fullscreen on desktop, which would hide the install UI there
+  (accepted). iOS standalone is detected but nothing marks an iOS home-screen install from a Safari tab, so an iOS player who already added
+  the icon is still offered the steps in Safari until they pick Don't ask again. No device testing (see below).
+- **Verification** (headless Chrome 157 over CDP, served from a temp dir with a `side-quest` symlink, 844x390 / 390x844 / 667x375 touch
+  emulation): SW registers with scope `/side-quest/` and controls the page after a reload; `Network.emulateNetworkConditions` offline +
+  reload still renders the menu (also with a query string); a file edited on disk is returned by a SW-served `fetch` immediately (no staleness);
+  `Page.getAppManifest` errors `[]`; `Page.getInstallabilityErrors` `[]`; Chrome itself fired a real `beforeinstallprompt`; a fake event shows
+  the button and calls `prompt()` once; the invitation appears after the first day, Not now hides it and it stays hidden after a reload and
+  another day, Don't ask again persists, `appinstalled` hides the menu item; iPhone UA and iPadOS (Mac UA + 5 touch points) show the
+  instructions, Esc / Back return; `navigator.standalone` hides everything (also with a fake prompt event); a Mac UA without touch shows nothing.
+  No console errors.

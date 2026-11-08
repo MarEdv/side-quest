@@ -140,17 +140,11 @@ window.addEventListener('pointerdown', () => audio.unlock());
 window.addEventListener('pointerup', () => audio.unlock()); // iOS only honours some gestures on release
 window.addEventListener('touchend', () => audio.unlock()); // older WebKit: touchend is the activation event
 
-// iOS ignores SVG apple-touch-icon: draw a small PNG at runtime.
-try {
-  const ic = document.createElement('canvas'); ic.width = ic.height = 180;
-  const g = ic.getContext('2d');
-  g.fillStyle = '#5cae4b'; g.fillRect(0, 0, 180, 180);
-  g.fillStyle = '#a85d3b'; g.fillRect(0, 0, 180, 50);
-  g.fillStyle = '#f28c28'; g.beginPath(); g.arc(90, 112, 29, 0, 7); g.fill();
-  g.fillStyle = '#f1c9a0'; g.beginPath(); g.arc(90, 76, 18, 0, 7); g.fill();
-  const lk = document.createElement('link'); lk.rel = 'apple-touch-icon'; lk.href = ic.toDataURL('image/png');
-  document.head.appendChild(lk);
-} catch { /* cosmetic */ }
+// Offline support (D-25): relative URL, so the worker's scope is the game's own folder (also under /side-quest/).
+if ('serviceWorker' in navigator) {
+  const reg = () => navigator.serviceWorker.register('sw.js').catch(() => { /* cosmetic: the game works without it */ });
+  if (document.readyState === 'complete') reg(); else window.addEventListener('load', reg, { once: true });
+}
 
 // Auto-pause when the tab loses focus.
 const autoPause = () => { input.clear(); touch.clear(); if (state.phase === 'playing') state.phase = 'paused'; };
