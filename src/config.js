@@ -63,3 +63,12 @@ export function parseFlags(queryString = '') {
   }
   return flags;
 }
+
+// Short human-readable summary of the gameplay flags, stored with each high score, e.g. "vision·roam·normal".
+// Roaming only exists in vision mode, so random mode reads "random·normal".
+export function settingsSummary(flags = DEFAULT_FLAGS) {
+  const parts = [flags.wifeMode];
+  if (flags.wifeMode === 'vision') parts.push(flags.wifeRoam ? 'roam' : 'patio');
+  parts.push(flags.difficulty);
+  return parts.join('\u00b7');
+}

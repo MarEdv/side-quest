@@ -9,7 +9,7 @@ import { moveWithCollision } from './geometry.js';
 import { createChores, findChoreInRange, workOnChore, choresDoneCount, allChoresDone } from './chores.js';
 import { HARMONY, canGiveQuest, giveQuest, tryQuestInteraction, updateQuests } from './quests.js';
 import { createWife, updateWife, sayBubble } from './wife.js';
-import { DEFAULT_FLAGS } from './config.js';
+import { DEFAULT_FLAGS, settingsSummary } from './config.js';
 
 export const PLAYER_SPEED = 150;
 export const PLAYER_HALF = 8;
@@ -33,7 +33,7 @@ export function createGame(flags = DEFAULT_FLAGS, phase = 'title') {
     wife: createWife(world, rng, flags),
     harmony: HARMONY.start,
     stats: { questsCompleted: 0, questsFailed: 0, questsAvoided: 0 },
-    endReason: null, score: 0,
+    endReason: null, score: 0, summary: settingsSummary(flags),
     events: [],
     prev: { pause: false, start: false, restart: false },
   };
@@ -119,12 +119,17 @@ function step(s, input, dt) {
   else if (s.time >= s.dayLength) endGame(s, 'lost', 'sunset');
 }
 
-export function resetGame(s) {
-  const fresh = createGame(s.flags, 'playing');
+export function resetGame(s, phase = 'playing') {
+  const fresh = createGame(s.flags, phase);
   // Keep the same seed unless it was random (then createGame already rolled a new one).
   for (const k of Object.keys(s)) delete s[k];
   Object.assign(s, fresh);
 }
+
+// Menu hand-offs (keep the key-edge memory so a held key does not re-trigger). startGame: new day, playing.
+// toMenu: fresh garden behind the main menu (phase 'title' now means "menu shown").
+export function startGame(s) { const prev = { ...s.prev }; resetGame(s, 'playing'); s.prev = prev; }
+export function toMenu(s) { const prev = { ...s.prev }; resetGame(s, 'title'); s.prev = prev; }
 
 export function update(s, input, dt) {
   const edge = {

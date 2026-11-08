@@ -115,11 +115,11 @@ ensure gradually increased difficulty; keep the current play mode as an 'arcade 
 **Feature 1 — High scores (local device)**
 | ID | Requirement | Status |
 |----|-------------|--------|
-| HS-1 | Scores are saved in `localStorage` on this device only (no server, no account). Storage failures (private mode, quota) never break the game. | 📋 |
-| HS-2 | Arcade keeps a top-10 table: score, outcome (won/lost), date, and a short settings summary (e.g. "vision·roam·normal"). | 📋 |
-| HS-3 | Each level keeps its best score and whether it has been won (feeds level unlocking, L-3). | 📋 |
+| HS-1 | Scores are saved in `localStorage` on this device only (no server, no account). Storage failures (private mode, quota) never break the game. |🚧 logic + unit tests done (`storage.js`, `scores.js`); UI wiring follows |
+| HS-2 | Arcade keeps a top-10 table: score, outcome (won/lost), date, and a short settings summary (e.g. "vision·roam·normal"). |🚧 logic + unit tests done (`storage.js`, `scores.js`); UI wiring follows |
+| HS-3 | Each level keeps its best score and whether it has been won (feeds level unlocking, L-3). |🚧 logic + unit tests done (`storage.js`, `scores.js`); UI wiring follows |
 | HS-4 | End screen shows "New high score!" / the rank achieved and the current best. A High scores screen lists them, with a "Clear scores" action that asks for confirmation inside the page. | 📋 |
-| HS-5 | No name entry (single-player, one device). Data is versioned (`sidequest.v1.*`) so later formats can migrate. | 📋 |
+| HS-5 | No name entry (single-player, one device). Data is versioned (`sidequest.v1.*`) so later formats can migrate. |🚧 logic + unit tests done (`storage.js`, `scores.js`); UI wiring follows |
 
 **Feature 2 — Settings screen**
 | ID | Requirement | Status |

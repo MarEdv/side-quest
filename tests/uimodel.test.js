@@ -1,0 +1,70 @@
+import { test } from 'node:test';
+import assert from 'node:assert/strict';
+import { gateInput, rankText, bestText, formatDate, moveFocus } from '../src/uimodel.js';
+import { settingsSummary, DEFAULT_FLAGS } from '../src/config.js';
+import { createGame, update, startGame, toMenu } from '../src/game.js';
+import { mkFlags, NO_INPUT } from './helpers.js';
+
+const all = { up: true, down: true, left: true, right: true, action: true, pause: true, start: true, restart: true, moveX: 1, moveY: 1 };
+
+test('gateInput: nothing reaches the game from the main menu', () => {
+  const g = gateInput('title', all);
+  assert.ok(Object.values(g).every((v) => v === false || v === 0));
+});
+test('gateInput: pause only passes pause; end screens only restart; playing drops start/restart', () => {
+  assert.deepEqual(Object.entries(gateInput('paused', all)).filter(([, v]) => v).map(([k]) => k), ['pause']);
+  assert.deepEqual(Object.entries(gateInput('won', all)).filter(([, v]) => v).map(([k]) => k), ['restart']);
+  assert.equal(gateInput('lost', all).action, false);
+  const p = gateInput('playing', all);
+  assert.equal(p.action, true); assert.equal(p.start, false); assert.equal(p.restart, false); assert.equal(p.moveX, 1);
+});
+
+test('rank / best texts', () => {
+  assert.equal(rankText({ rank: 1, isBest: true, best: 9 }), 'New high score!');
+  assert.equal(rankText({ rank: 3, isBest: false, best: 9 }), '#3 on your board');
+  assert.equal(rankText({ rank: null, isBest: false, best: 9 }), '');
+  assert.equal(bestText({ rank: 3, isBest: false, best: 9 }), 'Best: 9');
+  assert.equal(bestText(null), '');
+});
+
+test('formatDate is short and tolerant', () => {
+  assert.match(formatDate('2026-11-08T10:00:00Z', 'en-US'), /2026/);
+  assert.equal(formatDate('nope'), '');
+  assert.equal(formatDate(''), '');
+});
+
+test('moveFocus wraps and handles empty/unknown', () => {
+  assert.equal(moveFocus(3, 0, 'ArrowDown'), 1);
+  assert.equal(moveFocus(3, 2, 'ArrowRight'), 0);
+  assert.equal(moveFocus(3, 0, 'ArrowUp'), 2);
+  assert.equal(moveFocus(3, -1, 'ArrowDown'), 0);
+  assert.equal(moveFocus(3, 1, 'KeyX'), 1);
+  assert.equal(moveFocus(0, 0, 'ArrowDown'), -1);
+});
+
+test('settingsSummary', () => {
+  assert.equal(settingsSummary(DEFAULT_FLAGS), 'vision·roam·normal');
+  assert.equal(settingsSummary({ ...DEFAULT_FLAGS, wifeRoam: false, difficulty: 'hard' }), 'vision·patio·hard');
+  assert.equal(settingsSummary({ ...DEFAULT_FLAGS, wifeMode: 'random', difficulty: 'easy' }), 'random·easy');
+});
+
+test('game carries its summary; startGame / toMenu hand-offs', () => {
+  const s = createGame(mkFlags({ difficulty: 'hard' }), 'title');
+  assert.equal(s.summary, 'vision·roam·hard');
+  startGame(s);
+  assert.equal(s.phase, 'playing');
+  s.time = 5;
+  toMenu(s);
+  assert.equal(s.phase, 'title');
+  assert.equal(s.time, 0);
+  update(s, NO_INPUT, 1 / 60);
+  assert.equal(s.phase, 'title');
+});
+
+test('startGame keeps held-key edge memory (no instant pause toggle)', () => {
+  const s = createGame(mkFlags(), 'title');
+  update(s, { ...NO_INPUT, pause: true }, 1 / 60);
+  startGame(s);
+  update(s, { ...NO_INPUT, pause: true }, 1 / 60);
+  assert.equal(s.phase, 'playing');
+});

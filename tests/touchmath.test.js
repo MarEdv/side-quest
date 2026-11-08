@@ -169,7 +169,7 @@ test('landscape / keyboard: pause stays in the CSS corner, hint right under the 
 });
 
 test('logic modules stay DOM-free (CLAUDE.md)', () => {
-  for (const f of ['game', 'chores', 'quests', 'wife', 'world', 'geometry', 'rng', 'config', 'touchmath']) {
+  for (const f of ['game', 'chores', 'quests', 'wife', 'world', 'geometry', 'rng', 'config', 'touchmath', 'storage', 'scores', 'uimodel']) {
     const src = readFileSync(new URL(`../src/${f}.js`, import.meta.url), 'utf8').replace(/\/\/.*$/gm, '');
     assert.doesNotMatch(src, /\b(document|window|navigator|innerWidth|innerHeight|matchMedia|performance)\b/, f);
   }
