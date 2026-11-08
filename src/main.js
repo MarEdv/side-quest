@@ -8,6 +8,7 @@ import { computeLayout, chromeLayout, mergeInput } from './touchmath.js';
 import { createAudio } from './audio.js';
 import { createStorage } from './storage.js';
 import { createScores } from './scores.js';
+import { LEVELS, levelById, levelIndex, nextLevel, levelFlags, isUnlocked, unlockedCount } from './levels.js';
 import { createUI } from './ui.js';
 import { createInstall, registerServiceWorker } from './install.js';
 import { gateInput, shouldRecord, startsDay } from './uimodel.js';
@@ -39,8 +40,13 @@ const state = createGame(flags);
 if (flags.debug) window.__state = state; // inspection hook for browser self-checks
 
 const dayInProgress = () => state.phase === 'playing' || state.phase === 'paused';
-const pendingKeys = () => GAMEPLAY_FLAGS.filter((k) => flags[k] !== resolved.flags[k]);
-function applyGameplay() { Object.assign(flags, gameplayOf(resolved.flags)); }
+// What is being played: null = Arcade (gameplay flags from Settings), or a level {id, index, name} whose own gameplay flags
+// are fixed (src/levels.js). The same `flags` object serves both, so R on the end screen restarts the same thing (D-27).
+let mode = null;
+const modeOf = (lvl) => ({ id: lvl.id, index: levelIndex(lvl.id), name: lvl.name });
+// Settings only change Arcade, so nothing is "pending" while a level is the current mode.
+const pendingKeys = () => (mode ? [] : GAMEPLAY_FLAGS.filter((k) => flags[k] !== resolved.flags[k]));
+function applyGameplay() { Object.assign(flags, gameplayOf(mode ? levelFlags(levelById(mode.id), resolved.flags) : resolved.flags)); }
 let debugTainted = false; // a day with debug on at any moment is never recorded (D-22/D-23)
 
 function applyControl() {
@@ -81,6 +87,8 @@ registerServiceWorker();
 
 const controlsText = () => (touch.active() ? HINT_TOUCH[flags.touchScheme] : HINT_KEYS);
 const startDay = () => { debugTainted = false; applyGameplay(); startGame(state); };
+const startLevel = (id) => { mode = modeOf(levelById(id)); audio.unlock(); startDay(); };
+const records = () => scores.levels();
 const menus = createUI({
   scores, now: () => performance.now(),
   persistent: () => storage.persistent,
@@ -93,11 +101,21 @@ const menus = createUI({
     reset() { saved = settingsStore.reset(); refreshResolved(); },
     clearLinks() { location.assign(location.pathname + location.hash); }, // reload without the query string
   },
+  mode: () => mode,
+  levels: {
+    list: LEVELS,
+    records,
+    isUnlocked: (i) => isUnlocked(i, records()),
+    unlockedCount: () => unlockedCount(records()),
+    next: (id) => nextLevel(id),
+    start: startLevel,
+    flagsText: (lvl) => settingsSummary(levelFlags(lvl, resolved.flags)) + ` \u00b7 ${lvl.flags.maxActiveQuests} quest${lvl.flags.maxActiveQuests === 1 ? '' : 's'} at a time \u00b7 ${lvl.flags.dayLength} s day`,
+  },
   actions: {
-    play: () => { audio.unlock(); startDay(); },
-    again: () => startDay(),
+    play: () => { mode = null; audio.unlock(); startDay(); }, // Arcade
+    again: () => startDay(), // retry the current level, or play Arcade again
     resume: () => { if (state.phase === 'paused') state.phase = 'playing'; },
-    quit: () => { applyGameplay(); toMenu(state); },
+    quit: () => { mode = null; applyGameplay(); toMenu(state); },
   },
 });
 
@@ -159,9 +177,15 @@ let shownPhase = null;
 function syncMenus() {
   if (state.phase === shownPhase) return;
   if (shouldRecord(shownPhase, state.phase, { debug: debugTainted || flags.debug })) {
-    menus.setEndResult(scores.recordArcade({ score: state.score, won: state.phase === 'won', date: new Date().toISOString(), summary: state.summary }));
+    if (mode) {
+      const won = state.phase === 'won', next = nextLevel(mode.id);
+      const wasOpen = next ? isUnlocked(levelIndex(next.id), records()) : true;
+      const rec = scores.recordLevel(mode.id, { score: state.score, won });
+      menus.setEndResult({ level: true, best: rec ? rec.best : null, isBest: !!(rec && rec.isBest), won,
+        unlocked: won && next && !wasOpen && rec ? next.name : null });
+    } else menus.setEndResult(scores.recordArcade({ score: state.score, won: state.phase === 'won', date: new Date().toISOString(), summary: state.summary }));
   } else if (state.phase === 'won' || state.phase === 'lost') {
-    menus.setEndResult((debugTainted || flags.debug) ? { rank: null, isBest: false, best: null, note: 'Debug run: not recorded' } : null);
+    menus.setEndResult((debugTainted || flags.debug) ? { rank: null, isBest: false, best: null, level: !!mode, note: 'Debug run: not recorded' } : null);
   }
   // A new day starts clean: R on the end screen restarts from game.js without startDay(), and must not inherit the
   // previous day's debug mark (D-24). The frame loop marks it again before the next step if debug is still on.
@@ -202,7 +226,7 @@ function frame(now) {
   // DPR-aware transform, reset every frame: logical 960x540 -> backing store.
   const k = canvas.width / W;
   ctx.setTransform(k, 0, 0, k, 0, 0);
-  render(ctx, state, { fps, time: now / 1000, touch: touch.active() });
+  render(ctx, state, { fps, time: now / 1000, touch: touch.active(), level: mode });
   requestAnimationFrame(frame);
 }
 requestAnimationFrame(frame);

@@ -282,7 +282,7 @@ function drawArrow(c, s, t) {
   c.restore();
 }
 
-function drawHUD(c, s) {
+function drawHUD(c, s, level) {
   c.fillStyle = 'rgba(15,20,25,0.78)'; c.fillRect(0, 0, W, 34);
   text(c, fmtClock(clockMinutes(s)), 14, 17, 18, '#ffe9a8');
   // sun progress
@@ -302,6 +302,7 @@ function drawHUD(c, s) {
     const q = s.quests.find((x) => x.id === s.carry);
     text(c, `Carrying: ${q ? q.title : '?'}`, 640, 17, 13, '#4fc3f7');
   }
+  if (level) text(c, `L${level.index + 1} \u00b7 ${level.name}`, W - 14, 17, 12, '#ffd23f', 'right');
   // quest list
   if (s.quests.length) {
     const h = 24 + s.quests.length * 20;
@@ -378,7 +379,7 @@ export function render(c, s, info = { fps: 60, time: 0 }) {
   drawTreeCanopy(c, s);
   if (s.phase === 'playing' || s.phase === 'paused') drawArrow(c, s, t);
   if (s.phase !== 'won' && s.phase !== 'lost') drawBubble(c, s.wife); // it collided with the end-screen title
-  if (s.phase !== 'title') drawHUD(c, s);
+  if (s.phase !== 'title') drawHUD(c, s, info.level);
   if (s.flags.debug) drawDebug(c, s, info);
   if (s.phase === 'title') drawTitle(c);
   else if (s.phase === 'paused') drawPause(c, touch);

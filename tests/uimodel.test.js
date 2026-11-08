@@ -98,3 +98,23 @@ test('startsDay: Play / Play again / R restart begin a day; resuming from pause 
   assert.equal(startsDay('playing', 'playing'), false);
   assert.equal(startsDay('playing', 'won'), false);
 });
+
+test('levelBannerText: new best, level best, unlock and debug note', async () => {
+  const { levelBannerText, levelCard, levelEndButtons } = await import('../src/uimodel.js');
+  assert.equal(levelBannerText(null), '');
+  assert.equal(levelBannerText({ rank: 1, best: 5 }), ''); // an arcade result is not a level result
+  assert.equal(levelBannerText({ level: true, best: 900, isBest: true, unlocked: 'Honey-Do List' }), 'New best!  ·  Level best: 900  ·  Honey-Do List unlocked!');
+  assert.equal(levelBannerText({ level: true, best: 900, isBest: false }), 'Level best: 900');
+  assert.equal(levelBannerText({ level: true, best: null, isBest: false, note: 'Debug run: not recorded' }), 'Debug run: not recorded');
+  // cards
+  const lvl = { name: 'Honey-Do List', briefing: 'b' };
+  assert.deepEqual(levelCard(lvl, 1, undefined, false, 'Saturday Morning'),
+    { title: '2. Honey-Do List', briefing: 'b', locked: true, won: false, bestText: '', lockText: 'Win Saturday Morning to unlock it.' });
+  assert.equal(levelCard(lvl, 1, undefined, true).bestText, 'Not played yet');
+  const won = levelCard(lvl, 1, { best: 700, won: true }, true);
+  assert.deepEqual([won.won, won.locked, won.bestText], [true, false, 'Best: 700']);
+  // end buttons: Next only when won and a next level is offered
+  assert.deepEqual(levelEndButtons(true, { id: 'l2' }), ['next', 'retry', 'menu']);
+  assert.deepEqual(levelEndButtons(true, null), ['retry', 'menu']);
+  assert.deepEqual(levelEndButtons(false, { id: 'l2' }), ['retry', 'menu']);
+});

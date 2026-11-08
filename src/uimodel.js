@@ -42,3 +42,33 @@ export function moveFocus(count, cur, key) {
   if (cur < 0 || cur >= count) return dir > 0 ? 0 : count - 1;
   return (cur + dir + count) % count;
 }
+
+// ---- levels (Features 4 & 5) ----
+// End-screen banner for a level day. res = { level: true, best, isBest, won, unlocked (name of a newly opened level or null), note }.
+export function levelBannerText(res) {
+  if (!res || !res.level) return '';
+  const parts = [];
+  if (res.isBest) parts.push('New best!');
+  if (res.best != null) parts.push(`Level best: ${res.best}`);
+  if (res.unlocked) parts.push(`${res.unlocked} unlocked!`);
+  if (res.note) parts.push(res.note);
+  return parts.join('  ·  ');
+}
+
+// What a level card shows. rec = {best, won} or undefined; unlocked comes from levels.js isUnlocked.
+export function levelCard(level, index, rec, unlocked, prevName) {
+  const best = rec && Number.isFinite(rec.best) ? rec.best : null;
+  return {
+    title: `${index + 1}. ${level.name}`,
+    briefing: level.briefing,
+    locked: !unlocked,
+    won: !!(rec && rec.won),
+    bestText: unlocked ? (best == null ? 'Not played yet' : `Best: ${best}`) : '',
+    lockText: unlocked ? '' : `Win ${prevName || 'the previous level'} to unlock it.`,
+  };
+}
+
+// Which buttons the level end screen offers, in order. next = the following level when it exists and is unlocked.
+export function levelEndButtons(won, next) {
+  return won && next ? ['next', 'retry', 'menu'] : ['retry', 'menu'];
+}

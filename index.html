@@ -155,6 +155,31 @@
       table.scores { font-size: 14px; } table.scores th, table.scores td { padding: 4px 8px; }
     }
     @media (max-width: 480px) { table.scores { font-size: 14px; } table.scores th, table.scores td { padding: 6px 5px; } table.scores td:nth-child(5) { white-space: normal; overflow-wrap: anywhere; font-size: 12px; } }
+
+    /* Levels (src/levelsui.js) */
+    .ui .levels { width: min(760px, 100%); }
+    .ui .lscroll { width: 100%; max-height: calc(100dvh - 150px); border: 0; background: none; }
+    .ui .lgrid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; padding: 2px; }
+    .ui .lcard { all: unset; box-sizing: border-box; display: flex; flex-direction: column; gap: 6px; text-align: left; min-height: 48px; padding: 12px 14px;
+      border-radius: 12px; border: 2px solid #667; background: #262b33; color: #fff; cursor: pointer; }
+    .ui .lcard:focus-visible { outline: 3px solid #fff; outline-offset: 2px; }
+    .ui .lcard:active:not(:disabled) { filter: brightness(1.2); }
+    .ui .lcard.won { border-color: #5ed26a; }
+    .ui .lcard.locked { opacity: .55; cursor: default; border-style: dashed; }
+    .ui .lhead { display: flex; justify-content: space-between; align-items: baseline; gap: 8px; }
+    .ui .lname { font-weight: bold; font-size: 18px; color: #ffd23f; }
+    .ui .lbadge { font-size: 13px; font-weight: bold; white-space: nowrap; }
+    .ui .lbadge.won { color: #7fe08a; } .ui .lbadge.lock { color: #cde; }
+    .ui .lbrief { font-size: 14px; line-height: 1.35; color: #dde; }
+    .ui .lbest { font-size: 13px; color: #9fd3ff; }
+    .ui .intro { max-width: 34em; }
+    .ui .btn small { display: block; font-size: 12px; font-weight: normal; opacity: .8; }
+    .ui .col { flex-wrap: wrap; }
+    .ui .menu .warn { max-width: 30em; }
+    .ui .shead { margin: 10px 10px 2px; text-align: left; color: #ffd23f; font-size: 16px; }
+    .ui .spad { padding: 6px 10px 10px; text-align: left; }
+    @media (max-width: 600px) { .ui .lgrid { grid-template-columns: minmax(0, 1fr); } }
+    @media (max-height: 500px) { .ui .lscroll { max-height: calc(100dvh - 110px); } .ui .lcard { padding: 8px 12px; gap: 3px; } .ui .lbrief { font-size: 13px; } }
   </style>
 </head>
 <body>

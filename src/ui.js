@@ -2,9 +2,10 @@
 // function; `phase` links a root screen to a game phase ('title' = menu shown, 'paused', 'won'/'lost'), and
 // push()/back() navigate sub-screens (e.g. High scores on top of the main menu). Later features register more
 // screens (settings, levels, install) with ui.register(). The game itself never sees menu input (uimodel.gateInput).
-import { moveFocus, rankText, bestText, formatDate } from './uimodel.js';
+import { moveFocus, rankText, bestText, formatDate, levelBannerText, levelEndButtons } from './uimodel.js';
 import { registerSettings } from './settingsui.js';
 import { registerInstall } from './installui.js';
+import { registerLevels } from './levelsui.js';
 
 export const END_GUARD_MS = 700; // end-screen buttons ignore clicks this long after the game ends (mashed WORK/Space)
 
@@ -19,7 +20,7 @@ function h(tag, props = {}, ...kids) {
   return e;
 }
 
-// ctx: { actions: {play, resume, quit, again}, scores, settings (see settingsui.js), install (see installui.js), persistent(), controlsText(), summary(), isTouch(), now() }
+// ctx: { actions: {play (arcade), resume, quit, again (retry the current level / arcade)}, levels (see levelsui.js), mode() -> level or null, scores, settings (see settingsui.js), install (see installui.js), persistent(), controlsText(), summary(), isTouch(), now() }
 export function createUI(ctx, root = document.body) {
   const host = h('div', { class: 'ui', hidden: true });
   root.appendChild(host);
@@ -122,32 +123,42 @@ export function createUI(ctx, root = document.body) {
       h('h1', {}, 'SIDE QUEST'),
       h('p', { class: 'tag' }, 'Finish the garden before sunset. Your wife has other plans.'),
       h('div', { class: 'col' },
-        btn('Play', () => A.play(), { primary: true, autofocus: true }),
+        btn([h('span', {}, 'Levels'), h('small', {}, `${ctx.levels.unlockedCount()} of ${ctx.levels.list.length} unlocked`)], () => api.push('levels'), { primary: true, autofocus: true }),
+        btn([h('span', {}, 'Arcade'), h('small', {}, ctx.summary())], () => A.play()),
         btn('Settings', () => api.push('settings')),
         btn('High scores', () => api.push('scores')),
         installButton()),
       h('p', { class: 'small' }, ctx.controlsText()),
-      h('p', { class: 'small dim' }, `Mode: ${ctx.summary()}`)),
+      h('p', { class: 'small dim' }, 'Arcade uses your Settings. Levels use their own.')),
   });
 
   api.register('scores', {
     onEsc: (a) => { if (a.local.confirm) { a.local.confirm = false; a.refresh(); return true; } return false; },
     build: (a) => {
       const list = ctx.scores.arcade();
-      const body = list.length
-        ? h('div', { class: 'ui-scroll' }, h('table', { class: 'scores' },
+      const recs = ctx.scores.levels();
+      const hasLevels = Object.keys(recs).length > 0;
+      const arcadeTable = list.length
+        ? h('table', { class: 'scores' },
           h('thead', {}, h('tr', {}, ['#', 'Score', 'Result', 'Date', 'Mode'].map((t) => h('th', {}, t)))),
           h('tbody', {}, list.map((e, i) => h('tr', {},
             h('td', {}, String(i + 1)), h('td', { class: 'num' }, String(e.score)),
-            h('td', {}, e.won ? 'Won' : 'Lost'), h('td', {}, formatDate(e.date)), h('td', { class: 'dim' }, e.summary))))))
-        : h('p', { class: 'tag' }, 'No scores yet. Finish a day to get on the board.');
+            h('td', {}, e.won ? 'Won' : 'Lost'), h('td', {}, formatDate(e.date)), h('td', { class: 'dim' }, e.summary)))))
+        : h('p', { class: 'small dim spad' }, 'No Arcade scores yet. Finish a day to get on the board.');
+      const levelTable = h('table', { class: 'scores' },
+        h('thead', {}, h('tr', {}, ['Level', 'Best', 'Won'].map((t) => h('th', {}, t)))),
+        h('tbody', {}, ctx.levels.list.map((lvl, i) => { const r = recs[lvl.id]; return h('tr', {},
+          h('td', {}, `${i + 1}. ${lvl.name}`), h('td', { class: 'num' }, r ? String(r.best) : '\u2013'),
+          h('td', {}, r && r.won ? '\u2713' : '\u2013')); })));
+      const body = h('div', { class: 'ui-scroll' },
+        h('h3', { class: 'shead' }, 'Arcade'), arcadeTable, h('h3', { class: 'shead' }, 'Levels'), levelTable);
       const actions = a.local.confirm
-        ? [h('p', { class: 'warn' }, 'Clear all saved scores? This cannot be undone.'),
+        ? [h('p', { class: 'warn' }, 'Clear all saved scores AND level progress? Every level you unlocked locks again (only Level 1 stays open). This cannot be undone.'),
           h('div', { class: 'row' },
-            btn('Yes, clear', () => { ctx.scores.clearAll(); a.local.confirm = false; a.refresh('[data-back]'); }),
+            btn('Yes, clear scores and progress', () => { ctx.scores.clearAll(); a.local.confirm = false; a.refresh('[data-back]'); }),
             btn('Cancel', () => { a.local.confirm = false; a.refresh(); }, { primary: true, autofocus: true }))]
         : [h('div', { class: 'row' },
-          btn('Clear scores', () => { a.local.confirm = true; a.refresh(); }, { disabled: !list.length }),
+          btn('Clear scores', () => { a.local.confirm = true; a.refresh(); }, { disabled: !list.length && !hasLevels }),
           h('button', { type: 'button', class: 'btn primary', 'data-back': true, 'data-autofocus': true, onclick: () => a.back() }, 'Back'))];
       return h('div', { class: 'menu' }, h('h2', {}, 'High scores'), body,
         ctx.persistent() ? null : h('p', { class: 'small dim' }, 'Storage is blocked here: scores last only until you close the page.'),
@@ -157,19 +168,41 @@ export function createUI(ctx, root = document.body) {
 
   api.register('pause', {
     phase: 'paused', kind: 'dock',
-    build: () => h('div', { class: 'row' },
-      btn('Resume', () => A.resume(), { primary: true, autofocus: true }),
-      btn('Settings', () => api.push('settings')),
-      btn('Quit to menu', () => A.quit())),
+    build: () => h('div', { class: 'endp' },
+      ctx.mode() ? h('p', { class: 'small' }, `Level ${ctx.mode().index + 1}: ${ctx.mode().name}`) : null,
+      h('div', { class: 'row' },
+        btn('Resume', () => A.resume(), { primary: true, autofocus: true }),
+        btn('Settings', () => api.push('settings')),
+        btn('Quit to menu', () => A.quit()))),
   });
 
   registerSettings(api, ctx, btn);
+  registerLevels(api, ctx, btn);
   const { installButton, inviteBlock } = registerInstall(api, ctx, btn);
+
+  // End screen of a level day: Next level (only if won and a next, unlocked level exists), Retry (R), Menu.
+  function levelEnd(r, lvl) {
+    const line = levelBannerText(r);
+    const next = ctx.levels.next(lvl.id);
+    const won = !!(api.phase === 'won');
+    const kinds = levelEndButtons(won, next && ctx.levels.isUnlocked(ctx.levels.list.indexOf(next)) ? next : null);
+    const mk = {
+      next: () => btn('Next level', () => api.openLevelIntro(next.id), { primary: true, autofocus: true, guard: true }),
+      retry: () => btn(ctx.isTouch() ? 'Retry' : 'Retry (R)', () => A.again(), { primary: kinds[0] === 'retry', autofocus: kinds[0] === 'retry', guard: true }),
+      menu: () => btn('Menu', () => A.quit(), { guard: true }),
+    };
+    return h('div', { class: 'endp' },
+      h('p', { class: 'small' }, `Level ${lvl.index + 1}: ${lvl.name}`),
+      line ? h('p', { class: `banner${r && r.isBest ? ' hi' : ''}` }, line) : null,
+      h('div', { class: 'row' }, kinds.map((k) => mk[k]())));
+  }
 
   const endScreen = {
     kind: 'dock', dock: 'bottom',
     build: () => {
       const r = api.endResult;
+      const lvl = ctx.mode();
+      if (lvl) return levelEnd(r, lvl);
       const line = [rankText(r), bestText(r), r && r.note].filter(Boolean).join('  ·  ');
       return h('div', { class: 'endp' },
         line ? h('p', { class: `banner${r && r.isBest ? ' hi' : ''}` }, line) : null,

@@ -22,6 +22,7 @@ const PRECACHE = [
   'src/installmodel.js',
   'src/installui.js',
   'src/levels.js',
+  'src/levelsui.js',
   'src/main.js',
   'src/quests.js',
   'src/render.js',
