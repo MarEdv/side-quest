@@ -1,6 +1,6 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { segmentIntersectsAABB, pointInCone, angleDiff, moveWithCollision, clamp } from '../src/geometry.js';
+import { segmentIntersectsAABB, segmentAABBEntry, pointInCone, angleDiff, moveWithCollision, clamp } from '../src/geometry.js';
 
 const box = { x: 10, y: 10, w: 10, h: 10 };
 
@@ -44,4 +44,10 @@ test('moveWithCollision stops at rects and bounds, slides along walls', () => {
   const q = { x: 5, y: 5 };
   moveWithCollision(q, -50, -50, 8, [], { w: 200, h: 100 });
   assert.deepEqual(q, { x: 8, y: 8 });
+});
+
+test('segmentAABBEntry returns entry parameter, 0 inside, -1 on miss', () => {
+  assert.equal(segmentAABBEntry(0, 15, 30, 15, box), 10 / 30);
+  assert.equal(segmentAABBEntry(15, 15, 100, 15, box), 0);
+  assert.equal(segmentAABBEntry(0, 0, 30, 5, box), -1);
 });

@@ -75,7 +75,7 @@ before sunset while completing — or sneakily avoiding — the side quests.
 |----|-------------|--------|
 | P-1 | All art is procedural canvas drawing (no image assets). | ✅ |
 | P-2 | HUD: clock, Harmony meter, chore count, active quest list with countdown. | ✅ |
-| P-3 | Wife's quest is shown as a speech bubble; her vision cone is drawn faintly when she is out (flag `showVisionCone`). | ✅ |
+| P-3 | Wife's quest is shown as a speech bubble; her vision cone is drawn faintly when she is out (flag `showVisionCone`), clipped by sight blockers so it matches what she can actually see (D-10). | ✅ |
 | P-4 | Simple WebAudio blips for events (flag `sound`, default on). No audio files. | ✅ |
 | P-5 | Arrow/position indicator toward the current quest target. | ✅ |
 

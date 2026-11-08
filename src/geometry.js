@@ -4,23 +4,27 @@ export const dist = (ax, ay, bx, by) => Math.hypot(bx - ax, by - ay);
 export const pointInRect = (px, py, r) => px >= r.x && px <= r.x + r.w && py >= r.y && py <= r.y + r.h;
 export const rectsOverlap = (a, b) => a.x < b.x + b.w && a.x + a.w > b.x && a.y < b.y + b.h && a.y + a.h > b.y;
 
-// Liang-Barsky: does segment (x1,y1)-(x2,y2) touch rect r?
-export function segmentIntersectsAABB(x1, y1, x2, y2, r) {
+// Liang-Barsky: parameter t in [0,1] where segment (x1,y1)-(x2,y2) first touches rect r, or -1 if it misses.
+// t = 0 when the segment starts inside the rect.
+export function segmentAABBEntry(x1, y1, x2, y2, r) {
   const dx = x2 - x1, dy = y2 - y1;
   const p = [-dx, dx, -dy, dy];
   const q = [x1 - r.x, r.x + r.w - x1, y1 - r.y, r.y + r.h - y1];
   let t0 = 0, t1 = 1;
   for (let i = 0; i < 4; i++) {
     if (p[i] === 0) {
-      if (q[i] < 0) return false;
+      if (q[i] < 0) return -1;
     } else {
       const t = q[i] / p[i];
-      if (p[i] < 0) { if (t > t1) return false; if (t > t0) t0 = t; }
-      else { if (t < t0) return false; if (t < t1) t1 = t; }
+      if (p[i] < 0) { if (t > t1) return -1; if (t > t0) t0 = t; }
+      else { if (t < t0) return -1; if (t < t1) t1 = t; }
     }
   }
-  return true;
+  return t0;
 }
+
+// Does segment (x1,y1)-(x2,y2) touch rect r?
+export const segmentIntersectsAABB = (x1, y1, x2, y2, r) => segmentAABBEntry(x1, y1, x2, y2, r) >= 0;
 
 export function normalizeAngle(a) {
   while (a > Math.PI) a -= 2 * Math.PI;

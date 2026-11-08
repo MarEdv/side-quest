@@ -1,5 +1,5 @@
 // The wife: patio appearances and line-of-sight vision. Pure.
-import { pointInCone, segmentIntersectsAABB } from './geometry.js';
+import { pointInCone, segmentIntersectsAABB, segmentAABBEntry } from './geometry.js';
 
 export const WIFE = {
   fov: (70 * Math.PI) / 180,
@@ -34,6 +34,19 @@ export function canSee(wife, player, obstacles) {
 export function isSightBlocked(x1, y1, x2, y2, obstacles) {
   for (const o of obstacles) if (o.blocksSight && segmentIntersectsAABB(x1, y1, x2, y2, o)) return true;
   return false;
+}
+
+// How far she can see along `angle` before a sight-blocking obstacle (capped at WIFE.range).
+// render.js uses this to draw the cone clipped by obstacles so it matches canSee.
+export function sightDistance(wife, angle, obstacles) {
+  const ex = wife.x + Math.cos(angle) * WIFE.range, ey = wife.y + Math.sin(angle) * WIFE.range;
+  let t = 1;
+  for (const o of obstacles) {
+    if (!o.blocksSight) continue;
+    const e = segmentAABBEntry(wife.x, wife.y, ex, ey, o);
+    if (e >= 0 && e < t) t = e;
+  }
+  return t * WIFE.range;
 }
 
 export function sayBubble(wife, text, seconds = 4) {

@@ -59,3 +59,11 @@
 - **Canvas scaling:** the canvas CSS size is `960·s × 540·s` and the backing store `960·s·dpr × 540·s·dpr`; each frame `setTransform(k,0,0,k,0,0)` with `k = backing/960` (= `s·dpr`). Sharper than a fixed `960·dpr` store when upscaled.
 - **Auto-pause** when the window loses focus; large frame gaps are clamped to 250 ms.
 - **Tests:** `npm test` runs `node --test` (auto-discovers `tests/*.test.js`; `tests/helpers.js` is shared fixture code).
+
+### D-10 — Verification pass: rendering fixes (2026-11-08)
+- **Vision cone is drawn clipped by sight blockers.** It used to be a full wedge through hedges/shed/trunk, so a
+  player who was correctly hidden (logic uses line of sight) still appeared inside the cone. Now `render.js` casts
+  48 rays with `sightDistance()` (`wife.js`, built on the new `segmentAABBEntry()` in `geometry.js`) — the same
+  rule as `canSee`. Alternative: keep the wedge and draw "shadows" on top (more draw calls, same result).
+- **Harmony number** in the HUD is white when the bar fill doesn't reach the centre (it was dark-on-dark below ~50).
+- **Warning "!" badge** moved from y=40 to y=50 (r 14) so the 34 px HUD bar no longer covers its top half.

@@ -2,7 +2,7 @@
 import { W, H } from './world.js';
 import { CHORE_TYPES, INTERACT_RANGE, choresDoneCount } from './chores.js';
 import { QUEST_TEMPLATES, primaryQuest, questTarget } from './quests.js';
-import { WIFE } from './wife.js';
+import { WIFE, sightDistance } from './wife.js';
 import { clockMinutes, END_MESSAGES } from './game.js';
 
 const FONT = 'system-ui, -apple-system, "Segoe UI", sans-serif';
@@ -212,12 +212,20 @@ function drawWife(c, s, t) {
       g.addColorStop(0, w.spotted ? 'rgba(255,80,60,0.38)' : 'rgba(255,240,120,0.32)');
       g.addColorStop(1, w.spotted ? 'rgba(255,80,60,0.05)' : 'rgba(255,240,120,0.04)');
       c.fillStyle = g;
-      c.beginPath(); c.moveTo(w.x, w.y); c.arc(w.x, w.y, WIFE.range, a0, a1); c.closePath(); c.fill();
+      // Cone clipped by sight blockers (same rule as canSee), so hiding spots look hidden.
+      const RAYS = 48;
+      c.beginPath(); c.moveTo(w.x, w.y);
+      for (let i = 0; i <= RAYS; i++) {
+        const a = a0 + ((a1 - a0) * i) / RAYS, d = sightDistance(w, a, s.world.obstacles);
+        c.lineTo(w.x + Math.cos(a) * d, w.y + Math.sin(a) * d);
+      }
+      c.closePath(); c.fill();
     }
     drawPerson(c, w.x, w.y, '#e86a9a', '#5a3825', 1, false, t, true);
   } else if (w.phase === 'warning') {
     const blink = Math.floor(t * 6) % 2 === 0;
-    if (blink) { c.fillStyle = '#ffd23f'; c.beginPath(); c.arc(480, 40, 16, 0, 7); c.fill(); text(c, '!', 480, 41, 24, '#7a1f1f', 'center'); }
+    // y=50 keeps the badge below the 34 px HUD bar (it was half hidden at y=40).
+    if (blink) { c.fillStyle = '#ffd23f'; c.beginPath(); c.arc(480, 50, 14, 0, 7); c.fill(); text(c, '!', 480, 51, 22, '#7a1f1f', 'center'); }
   }
 }
 
@@ -286,7 +294,8 @@ function drawHUD(c, s) {
   c.fillStyle = '#334'; rr(c, 335, 10, 150, 14, 7); c.fill();
   c.fillStyle = hf > 0.5 ? '#5ed26a' : hf > 0.25 ? '#f0c040' : '#ee5555';
   rr(c, 335, 10, Math.max(8, 150 * hf), 14, 7); c.fill();
-  text(c, String(Math.round(s.harmony)), 410, 17, 11, '#112', 'center');
+  // Dark digits only when the fill reaches the centre of the bar; otherwise they sit on the dark track.
+  text(c, String(Math.round(s.harmony)), 410, 17, 11, hf >= 0.55 ? '#112' : '#fff', 'center');
   text(c, `Chores ${choresDoneCount(s.chores)}/${s.chores.length}`, 510, 17, 15, '#fff');
   if (s.carry != null) {
     const q = s.quests.find((x) => x.id === s.carry);

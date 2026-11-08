@@ -1,6 +1,6 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { canSee, WIFE, updateWife, createWife } from '../src/wife.js';
+import { canSee, WIFE, updateWife, createWife, sightDistance } from '../src/wife.js';
 import { createWorld } from '../src/world.js';
 import { createRng } from '../src/rng.js';
 import { update } from '../src/game.js';
@@ -82,4 +82,15 @@ test('random mode: quest called regardless of player location', () => {
   s.player.x = 100; s.player.y = 500; // far, out of any cone
   for (let i = 0; i < 60 * 8 && s.quests.length === 0; i++) update(s, NO_INPUT, 1 / 60);
   assert.equal(s.quests.length, 1);
+});
+
+test('sightDistance: full range in the open, clipped at a hedge, and consistent with canSee', () => {
+  const w = wifeAt(Math.PI / 2);
+  assert.equal(sightDistance(w, Math.PI / 2, world.obstacles), WIFE.range);
+  const a = Math.atan2(260 - 128, 300 - 480); // through hedgeA
+  const d = sightDistance(w, a, world.obstacles);
+  assert.ok(d > 60 && d < 200, `clipped distance ${d}`);
+  const just = (k) => ({ x: 480 + Math.cos(a) * (d + k), y: 128 + Math.sin(a) * (d + k) });
+  assert.equal(canSee({ ...w, dir: a }, just(-2), world.obstacles), true);
+  assert.equal(canSee({ ...w, dir: a }, just(40), world.obstacles), false);
 });
