@@ -3,7 +3,10 @@
 > **Living document.** Every change to gameplay, controls, tech, or flags MUST update this file
 > in the same commit. See `CLAUDE.md`. Requirement IDs are stable; never reuse a retired ID.
 
-Status legend: ✅ implemented · 🚧 in progress · 📋 planned · ❌ retired
+Status legend: ✅ implemented and verified · 🚧 implemented but not (fully) verified, or in progress · 📋 planned · ❌ retired
+
+Last verification pass: 2026-11-08 (D-14): `npm test`, headless Chrome screenshots (title, play, hidden, warning,
+paused, won, lost, debug, DPR 2), trusted key input via the DevTools protocol, and a path-planning bot over flag combos.
 
 ## 1. Product vision
 
@@ -24,7 +27,7 @@ before sunset while completing — or sneakily avoiding — the side quests.
 
 | ID | Requirement | Status |
 |----|-------------|--------|
-| TR-1 | Runs in any modern evergreen browser; primary test target is Chrome. | ✅ |
+| TR-1 | Runs in any modern evergreen browser; primary test target is Chrome. | 🚧 Verified in Chrome (headless, real-time key input). Firefox/Safari not tested. |
 | TR-2 | Minimise dependencies. (Decision D-1: zero runtime and zero dev dependencies.) | ✅ |
 
 ## 4. Process requirements (from the owner)
@@ -45,7 +48,7 @@ before sunset while completing — or sneakily avoiding — the side quests.
 |----|-------------|--------|
 | G-1 | Top-down 2D garden viewed on a single screen (logical 960×540, scaled to fit). | ✅ |
 | G-2 | Player walks with WASD / arrow keys. Holding **Space** (or **E**) next to a task works on it. | ✅ |
-| G-3 | A day lasts a fixed time (default 180 s real time, flag `dayLength`), shown as a clock from 09:00 to 18:00 (sunset). | ✅ |
+| G-3 | A day lasts a fixed time (default 180 s real time, flag `dayLength`), shown as a clock from 09:00 to 18:00 (sunset); the HUD uses 12-hour format (9:00 AM – 6:00 PM). | ✅ |
 | G-4 | **Win**: all chores completed before sunset. **Lose**: sunset with chores left, or Harmony reaches 0. | ✅ |
 | G-5 | End screen shows outcome, chores done, quests completed/failed/avoided, Harmony, and a score. | ✅ |
 | G-6 | Pause with **P** / **Esc** (also auto-pauses on window blur or when the tab is hidden); restart with **R** on the end screen. Title screen: press Space/Enter to start. | ✅ |
@@ -62,7 +65,7 @@ before sunset while completing — or sneakily avoiding — the side quests.
 ### 5.3 The wife and side quests
 | ID | Requirement | Status |
 |----|-------------|--------|
-| W-1 | The wife lives in the house. Periodically she steps onto the patio and looks around. | ✅ |
+| W-1 | The wife lives in the house. Periodically (flag `questInterval`) she steps onto the patio and looks around. | ✅ |
 | W-2 | Quest-giving mode is selected by flag `wifeMode` (see FLAGS.md): `vision` (default) — she gives a quest only if she **sees** the player (vision cone, blocked by the shed and hedges); `random` — she calls out a quest on a timer regardless of where the player is. | ✅ |
 | W-3 | At most `maxActiveQuests` (default 2) side quests active at once. | ✅ |
 | W-4 | Side quest types are fetch/deliver errands: pick up an item at a spot, deliver it to a spot (often the wife/house door). Examples: groceries from the car, glasses from the garden bench, trash bins to the curb, the cat from the tree, the mail from the mailbox. | ✅ |
@@ -77,7 +80,7 @@ before sunset while completing — or sneakily avoiding — the side quests.
 | P-1 | All art is procedural canvas drawing (no image assets). | ✅ |
 | P-2 | HUD: clock, Harmony meter, chore count, active quest list with countdown. | ✅ |
 | P-3 | Wife's quest is shown as a speech bubble; her vision cone is drawn faintly when she is out (flag `showVisionCone`), clipped by sight blockers so it matches what she can actually see (D-10). | ✅ |
-| P-4 | Simple WebAudio blips for events (flag `sound`, default on). No audio files. | ✅ |
+| P-4 | Simple WebAudio blips for events (flag `sound`, default on). No audio files. | 🚧 Code-reviewed only: the AudioContext is created in the first keydown/pointerdown handler and `sound=0` disables it. Not listened to (headless). |
 | P-5 | Arrow/position indicator toward the current quest target. | ✅ |
 
 ### 5.5 Implementation notes (added with first implementation)

@@ -93,3 +93,17 @@
 - The wife's speech bubble is not drawn on the won/lost screens (it overlapped the title). `index.html` gets an empty
   data: favicon so the console has no 404.
 - FLAGS.md now spells out what `questInterval` measures (time inside, not the full cycle). Behaviour unchanged.
+
+### D-14 — Verification pass results (2026-11-08)
+- **Method:** `npm test`; headless Chrome (`--screenshot`) on the real page and on a throwaway harness outside the repo
+  that renders chosen states; real-time Chrome driven over the DevTools protocol (Node's built-in WebSocket) with
+  trusted key events (start, move, pause, sunset, restart); a grid path-planning bot; and a hiding-spot reachability
+  analysis. `--virtual-time-budget` starves rAF (3 frames), so it can't be used for gameplay checks.
+- **Confirmed:** movement speed (150 px/s), pause freezes time, edges don't repeat, no page scroll, restart resets all
+  state (now a test), harmony decay = −1/in-game hour, score = D-8, all flags honoured. C-3: the bot finishes a normal day
+  in 109–117 s of 180 (61–65%) and hard in 134 s. No quest expired even with `hard`, 5 quests and a 5 s interval.
+  W-9: from every chore a spot hidden from her whole sweep is ≤0.8 s away (now a test).
+- **Balance observation (no change made):** 5 of 8 chores lie beyond her 320 px range or are already shadowed, so a bot
+  that ignores her is spotted at most once per vision-mode day. Vision mode is easy. Raising `WIFE.range` or
+  letting her walk the path would make it harder. This is left to a gameplay iteration rather than a verification fix.
+- **Not verified:** non-Chrome browsers (TR-1) and audible sound (P-4). Those rows are marked 🚧.
