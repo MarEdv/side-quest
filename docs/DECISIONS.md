@@ -107,3 +107,32 @@
   that ignores her is spotted at most once per vision-mode day. Vision mode is easy. Raising `WIFE.range` or
   letting her walk the path would make it harder. This is left to a gameplay iteration rather than a verification fix.
 - **Not verified:** non-Chrome browsers (TR-1) and audible sound (P-4). Those rows are marked 🚧.
+
+### D-15 — Wife roams the garden; `visionRange` (2026-11-08) — supersedes the D-14 balance concern
+- **Problem (D-14):** on the patio only 3 of 8 chores were reliably in view, so a player ignoring her was barely spotted.
+- **Chosen (flag `wifeRoam`, default on; vision mode only):** after the warning she walks out along a random one of 6
+  hand-placed routes (`world.wifeRoutes`, 1–2 straight legs each, chosen so every leg is clear of obstacles and the ends
+  cover the yard, incl. the left side behind hedge A which no single straight walk from the door reaches), stands and
+  sweeps for 4 s, and retraces the route. Speed 90 px/s (player 150). Direction = direction of motion while walking;
+  while standing the existing sin sweep (±1 rad, 4.5 s) around the direction she arrived in. If she sees the player
+  she stops (`linger`, ≥3 s, bubble) and then walks home; if she sees him on the way home she still calls out while
+  walking. `random` mode keeps the patio (nothing to dodge there). **Alternatives:** a single waypoint list with straight
+  lines from the door (rejected: ≤50 % of chores coverable per trip, left chores unreachable); real path-finding
+  (more code, no benefit for 6 fixed routes).
+- **`visionRange`** (default 320, 50–1200) is stored on the wife (`wife.range`) and used by `canSee`, `sightDistance`
+  and the renderer. Default left at 320 as asked.
+- **Pace tuning:** a trip is ~9 s instead of 5 s, so with `questInterval` 20 she would appear only ~3.5×/day. While
+  roaming the inside wait is scaled by `WIFE.roamInsideScale = 0.55` (about 11 s), giving ~5 appearances per 108 s day.
+  Alternative: lower the default `questInterval`, rejected because it would also change `random` mode.
+- **Measured** (throwaway bot outside the repo: grid A*, nearest-chore-first, never hides, 200 seeds, finishes the
+  day in ~108 s, `maxActiveQuests=0` so that early harmony loss cannot end the run): spots per day
+  patio (`wifeRoam=0`) **2.29** (histogram 1:9 2:125 3:65 4:1; 3.97 appearances), roaming **3.2** (1:9 2:48 3:66 4:50 5:26;
+  5.0 appearances). `visionRange` 240 → 2.65, 400 → 3.24. The D-14 "at most once per day" figure came from a different
+  bot route; my bot gets 2.3 on the patio, so the improvement is 2.3 → 3.2, within the 3–5 target but at its low end.
+  Per trip a single stop covers about half the yard, so ~3 is what 5 appearances allow without more trips.
+- **Hiding stays possible:** for every (chore, route) pair there is a spot hidden from her whole trip (walking out,
+  sweep, walking home; all sampled cone directions) that the player reaches within warning + her outbound walk time.
+  Smallest slack over all 48 pairs: 3.05 s (test uses a coarser grid). `W-9` (patio) test unchanged.
+- **Unsure:** the 3–5 target is met only on average, and with a bot that never reacts; a human who hides reacts to
+  the warning and sees which way she turns, so real counts will be lower.
+

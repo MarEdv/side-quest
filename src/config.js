@@ -6,6 +6,8 @@ export const DEFAULT_FLAGS = Object.freeze({
   questInterval: 20,
   difficulty: 'normal',
   showVisionCone: true,
+  wifeRoam: true,
+  visionRange: 320,
   sound: true,
   seed: 'random',
   debug: false,
@@ -21,9 +23,10 @@ const NUMBERS = {
   dayLength: { min: 10, max: 3600, int: false },
   maxActiveQuests: { min: 0, max: 5, int: true },
   questInterval: { min: 3, max: 300, int: false },
+  visionRange: { min: 50, max: 1200, int: false },
 };
 
-const BOOLS = ['showVisionCone', 'sound', 'debug'];
+const BOOLS = ['showVisionCone', 'wifeRoam', 'sound', 'debug'];
 
 export function parseBool(v) {
   const s = String(v).trim().toLowerCase();

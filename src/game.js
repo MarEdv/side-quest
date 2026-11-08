@@ -56,7 +56,7 @@ function endGame(s, phase, reason) {
 }
 
 function handleWife(s, dt) {
-  const evs = updateWife(s.wife, { player: s.player, obstacles: s.world.obstacles, rng: s.rng, flags: s.flags }, dt);
+  const evs = updateWife(s.wife, { player: s.player, obstacles: s.world.obstacles, rng: s.rng, flags: s.flags, world: s.world }, dt);
   for (const e of evs) {
     if (e === 'warning') s.events.push({ type: 'warning' });
     else if (e === 'out') s.events.push({ type: 'wifeOut' });

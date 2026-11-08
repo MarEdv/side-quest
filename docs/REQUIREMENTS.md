@@ -65,8 +65,8 @@ before sunset while completing — or sneakily avoiding — the side quests.
 ### 5.3 The wife and side quests
 | ID | Requirement | Status |
 |----|-------------|--------|
-| W-1 | The wife lives in the house. Periodically (flag `questInterval`) she steps onto the patio and looks around. | ✅ |
-| W-2 | Quest-giving mode is selected by flag `wifeMode` (see FLAGS.md): `vision` (default) — she gives a quest only if she **sees** the player (vision cone, blocked by the shed and hedges); `random` — she calls out a quest on a timer regardless of where the player is. | ✅ |
+| W-1 | The wife lives in the house. Periodically (flag `questInterval`) she comes out after a warning: with `wifeRoam` (default, vision mode) she roams the garden (W-12); otherwise she steps onto the patio and looks around. | ✅ |
+| W-2 | Quest-giving mode is selected by flag `wifeMode` (see FLAGS.md): `vision` (default) — she gives a quest only if she **sees** the player (vision cone of length `visionRange`, default 320 px, blocked by the shed and hedges); `random` — she calls out a quest on a timer regardless of where the player is. | ✅ |
 | W-3 | At most `maxActiveQuests` (default 2) side quests active at once. | ✅ |
 | W-4 | Side quest types are fetch/deliver errands: pick up an item at a spot, deliver it to a spot (often the wife/house door). Examples: groceries from the car, glasses from the garden bench, trash bins to the curb, the cat from the tree, the mail from the mailbox. | ✅ |
 | W-5 | Each side quest has a deadline. Completing it raises Harmony; letting it expire lowers Harmony more. | ✅ |
@@ -79,7 +79,7 @@ before sunset while completing — or sneakily avoiding — the side quests.
 |----|-------------|--------|
 | P-1 | All art is procedural canvas drawing (no image assets). | ✅ |
 | P-2 | HUD: clock, Harmony meter, chore count, active quest list with countdown. | ✅ |
-| P-3 | Wife's quest is shown as a speech bubble; her vision cone is drawn faintly when she is out (flag `showVisionCone`), clipped by sight blockers so it matches what she can actually see (D-10). | ✅ |
+| P-3 | Wife's quest is shown as a speech bubble; her vision cone (walking with her when roaming) is drawn faintly when she is out (flag `showVisionCone`), clipped by sight blockers so it matches what she can actually see (D-10). | ✅ |
 | P-4 | Simple WebAudio blips for events (flag `sound`, default on). No audio files. | 🚧 Code-reviewed only: the AudioContext is created in the first keydown/pointerdown handler and `sound=0` disables it. Not listened to (headless). |
 | P-5 | Arrow/position indicator toward the current quest target. | ✅ |
 
@@ -89,6 +89,7 @@ before sunset while completing — or sneakily avoiding — the side quests.
 | W-9 | The wife gives a ~1.5 s warning before appearing (door rattles, blinking "!") so the player can avoid her. After spotting the player she stays ≥3 s with a speech bubble. | ✅ |
 | W-10 | Sight blockers: shed, hedges, tree trunk. Car and bench do not block sight. | ✅ |
 | W-11 | In `random` mode no "avoided" stat is counted (quests cannot be dodged). | ✅ |
+| W-12 | **Roaming** (flag `wifeRoam`, default on, vision mode only; D-15): after the warning she walks at 90 px/s (player 150) along a random one of 6 clear routes into the garden, sweeps the cone for 4 s at the end, then retraces the route home. The cone faces her direction of motion while she walks and sweeps while she stands. Spotting the player stops her for ≥3 s (bubble), then she walks home. A player who ignores her is spotted ~3.2×/day (patio-only: ~2.3); hiding stays possible from every chore. Rendered with a bobbing walk. Off = the patio behaviour of W-1. | ✅ Unit-tested (route reached and returned, cone direction, speed, spotted/linger, flag off, hiding reachability); numbers from a throwaway bot, see D-15. |
 | Q-1 | Quest interaction is instant while holding the action key within 40 px of a pickup/drop; quest spots win over chores. | ✅ |
 | Q-2 | Debug overlay (flag `debug`): obstacle boxes, interact range, FPS, wife/player state. | ✅ |
 

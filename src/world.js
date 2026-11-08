@@ -21,6 +21,17 @@ export function createWorld() {
     patio: { x: 400, y: 100, w: 160, h: 50 },
     door: { x: 480, y: 118 },
     wifePos: { x: 480, y: 128 },
+    // Routes the wife may walk in `wifeRoam` mode: from wifePos through each point in order; she looks
+    // around at the last one and retraces the route home. Every leg is a clear straight line
+    // (tests/wife.test.js checks this) and together the six spots cover the yard.
+    wifeRoutes: [
+      [{ x: 200, y: 150 }, { x: 200, y: 250 }],
+      [{ x: 380, y: 310 }],
+      [{ x: 480, y: 420 }, { x: 350, y: 450 }],
+      [{ x: 700, y: 230 }, { x: 700, y: 300 }],
+      [{ x: 200, y: 150 }, { x: 220, y: 330 }],
+      [{ x: 700, y: 230 }, { x: 840, y: 360 }],
+    ],
     playerStart: { x: 480, y: 300 },
     curb: { x: 0, y: 512, w: 960, h: 28 },
     // Decorative-only things (not collidable)

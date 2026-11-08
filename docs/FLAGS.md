@@ -10,8 +10,10 @@ Booleans accept `1/0/true/false`. Unknown flags are ignored. **Any new flag must
 | `wifeMode` | enum | `vision` | `vision`: quests only when she sees you (avoidable). `random`: quests on a timer wherever you are. |
 | `dayLength` | number (s) | `180` | Real seconds from 09:00 to sunset 18:00. |
 | `maxActiveQuests` | int | `2` | Cap on simultaneous side quests. |
-| `questInterval` | number (s) | `20` | Mean seconds she stays inside between appearances (×0.7–1.3; first one after 0.5–1×). Each appearance then adds 1.5 s warning + 5 s outside, so a full cycle averages `questInterval + 6.5` s. Same timing in both modes. |
+| `questInterval` | number (s) | `20` | Mean seconds she stays inside between appearances (×0.7–1.3; first one after 0.5–1×). Each appearance then adds 1.5 s warning + 5 s outside, so a full cycle averages `questInterval + 6.5` s. Same timing in `random` mode and in `vision` with `wifeRoam=0`. With `wifeRoam` on (vision mode) the time inside is scaled by 0.55 because each trip outside takes about 9 s instead of 5 (D-15). |
 | `difficulty` | enum | `normal` | `easy` (chore/quest times ×0.75, longer deadlines) · `normal` · `hard` (×1.25, shorter deadlines). |
+| `wifeRoam` | bool | `true` | `vision` mode only. After the warning she walks (90 px/s) along one of 6 random routes into the garden, sweeps the cone for 4 s at its end, then retraces it home. The cone points along her walk. Off: she stays on the patio for 5 s (original behaviour). Ignored in `random` mode. |
+| `visionRange` | number (px) | `320` | How far she can see (cone length), 50–1200. Applies to both patio and roaming. |
 | `showVisionCone` | bool | `true` | Draw the wife's vision cone. |
 | `sound` | bool | `true` | WebAudio blips. |
 | `seed` | int | `random` | RNG seed for reproducible runs. |
