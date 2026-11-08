@@ -49,6 +49,7 @@ before sunset while completing — or sneakily avoiding — the side quests.
 | G-4 | **Win**: all chores completed before sunset. **Lose**: sunset with chores left, or Harmony reaches 0. | ✅ |
 | G-5 | End screen shows outcome, chores done, quests completed/failed/avoided, Harmony, and a score. | ✅ |
 | G-6 | Pause with **P** / **Esc** (also auto-pauses on window blur); restart with **R** on the end screen. Title screen: press Space/Enter to start. | ✅ |
+| G-7 | Game keys don't scroll the page (preventDefault on arrows/Space etc.). Keys pressed with Cmd/Ctrl/Alt are ignored so browser shortcuts (reload, close tab) still work; held keys are released on window blur and on Meta keyup (D-11). | ✅ |
 
 ### 5.2 Chores (main tasks)
 | ID | Requirement | Status |

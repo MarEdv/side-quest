@@ -67,3 +67,11 @@
   rule as `canSee`. Alternative: keep the wedge and draw "shadows" on top (more draw calls, same result).
 - **Harmony number** in the HUD is white when the bar fill doesn't reach the centre (it was dark-on-dark below ~50).
 - **Warning "!" badge** moved from y=40 to y=50 (r 14) so the 34 px HUD bar no longer covers its top half.
+
+### D-11 — Ignore modified key presses (2026-11-08)
+- **Problem:** `input.js` called `preventDefault()` on every game key, including Cmd/Ctrl+R (reload) and Cmd+W/A/S/D,
+  and recorded them as held. macOS sends no `keyup` for keys released while Cmd is held, so Cmd+A left "left" stuck on.
+- **Chosen:** keydown with `metaKey`/`ctrlKey`/`altKey` is ignored entirely (not recorded, default kept), and a Meta
+  keyup clears all held keys. **Alternative:** track modifiers and filter only known shortcuts (more code, same
+  outcome for a game that uses no modified keys).
+- Covered by `tests/input.test.js`, which drives `createInput` with Node's built-in `EventTarget`.
