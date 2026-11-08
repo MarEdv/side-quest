@@ -56,7 +56,7 @@ function endGame(s, phase, reason) {
 }
 
 function handleWife(s, dt) {
-  const evs = updateWife(s.wife, { player: s.player, obstacles: s.world.obstacles, rng: s.rng, flags: s.flags, world: s.world }, dt);
+  const evs = updateWife(s.wife, { player: s.player, obstacles: s.world.obstacles, rng: s.rng, flags: s.flags, world: s.world, canCall: canGiveQuest(s) }, dt);
   for (const e of evs) {
     if (e === 'warning') s.events.push({ type: 'warning' });
     else if (e === 'out') s.events.push({ type: 'wifeOut' });
@@ -65,7 +65,8 @@ function handleWife(s, dt) {
       // Only a dodge if she had a quest to give; with the cap full there was nothing to avoid (D-12).
       if (canGiveQuest(s)) { s.stats.questsAvoided++; s.events.push({ type: 'avoided' }); }
     }
-    else if (e === 'spotted' || e === 'callout') {
+    else if (e === 'spotted' || e === 'callout' || e === 'forced') {
+      if (e === 'forced') s.events.push({ type: 'forced' });
       if (e === 'spotted') s.events.push({ type: 'spotted' });
       const q = giveQuest(s);
       sayBubble(s.wife, q ? q.say : 'Oh, you look busy. Carry on!', 4);

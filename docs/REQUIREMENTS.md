@@ -66,11 +66,11 @@ before sunset while completing — or sneakily avoiding — the side quests.
 | ID | Requirement | Status |
 |----|-------------|--------|
 | W-1 | The wife lives in the house. Periodically (flag `questInterval`) she comes out after a warning: with `wifeRoam` (default, vision mode) she roams the garden (W-12); otherwise she steps onto the patio and looks around. | ✅ |
-| W-2 | Quest-giving mode is selected by flag `wifeMode` (see FLAGS.md): `vision` (default) — she gives a quest only if she **sees** the player (vision cone of length `visionRange`, default 320 px, blocked by the shed and hedges); `random` — she calls out a quest on a timer regardless of where the player is. | ✅ |
+| W-2 | Quest-giving mode is selected by flag `wifeMode` (see FLAGS.md): `vision` (default) — she gives a quest only if she **sees** the player (vision cone of length `visionRange`, default 320 px, blocked by the shed and hedges); `random` — she calls out a quest on a timer regardless of where the player is; `hybrid` (L-6) — vision + roaming, and a trip that ends without spotting the player may still call a quest (probability 0.4, only if the cap allows). | ✅ |
 | W-3 | At most `maxActiveQuests` (default 2) side quests active at once. | ✅ |
 | W-4 | Side quest types are fetch/deliver errands: pick up an item at a spot, deliver it to a spot (often the wife/house door). Examples: groceries from the car, glasses from the garden bench, trash bins to the curb, the cat from the tree, the mail from the mailbox. | ✅ |
 | W-5 | Each side quest has a deadline. Completing it raises Harmony; letting it expire lowers Harmony more. | ✅ |
-| W-6 | **Avoiding** a quest = never getting it: staying out of her sight (vision mode). Each wife appearance that ends without spotting the player counts as an "avoided" quest for the end-screen stat — only if she could have given a quest (cap not full, D-12). | ✅ |
+| W-6 | **Avoiding** a quest = never getting it: staying out of her sight (vision mode). Each wife appearance that ends without spotting the player counts as an "avoided" quest for the end-screen stat — only if she could have given a quest (cap not full, D-12). In `hybrid` mode a trip that ends in a forced quest is not "avoided". | ✅ |
 | W-7 | Player can carry only one quest item at a time. Carrying an item does not block chores. | ✅ |
 | W-8 | **Harmony** meter 0–100, starts at 60. +15 per completed quest, −20 per expired quest, slow decay of −1 per in-game hour while any quest is active. | ✅ |
 
@@ -145,7 +145,7 @@ ensure gradually increased difficulty; keep the current play mode as an 'arcade 
 | L-3 | Level 1 is unlocked; winning a level unlocks the next. Arcade is always available. | 📋 |
 | L-4 | Difficulty increases monotonically L1→L4, verified by a scripted bot: win rate and time slack at sunset must not increase from one level to the next (numbers recorded in DECISIONS). | 📋 |
 | L-5 | Level intro card (name + one-line briefing of what's new) before play; end screen offers Next level / Retry / Menu. | 📋 |
-| L-6 | `wifeMode=hybrid` is also selectable in Arcade settings (new flag value). | 📋 |
+| L-6 | `wifeMode=hybrid` is also selectable in Arcade settings (new flag value). | 🚧 logic, Settings select, FLAGS.md and unit tests done (D-27); browser check pending |
 
 ## 6. Non-functional
 | ID | Requirement | Status |

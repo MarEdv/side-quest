@@ -324,3 +324,91 @@ test('roam: a spot hidden from her whole trip is reachable from every chore with
     }
   }
 });
+
+// ---- hybrid mode (L-6, D-27) ----
+// Put a roaming wife at the last step of her walk home with nobody in sight, and tick until she is inside.
+function hybridTripEnd({ chance, canCall, seed = 5, flagsOver = {} }) {
+  const flags = mkFlags({ wifeMode: 'hybrid', ...flagsOver });
+  const rng = createRng(seed);
+  const w = createWife(world, rng, flags);
+  w.phase = 'out'; w.leg = 'back'; w.route = world.wifeRoutes[1]; w.stop = 0; w.x = 480; w.y = 140; w.spotted = false;
+  const ev = [];
+  for (let i = 0; i < 30 && w.phase === 'out'; i++) ev.push(...updateWife(w, { player: { x: 40, y: 520 }, obstacles: world.obstacles, rng, flags, world, canCall, hybridChance: chance }, 0.05));
+  return ev;
+}
+
+test('hybrid: roams even with wifeRoam off, and a trip walks out and back like vision+roam', () => {
+  const flags = mkFlags({ wifeMode: 'hybrid', wifeRoam: false, questInterval: 3 });
+  const rng = createRng(3);
+  const w = createWife(world, rng, flags);
+  w.timer = 0.01;
+  const ctx = { player: { x: 40, y: 520 }, obstacles: world.obstacles, rng, flags, world };
+  const ev = [];
+  for (let i = 0; i < 60 * 40 && !(w.phase === 'inside' && ev.includes('left')); i++) ev.push(...updateWife(w, ctx, 1 / 60));
+  assert.ok(ev.includes('out') && ev.includes('left'));
+  assert.ok(w.moving === false && w.leg === null);
+  // she really walked: the 'to' leg ran (she left the patio)
+  const w2 = createWife(world, createRng(3), flags);
+  w2.phase = 'warning'; w2.timer = 0.01;
+  updateWife(w2, ctx, 0.02);
+  assert.equal(w2.leg, 'to');
+});
+
+test('hybrid: unspotted trip end calls a quest anyway at probability 1, never at 0; no avoided event when forced', () => {
+  const yes = hybridTripEnd({ chance: 1, canCall: true });
+  assert.ok(yes.includes('forced') && !yes.includes('avoided') && yes.includes('left'));
+  const no = hybridTripEnd({ chance: 0, canCall: true });
+  assert.ok(no.includes('avoided') && !no.includes('forced'));
+  // vision mode never forces, whatever the chance
+  const v = hybridTripEnd({ chance: 1, canCall: true, flagsOver: { wifeMode: 'vision' } });
+  assert.ok(v.includes('avoided') && !v.includes('forced'));
+});
+
+test('hybrid: the default call probability is 0.4 and roughly that share of unspotted trips is forced', () => {
+  assert.equal(WIFE.hybridCallChance, 0.4);
+  let forced = 0;
+  const N = 400;
+  for (let seed = 1; seed <= N; seed++) if (hybridTripEnd({ chance: undefined, canCall: true, seed }).includes('forced')) forced++;
+  assert.ok(forced / N > 0.32 && forced / N < 0.48, `forced share ${forced / N}`);
+});
+
+test('hybrid: with the quest cap full no quest is forced and nothing is counted as avoided', () => {
+  const ev = hybridTripEnd({ chance: 1, canCall: false });
+  assert.ok(!ev.includes('forced'));
+  const s = playing({ wifeMode: 'hybrid', maxActiveQuests: 1, questInterval: 300 });
+  giveQuest(s);
+  s.wife.phase = 'out'; s.wife.leg = 'back'; s.wife.route = world.wifeRoutes[1]; s.wife.stop = 0; s.wife.x = 480; s.wife.y = 140;
+  s.player.x = 40; s.player.y = 520;
+  const before = WIFE.hybridCallChance; WIFE.hybridCallChance = 1;
+  try { for (let i = 0; i < 60; i++) update(s, NO_INPUT, 1 / 60); } finally { WIFE.hybridCallChance = before; }
+  assert.equal(s.quests.length, 1);
+  assert.equal(s.stats.questsAvoided, 0);
+});
+
+test('hybrid in the game: a forced quest is given with a bubble and is not "avoided"; a miss with a free cap is "avoided"', () => {
+  const run = (chance) => {
+    const s = playing({ wifeMode: 'hybrid', questInterval: 300 });
+    s.wife.phase = 'out'; s.wife.leg = 'back'; s.wife.route = world.wifeRoutes[1]; s.wife.stop = 0; s.wife.x = 480; s.wife.y = 140;
+    s.player.x = 40; s.player.y = 520;
+    const before = WIFE.hybridCallChance; WIFE.hybridCallChance = chance;
+    try { for (let i = 0; i < 60; i++) update(s, NO_INPUT, 1 / 60); } finally { WIFE.hybridCallChance = before; }
+    return s;
+  };
+  const forced = run(1);
+  assert.equal(forced.quests.length, 1);
+  assert.equal(forced.stats.questsAvoided, 0);
+  assert.ok(forced.wife.bubble && forced.wife.bubble.text);
+  const missed = run(0);
+  assert.equal(missed.quests.length, 0);
+  assert.equal(missed.stats.questsAvoided, 1);
+});
+
+test('hybrid: a spotted trip behaves like vision (quest at the spot, no extra forced call)', () => {
+  const s = playing({ wifeMode: 'hybrid', questInterval: 300 });
+  s.wife.phase = 'out'; s.wife.leg = 'look'; s.wife.route = world.wifeRoutes[1]; s.wife.stop = 1; s.wife.timer = 4;
+  s.wife.x = 480; s.wife.y = 128; s.wife.lookDir = Math.PI / 2; s.wife.sweepT = 0;
+  s.player.x = 480; s.player.y = 250;
+  update(s, NO_INPUT, 1 / 60);
+  assert.equal(s.quests.length, 1);
+  assert.ok(s.events.some((e) => e.type === 'spotted'));
+});

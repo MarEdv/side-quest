@@ -48,3 +48,10 @@ test('touch / touchScheme: defaults, valid values, invalid fall back', () => {
   assert.equal(bad.touch, 'auto');
   assert.equal(bad.touchScheme, 'joystick');
 });
+
+test('wifeMode accepts hybrid (L-6); summary reads hybrid·difficulty because hybrid always roams', async () => {
+  const { settingsSummary } = await import('../src/config.js');
+  assert.equal(parseFlags('wifeMode=hybrid').wifeMode, 'hybrid');
+  assert.equal(parseFlags('wifeMode=HYBRID').wifeMode, 'hybrid');
+  assert.equal(settingsSummary({ ...DEFAULT_FLAGS, wifeMode: 'hybrid', wifeRoam: false, difficulty: 'hard' }), 'hybrid·hard');
+});

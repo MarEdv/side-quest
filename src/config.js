@@ -16,7 +16,7 @@ export const DEFAULT_FLAGS = Object.freeze({
 });
 
 export const ENUMS = {
-  wifeMode: ['vision', 'random'],
+  wifeMode: ['vision', 'random', 'hybrid'],
   difficulty: ['easy', 'normal', 'hard'],
   touch: ['auto', 'on', 'off'],
   touchScheme: ['joystick', 'tap'],
@@ -79,10 +79,10 @@ export function parseFlags(queryString = '') {
 }
 
 // Short human-readable summary of the gameplay flags, stored with each high score, e.g. "vision·roam·normal".
-// Roaming only exists in vision mode, so random mode reads "random·normal".
+// Roaming only exists in vision and hybrid mode (hybrid always roams), so random mode reads "random·normal".
 export function settingsSummary(flags = DEFAULT_FLAGS) {
   const parts = [flags.wifeMode];
-  if (flags.wifeMode === 'vision') parts.push(flags.wifeRoam ? 'roam' : 'patio');
+  if (flags.wifeMode === 'vision') parts.push(flags.wifeRoam ? 'roam' : 'patio'); // hybrid always roams: nothing to add
   parts.push(flags.difficulty);
   return parts.join('\u00b7');
 }

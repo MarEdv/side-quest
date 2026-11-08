@@ -77,7 +77,9 @@ test('every flag has exactly one settings control', () => {
 
 test('inactive options are explained, not hidden', () => {
   assert.equal(inactiveReason('wifeRoam', { wifeMode: 'random' }), 'Only in vision mode');
-  assert.equal(inactiveReason('visionRange', { wifeMode: 'random' }), 'Only in vision mode');
+  assert.equal(inactiveReason('visionRange', { wifeMode: 'random' }), 'Only in vision and hybrid mode');
+  assert.equal(inactiveReason('visionRange', { wifeMode: 'hybrid' }), null);
+  assert.equal(inactiveReason('wifeRoam', { wifeMode: 'hybrid' }), 'Hybrid mode always roams');
   assert.equal(inactiveReason('wifeRoam', { wifeMode: 'vision' }), null);
   assert.ok(inactiveReason('touchScheme', { touch: 'off' }));
   assert.equal(inactiveReason('touchScheme', { touch: 'auto' }), null);

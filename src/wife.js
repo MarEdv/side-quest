@@ -12,10 +12,12 @@ export const WIFE = {
   baseDir: Math.PI / 2,
   walkSpeed: 90, // px/s while roaming (player: 150)
   lookTime: 4, // seconds she stands and sweeps at the end of a route
+  hybridCallChance: 0.4, // hybrid mode: chance she calls a quest anyway when a trip ends without spotting the player (L-6, D-27)
   roamInsideScale: 0.55, // a roaming trip takes ~8 s instead of 5, so she waits less inside to keep the pace (D-15)
 };
 
-const roams = (flags) => !!flags.wifeRoam && flags.wifeMode === 'vision';
+// Vision mode roams when `wifeRoam` is on; hybrid always roams (wifeRoam is ignored there, D-27).
+const roams = (flags) => flags.wifeMode === 'hybrid' || (!!flags.wifeRoam && flags.wifeMode === 'vision');
 // Seconds she stays inside before the next warning; `lo`/`hi` are the random multipliers.
 const insideTime = (flags, rng, lo, hi) => flags.questInterval * rng.range(lo, hi) * (roams(flags) ? WIFE.roamInsideScale : 1);
 
@@ -71,7 +73,7 @@ function walkToward(wife, tx, ty, dt) {
   return false;
 }
 
-// One tick of the roaming 'out' phase (vision mode, flag wifeRoam). Walks to a waypoint, sweeps, walks back.
+// One tick of the roaming 'out' phase (vision mode with wifeRoam, or hybrid mode). Walks to a waypoint, sweeps, walks back.
 function updateRoam(wife, ctx, dt, ev) {
   const { flags, rng, world } = ctx;
   wife.moving = false;
@@ -91,7 +93,13 @@ function updateRoam(wife, ctx, dt, ev) {
     // Retrace the route in reverse, ending at the door.
     const p = wife.stop > 0 ? wife.route[wife.stop - 1] : world.wifePos;
     if (walkToward(wife, p.x, p.y, dt) && --wife.stop < 0) {
-      if (!wife.spotted) ev.push('avoided');
+      if (!wife.spotted) {
+        // Hybrid: she may call a quest anyway ('forced'), but only if one can be given (cap not full), so no roll is
+        // wasted. A forced quest is not an 'avoided' one (L-6). ctx.hybridChance lets tests inject the probability.
+        const chance = ctx.hybridChance ?? WIFE.hybridCallChance;
+        if (flags.wifeMode === 'hybrid' && ctx.canCall !== false && rng.next() < chance) ev.push('forced');
+        else ev.push('avoided');
+      }
       wife.phase = 'inside'; wife.leg = null; wife.bubble = null; wife.dir = WIFE.baseDir;
       wife.timer = insideTime(flags, rng, 0.7, 1.3);
       ev.push('left');
@@ -111,7 +119,8 @@ export function sayBubble(wife, text, seconds = 4) {
 }
 
 // Advance the wife. ctx = {player, obstacles, rng, flags, world}. Returns an array of event types:
-// 'warning', 'out', 'spotted', 'callout' (random mode), 'avoided', 'left'.
+// 'warning', 'out', 'spotted', 'callout' (random mode), 'forced' (hybrid: calls anyway), 'avoided', 'left'.
+// ctx may also carry canCall (false when the quest cap is full) and hybridChance (test override).
 export function updateWife(wife, ctx, dt) {
   const ev = [];
   const { flags, rng } = ctx;

@@ -20,8 +20,8 @@ export const changedKeys = (a, b) => Object.keys(DEFAULT_FLAGS).filter((k) => a[
 // Screen layout. kind: select | toggle | number | seed. Help text is the one-liner from docs/FLAGS.md.
 export const SETTING_GROUPS = Object.freeze([
   { id: 'gameplay', title: 'Gameplay', note: 'Applies from the next day. Levels use their own gameplay settings.', items: [
-    { key: 'wifeMode', label: 'Wife mode', kind: 'select', help: 'Vision: quests only when she sees you (avoidable). Random: quests on a timer wherever you are.',
-      options: { vision: 'Vision (avoidable)', random: 'Random (on a timer)' } },
+    { key: 'wifeMode', label: 'Wife mode', kind: 'select', help: 'Vision: quests only when she sees you (avoidable). Random: quests on a timer wherever you are. Hybrid: she roams and looks for you, and if she misses you she may call a quest anyway.',
+      options: { vision: 'Vision (avoidable)', random: 'Random (on a timer)', hybrid: 'Hybrid (looks, then may call)' } },
     { key: 'wifeRoam', label: 'Wife roams the garden', kind: 'toggle', help: 'Vision mode: she walks into the garden and sweeps the cone before going home. Off: she stays on the patio.' },
     { key: 'difficulty', label: 'Difficulty', kind: 'select', help: 'Easy: chores and quests take 0.75x as long, longer deadlines. Hard: 1.25x, shorter deadlines.',
       options: { easy: 'Easy', normal: 'Normal', hard: 'Hard' } },
@@ -50,7 +50,9 @@ export const SETTING_ITEMS = Object.freeze(SETTING_GROUPS.flatMap((g) => g.items
 
 // Why an option does not matter right now (null = it matters). Shown as a note; the control is disabled, not hidden.
 export function inactiveReason(key, flags) {
-  if ((key === 'wifeRoam' || key === 'visionRange') && flags.wifeMode !== 'vision') return 'Only in vision mode';
+  if (key === 'wifeRoam' && flags.wifeMode === 'hybrid') return 'Hybrid mode always roams';
+  if (key === 'wifeRoam' && flags.wifeMode !== 'vision') return 'Only in vision mode';
+  if (key === 'visionRange' && flags.wifeMode === 'random') return 'Only in vision and hybrid mode';
   if (key === 'touchScheme' && flags.touch === 'off') return 'Only when touch controls are on';
   return null;
 }
