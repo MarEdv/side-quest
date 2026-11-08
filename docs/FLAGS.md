@@ -16,8 +16,8 @@ same validation and clamps as URL values; unusable ones are ignored. Two kinds o
   everyone; `?wifeMode=random` only changes Arcade). `seed` is random in levels unless `debug` is on, then the Settings / URL seed is used
   (`GAMEPLAY_FLAGS` / `CONTROL_FLAGS` in `src/settings.js`).
 
-**Levels.** 1 Saturday Morning (vision, patio, easy, 1 quest, interval 24) · 2 Honey-Do List (random, normal, 2 quests, interval 20) ·
-3 Eyes Everywhere (vision + roam, normal, range 500, 2 quests, interval 14) · 4 The Inspection (hybrid, hard, 3 quests, interval 26, range 420, 170 s day).
+**Levels** (tuned in D-28). 1 Saturday Morning (vision, patio, easy, 1 quest, interval 24) · 2 Honey-Do List (random, normal, 2 quests, interval 24) ·
+3 Eyes Everywhere (vision + roam, normal, range 600, 2 quests, interval 11) · 4 The Inspection (hybrid, hard, 3 quests, interval 12, range 320, 175 s day).
 
 Booleans accept `1/0/true/false`. Unknown flags are ignored. **Any new flag must be added here and in REQUIREMENTS.md.**
 

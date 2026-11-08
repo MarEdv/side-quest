@@ -6,7 +6,7 @@ import { GAMEPLAY_FLAGS, CONTROL_FLAGS, resolveFlags } from '../src/settings.js'
 import { createScores } from '../src/scores.js';
 import { createStorage } from '../src/storage.js';
 import { createGame, update } from '../src/game.js';
-import { runMany } from '../tools/level-bot.mjs';
+import { runMany, runBot } from '../tools/level-bot.mjs';
 import { NO_INPUT } from './helpers.js';
 
 const mem = () => { const m = new Map(); return { getItem: (k) => (m.has(k) ? m.get(k) : null), setItem: (k, v) => m.set(k, String(v)), removeItem: (k) => m.delete(k), m }; };
@@ -109,14 +109,35 @@ test('arcade is unchanged: DEFAULT_FLAGS still play the same vision day, and lev
   assert.equal(Object.isFrozen(DEFAULT_FLAGS), true);
 });
 
-// L-4: difficulty must rise monotonically. Fast regression guard (20 seeds, ~1 s); the full 200-seed table is in
-// DECISIONS D-27 (`node tools/level-balance.mjs`).
-test('balance: the bot wins less often and has less slack on every later level (L-4)', () => {
-  const r = LEVELS.map((l) => runMany(levelFlags(l), 20, 1));
-  for (let i = 1; i < r.length; i++) {
-    assert.ok(r[i].winRate <= r[i - 1].winRate, `win rate L${i + 1} ${r[i].winRate} <= L${i} ${r[i - 1].winRate}`);
-    assert.ok(r[i].slackFrac < r[i - 1].slackFrac, `slack L${i + 1} ${r[i].slackFrac.toFixed(3)} < L${i} ${r[i - 1].slackFrac.toFixed(3)}`);
-  }
-  assert.ok(r[0].winRate >= 0.95, `L1 comfortably winnable: ${r[0].winRate}`);
-  assert.ok(r[3].winRate >= 0.3, `L4 still possible: ${r[3].winRate}`);
-}, { timeout: 15000 });
+// L-4: difficulty must rise monotonically, for a player who never hides AND for one who hides (D-28). Fast regression
+// guard (40 seeds per level and policy, ~2 s); the full 200-seed tables are in DECISIONS D-28 (`node tools/level-balance.mjs`).
+for (const policy of ['naive', 'hider']) {
+  test(`balance (${policy} bot): wins never rise and slack falls by at least 0.05 of the day on every later level (L-4)`, () => {
+    const r = LEVELS.map((l) => runMany(levelFlags(l), 40, 1, policy));
+    for (let i = 1; i < r.length; i++) {
+      assert.ok(r[i].winRate <= r[i - 1].winRate, `win rate L${i + 1} ${r[i].winRate} <= L${i} ${r[i - 1].winRate}`);
+      assert.ok(r[i].slackFrac <= r[i - 1].slackFrac - 0.05, `slack L${i + 1} ${r[i].slackFrac.toFixed(3)} at least 0.05 below L${i} ${r[i - 1].slackFrac.toFixed(3)}`);
+    }
+    assert.ok(r[0].winRate >= 0.95, `L1 comfortably winnable: ${r[0].winRate}`);
+    assert.ok(r[3].winRate >= (policy === 'hider' ? 0.25 : 0.1), `L4 still possible: ${r[3].winRate}`);
+  }, { timeout: 20000 });
+}
+
+test('balance bots: deterministic, and the hider really hides in vision levels (fewer quests, more avoided) but not in random mode', () => {
+  const l3 = levelFlags(LEVELS[2]);
+  assert.deepEqual(runBot(l3, 7, 'hider'), runBot(l3, 7, 'hider'));
+  const n = runMany(l3, 10, 1, 'naive'), h = runMany(l3, 10, 1, 'hider');
+  assert.ok(h.given < n.given && h.avoided > n.avoided, `hider given ${h.given} < ${n.given}, avoided ${h.avoided} > ${n.avoided}`);
+  const l2 = levelFlags(LEVELS[1]);
+  assert.deepEqual(runBot(l2, 3, 'hider'), runBot(l2, 3, 'naive'));
+  const sl = runMany(levelFlags(LEVELS[3]), 10, 1, 'sloppy');
+  assert.ok(sl.failed > 0, 'the sloppy bot fails quests, so harmony is exercised');
+  assert.throws(() => runBot(l2, 1, 'nope'));
+});
+
+test('level timing matches the L-2 text: L3 comes out more often than L1/L2, L4 is about as frequent as L3, shorter day', () => {
+  const [a, b, c, d] = LEVELS.map((l) => l.flags);
+  assert.ok(c.questInterval < a.questInterval && c.questInterval < b.questInterval);
+  assert.ok(d.questInterval <= c.questInterval * 1.1 && d.questInterval < DEFAULT_FLAGS.questInterval);
+  assert.ok(d.dayLength < DEFAULT_FLAGS.dayLength && d.dayLength < c.dayLength);
+});

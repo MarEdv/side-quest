@@ -32,9 +32,10 @@ then open http://localhost:8000 in Chrome (ES modules need HTTP, not `file://`).
   unlocks the next. Each level has an intro card, a best score and a won mark. Levels ignore your gameplay Settings and URL gameplay flags; control and
   display settings still apply.
 - **Arcade:** the original game, configured by Settings (and URL flags), with its own top-10 board.
-- **Balance check** (L-4): `node tools/level-balance.mjs [seedsPerLevel=200]` runs a greedy bot that never hides through every level and prints win rate,
-  slack, quests and harmony per level; it exits non-zero if difficulty stops rising. `tests/levels.test.js` runs a 20-seed version. Numbers in
-  [docs/DECISIONS.md](docs/DECISIONS.md) (D-27).
+- **Balance check** (L-4): `node tools/level-balance.mjs [seedsPerLevel=200] [firstSeed=1]` runs three scripted players through every level (`naive`:
+  never hides; `hider`: works a chore in cover when the wife comes out; `sloppy`: lets quest deadlines slip, so harmony matters) and prints win rate,
+  slack, quests and harmony per level; it exits non-zero if difficulty stops rising for the naive or the hider bot. `tests/levels.test.js` runs a
+  40-seed version. Numbers in [docs/DECISIONS.md](docs/DECISIONS.md) (D-28).
 
 ## Mobile / touch
 

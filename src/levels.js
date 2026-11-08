@@ -13,13 +13,13 @@ export const LEVELS = Object.freeze([
     flags: Object.freeze({ wifeMode: 'vision', wifeRoam: false, difficulty: 'easy', maxActiveQuests: 1, questInterval: 24, dayLength: 180, visionRange: 320 }) },
   { id: 'l2', name: 'Honey-Do List',
     briefing: 'New: she calls errands out wherever you are, so there is nowhere to hide. Two at a time.',
-    flags: Object.freeze({ wifeMode: 'random', difficulty: 'normal', maxActiveQuests: 2, questInterval: 20, dayLength: 180 }) },
+    flags: Object.freeze({ wifeMode: 'random', difficulty: 'normal', maxActiveQuests: 2, questInterval: 24, dayLength: 180 }) },
   { id: 'l3', name: 'Eyes Everywhere',
     briefing: 'New: she walks the garden and sees farther, and she comes out more often. Stay behind cover.',
-    flags: Object.freeze({ wifeMode: 'vision', wifeRoam: true, difficulty: 'normal', maxActiveQuests: 2, questInterval: 14, visionRange: 500, dayLength: 180 }) },
+    flags: Object.freeze({ wifeMode: 'vision', wifeRoam: true, difficulty: 'normal', maxActiveQuests: 2, questInterval: 11, visionRange: 600, dayLength: 180 }) },
   { id: 'l4', name: 'The Inspection',
-    briefing: 'New: if she misses you she may call an errand anyway. Hard, three at a time, a shorter day.',
-    flags: Object.freeze({ wifeMode: 'hybrid', difficulty: 'hard', maxActiveQuests: 3, questInterval: 26, visionRange: 420, dayLength: 170 }) },
+    briefing: 'New: if she misses you she may call an errand anyway. She comes out often, hard, three at a time, a shorter day.',
+    flags: Object.freeze({ wifeMode: 'hybrid', difficulty: 'hard', maxActiveQuests: 3, questInterval: 12, visionRange: 320, dayLength: 175 }) },
 ]);
 
 export const levelIndex = (id) => LEVELS.findIndex((l) => l.id === id);

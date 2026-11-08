@@ -511,3 +511,51 @@ Cache-Control, so heuristic freshness hid some effects and showed others that Gi
   locked card does nothing, intro, Start, HUD, recorded-win end screen, Next level). One defect found and fixed: the extra level line made the
   end panel cover the Score row at 844x390. Console: no errors; the only warning is Chrome's "AudioContext was not allowed to start" caused by
   the script's synthetic `click()`s (real key/tap gestures unlock it).
+
+### D-28 — Level balance with a hiding bot; verification of Features 4 & 5 (2026-11-08) — amends D-27 (L-2, L-4)
+- **Problem.** D-27's balance bot never hid and never failed a quest. Hiding is the core skill of the vision levels, so the bot
+  misjudged them (D-27 caveat 2: L2 -> L3 was only 0.03 of the day apart, and a player who hides finds L3 *easier*), and harmony was
+  never under pressure. L4's interval 26 also contradicted the L-2 text "frequent" (L3 was 14).
+- **Bot policies** (`tools/level-bot.mjs`, `runBot(flags, seed, policy)`), all deterministic (no `Math.random`, no draws from the game RNG):
+  `naive` = the D-27 bot. `hider` = naive, plus: when she comes out and could still give a quest, it looks for an unfinished chore that can be
+  worked from a cell hidden from her **whole appearance** (D-15 method: every position and cone direction of the walk out, the sweep and the walk
+  home, or the patio sweep; cell centre and corners checked), reachable within 4 s, and works it in cover; otherwise it carries on and takes the
+  quest. Patio: plans on the warning. Roaming: plans when she walks out (it reads her route; a human sees which way she turns). It stops when she is
+  inside, has spotted it anyway, or the cap is full. `sloppy` = naive that never drops a chore under way and sets off for a quest only when the trip
+  barely fits (3 s margin), so quests stack up and fail. Rejected hider variants (measured, 100 seeds, old L3 numbers): also standing idle in any hidden cell
+  within 0.5-2 s for the rest of the trip (L3 wins 100 % -> 93-75 %, L4 71 % -> 63-8 %: a roaming trip lasts 9-12 s, more than a quest costs)
+  and a longer reach to cover (6-10 s: no better than 4 s).
+  One bug found while building it: the wife's route is an object of the game's own `world`, so looking it up in the bot module's copy found nothing.
+- **Re-tuning.** With the hider the old numbers failed: L3 (hider 0.202 slack) was easier than L2 (0.189). Sweeps (100-200 seeds, both bots):
+  L3 interval 14/10/8 x range 500/600/700, L2 interval 20/24/28, L4 interval 10-14 x range 320/420/500 x day 170/175/180. Chosen:
+  **L2 interval 20 -> 24** (a gentler step after L1), **L3 interval 14 -> 11, range 500 -> 600**, **L4 interval 26 -> 12, range 420 -> 320,
+  day 170 -> 175**. L4 now comes out about as often as L3 (inside wait 12 x 0.55 = 6.6 s vs 6.1 s), so the L-2 text "frequent" is true; the row
+  now says "frequent (about as often as level 3)". L4's shorter sight and slightly longer day pay for the frequency, three hard quests and forced
+  calls; at interval 10-12 / range 420 / 170 s the hider won only 11-17 %. L1 is unchanged. L4's briefing now says "She comes out often".
+- **Criterion** (`tools/level-balance.mjs`, exits non-zero otherwise): for `naive` and `hider`, win rate never rises and slack falls by **at
+  least 0.05 of the day** (9 s) at every step; L1 >= 95 % for both; L4 >= 30 % (hider) / >= 10 % (naive). `sloppy` is informational.
+  `tests/levels.test.js` checks the same on 40 seeds per level and policy (~2 s), plus determinism, that the hider avoids more quests than the
+  naive bot in L3, that it equals the naive bot in random mode, that the sloppy bot fails quests, and the timing relations of the L-2 text.
+- **Final numbers** (`node tools/level-balance.mjs 200`, seeds 1..200; seeds 201..400 give the same order, L4 31 % / 41 %):
+
+  | Policy | Level | Win rate | Slack s (frac) | Quests given | Failed | Avoided | Harmony losses | Final harmony |
+  |---|---|---|---|---|---|---|---|---|
+  | naive | 1 | 100.0 % | 87.7 (0.487) | 1.3 | 0.00 | 1.54 | 0 % | 78.6 |
+  | naive | 2 | 100.0 % | 40.7 (0.226) | 4.3 | 0.00 | 0.00 | 0 % | 100.0 |
+  | naive | 3 | 93.0 % | 25.3 (0.140) | 7.1 | 0.00 | 1.92 | 0 % | 100.0 |
+  | naive | 4 | 21.5 % | 1.7 (0.010) | 7.8 | 0.00 | 2.07 | 0 % | 100.0 |
+  | hider | 1 | 100.0 % | 91.2 (0.506) | 0.8 | 0.00 | 1.81 | 0 % | 71.2 |
+  | hider | 2 | 100.0 % | 40.7 (0.226) | 4.3 | 0.00 | 0.00 | 0 % | 100.0 |
+  | hider | 3 | 92.5 % | 27.3 (0.152) | 6.4 | 0.00 | 2.38 | 0 % | 99.8 |
+  | hider | 4 | 37.5 % | 3.9 (0.022) | 6.6 | 0.00 | 2.95 | 0 % | 99.9 |
+  | sloppy | 1 | 100.0 % | 93.8 (0.521) | 1.4 | 0.51 | 0.11 | 0 % | 52.8 |
+  | sloppy | 2 | 98.5 % | 67.3 (0.374) | 3.5 | 1.41 | 0.00 | 1.5 % | 36.9 |
+  | sloppy | 3 | 91.0 % | 60.9 (0.338) | 3.8 | 1.64 | 1.13 | 9.0 % | 34.3 |
+  | sloppy | 4 | 47.0 % | 14.7 (0.084) | 5.3 | 3.06 | 1.38 | 53.0 % | 13.5 |
+
+- **What the sloppy bot shows (not changed, noted for the owner).** Letting quests fail is *faster*: sloppy has the most slack everywhere and
+  in L4 it wins more often than the careful bots (47 % vs 22-38 %), while half its L4 days end on harmony. Harmony is what limits it, rising
+  1.5 % -> 9 % -> 53 % from L2 to L4, so harmony pressure does grow with the levels, but "ignore her and finish the garden" is a real strategy.
+  Making failures cost more (`HARMONY.onFail`) or lowering the start harmony would change Arcade too, so it is left as a design question.
+- **Caveats.** Bots path perfectly and react instantly; humans are slower, so real win rates will be lower, most of all in L4. Nobody has played
+  the re-tuned levels.
