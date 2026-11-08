@@ -378,3 +378,75 @@ prompt API: Share > Add to Home Screen (other iOS browsers can do it from their 
   another day, Don't ask again persists, `appinstalled` hides the menu item; iPhone UA and iPadOS (Mac UA + 5 touch points) show the
   instructions, Esc / Back return; `navigator.standalone` hides everything (also with a fake prompt event); a Mac UA without touch shows nothing.
   No console errors.
+
+### D-26 — Service worker and install review before the first deploy (2026-11-08) — verifies D-25 (I-1..I-4, M-10)
+A verification pass over `a8722a9..47facc8` (the SW has never been deployed: `main` was 2 commits ahead of `origin/main`).
+Method: `npm test`, a code review, and headless Chrome 157 over CDP. The build was served from a temp dir with a `side-quest`
+symlink, by a static server that sends GitHub Pages' `Cache-Control: max-age=600` (plain `http.server` sends no
+Cache-Control, so heuristic freshness hid some effects and showed others that GitHub Pages would not).
+- **Defect 1 (fixed, `sw.js` `revalidating`): a deploy did not show on a reload in the same tab for up to 10 minutes.** Blink's
+  in-renderer memory cache served the module scripts on reload / same-tab navigation **without asking the worker** (resource
+  timing `workerStart` 0, no request at the server); only a new tab went through the SW. With GitHub Pages' max-age=600 the
+  freshly revalidated index.html could also run with old modules. Fix: the page gets a copy of every good same-origin response
+  with `Cache-Control: no-cache` (the Workbox `copyResponse` pattern; never redirected responses, whose URL relative imports
+  need; falls back to the original response if copying throws), so the memory cache must revalidate, which goes through the
+  worker and so to the network. Verified: edit a file, then normal reload, same-tab navigation and new tab all show it at once.
+  Alternatives: cache-busting module URLs (needs a build step) and accepting it (D-25's "next load" promise would be false) -
+  rejected.
+- **Defect 2 (fixed, `sw.js` `keyOf`): offline, an old copy could shadow the current one.** Every lookup used `ignoreSearch`,
+  and `cache.put` appends, so an older `?x` variant listed first won: in the browser an offline load showed an old
+  `src/ui.js?x=` copy. In real use, an old `?wifeMode=random` page load would win over the newest `./`. Fix: page loads are
+  stored under their URL without the query (one, always newest, index), and other requests match exactly. An offline page load
+  with any query is served the cached index, then `./`, then `index.html`.
+- **Defect 3 (fixed, `installmodel.detectStandalone`): F11 fullscreen hid the install UI on desktops.** `display-mode:
+  fullscreen` now counts as "installed" only on touch hardware (`maxTouchPoints > 0` or a coarse pointer, read from the device,
+  not the `?touch=` flag). Android installs run fullscreen (our `display_override`) on touch devices, and installed desktop apps
+  never get fullscreen (they fall back to standalone), so nothing real is lost. A touch laptop in F11 is still a false
+  positive (accepted). Headless Chrome cannot emulate `display-mode`, so this is unit-tested only.
+- **Defect 4 (fixed, `installmodel.inviteKind`): a wrong clock could silence the invitation for good.** A `dismissedUntil`
+  more than 7 days ahead (set while the clock was wrong, or the clock was turned back) now counts as over.
+- **Checked and fine:** fallback only on a network error (404/500 are passed through and never cached; opaque and redirected
+  responses are not cached); non-GET and cross-origin requests are not intercepted; `fetch(req, {cache: 'no-cache'})` is a
+  conditional revalidation (a 304 still costs only headers; navigations' `navigate` mode becomes `same-origin`, which is allowed
+  and keeps manual redirects). `addAll` is atomic: a failed precache (e.g. a 404 mid-deploy) rejects install, the new worker is
+  discarded and the old one (or none) keeps working; the browser retries on the next load, and the worker never breaks the site.
+  `skipWaiting` + `clients.claim` are safe because the game has **no dynamic `import()`** (the module graph loads at start-up)
+  and network-first old and new workers behave the same. Cleanup deletes other `sidequest-*` caches only. Registration is
+  relative (`sw.js`), scope `/side-quest/` on Pages (other repos on `maredv.github.io` are not touched). `sw.js` itself is
+  fetched past the HTTP cache (`updateViaCache: 'imports'` default), so a fixed or killed worker reaches players on their next
+  visit. Install logic: decisions match I-1..I-3. iPadOS = Mac UA/`MacIntel` + `maxTouchPoints > 1`. The prompt is used once
+  (`deferred` is cleared before `await`, so a double tap cannot prompt twice). Snooze = 7 days. The end-screen buttons sit
+  above the touch overlay, so a "Not now" tap did not restart the day. `installmodel.js` has no DOM. All text goes in via
+  `h()` (text nodes / `setAttribute`) and there is no `innerHTML`.
+- **Kill switch / rollback procedure** (`tools/sw-kill.js`, also in the README): (1) copy `tools/sw-kill.js` over `sw.js`, keeping
+  the same path; (2) in the same commit, remove the `registerServiceWorker()` call from `src/main.js`; (3) deploy, and leave it
+  deployed for weeks. On each player's next visit the browser fetches the new `sw.js`, which skips waiting, deletes the
+  `sidequest-*` caches and unregisters itself, so the site is a plain page again. **Do not** just delete `sw.js`: an update that
+  404s keeps the installed worker. The kill worker has no fetch handler and **does not reload open tabs**: a page that still
+  registers `sw.js` would then reload forever (unit-tested). Verified in the browser: after the deploy there was no registration,
+  no caches and no controller after a reload, no reload loop (even with the register call left in), and the game loaded.
+  Putting the normal `sw.js` back re-registered it. A page-side `serviceWorker` flag was considered and rejected, because the
+  worker-side switch also reaches pages a broken worker serves from its cache.
+- **Local development:** `npm start` serves the repo at `localhost:8000/`, so the worker's scope there is `/` and it also sees
+  other projects served on that port later (network-first, so they are not stale; offline it might answer with Side Quest's
+  index). Edits show on a normal reload (verified). To drop it: DevTools > Application > Service workers > Unregister (or
+  "Bypass for network").
+- **Browser verification** (all no console errors in pages or in the worker): **upgrade** - an `a8722a9` worktree (no SW)
+  played a day (score 60) and saved settings (hard, sound off); switching the served folder to the fixed HEAD and loading
+  installed and activated the worker (scope `/side-quest/`), claimed the page, showed "Install app", and kept scores and
+  settings. **Update** - the edits were visible at once (see defect 1). **Offline** - with the server killed and Chrome
+  restarted, a cold load of `?seed=42&wifeMode=random` rendered the current build. A deploy adding `src/extra.js` (and its
+  PRECACHE line) was picked up online and then ran offline after a cold restart. **Tab cycle** - 3 x open / play / reload /
+  close. **Mobile** (844x390, touch, Android UA): the invitation came after the first day, Not now hid it without restarting,
+  and a 7-day snooze was stored. **iPadOS** (Mac UA, `MacIntel`, 5 touch points, `beforeinstallprompt` suppressed as in
+  Safari): Install app showed the steps and Esc went back. **Test-harness caveats:** headless Chrome fires a real
+  `beforeinstallprompt` even with an iPad UA, and same-second mtimes made `http.server` answer 304 with old files; neither is
+  a product defect. The first load after a deploy can still mix versions from the HTTP cache for players who never had the
+  worker (GitHub Pages max-age=600, as before D-25). The worker cannot help before it is installed.
+- **Regression tests:** `tests/sw.test.js` runs `sw.js` and `tools/sw-kill.js` in `node:vm` with fake caches / fetch. It covers
+  network-first, no-cache page copies, 404/500/opaque not cached, non-GET / cross-origin untouched, offline query index,
+  exact subresource match, atomic precache, activate cleanup, and that the kill switch has no fetch handler and never reloads
+  pages. The no-cache and query-shadowing tests fail on the D-25 `sw.js`. `tests/installmodel.test.js` covers F11 vs touch
+  fullscreen and the snooze cap.
+- **Not done:** no real device (Android install, iOS Add to Home Screen, Samsung Internet, Firefox) and no gzip in the test
+  server. Header copying under gzip is the widely deployed Workbox pattern, but it was not observed here.

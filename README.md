@@ -42,6 +42,12 @@ The game is an installable web app (manifest + real PNG icons + a service worker
 - **Offline:** the service worker is network-first (a new deploy is picked up on the next online load) and falls back to its cached copy offline. Open the game once online first.
 - **Regenerate the icons** after changing the design in `tools/make-icons.mjs`: `node tools/make-icons.mjs` (no dependencies; writes `icons/*.png`, commit them).
 - When adding a file under `src/` or `icons/`, add it to `PRECACHE` in `sw.js` (`npm test` fails until you do).
+- **Service worker kill switch / rollback** (D-26): copy `tools/sw-kill.js` over `sw.js` (same path), remove the
+  `registerServiceWorker()` call in `src/main.js` in the same commit, and deploy. Leave it deployed for a few weeks. Each
+  player's browser picks it up on the next visit: it deletes the game's caches and unregisters itself. Never just delete
+  `sw.js`: an update that 404s keeps the installed worker running.
+- **Local dev:** `npm start` serves at `localhost:8000/`, so the worker's scope there is the whole port. It is network-first,
+  so edits show on a normal reload. To remove it, use DevTools > Application > Service workers > Unregister.
 
 ## Flags
 
