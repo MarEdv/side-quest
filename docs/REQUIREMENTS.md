@@ -1,0 +1,91 @@
+# Side Quest — Requirements
+
+> **Living document.** Every change to gameplay, controls, tech, or flags MUST update this file
+> in the same commit. See `CLAUDE.md`. Requirement IDs are stable; never reuse a retired ID.
+
+Status legend: ✅ implemented · 🚧 in progress · 📋 planned · ❌ retired
+
+## 1. Product vision
+
+A small, single-player, browser-based comedy game. A homeowner wants a quiet day of garden
+chores. His wife keeps handing him "side quests". The player must finish the garden chores
+before sunset while completing — or sneakily avoiding — the side quests.
+
+## 2. Product requirements (from the owner)
+
+| ID | Requirement | Status |
+|----|-------------|--------|
+| PR-1 | Game is called **"Side Quest"**, single player. | ✅ |
+| PR-2 | Protagonist is a homeowner doing garden chores (raking leaves, trimming bushes, etc.). | ✅ |
+| PR-3 | The wife throws side quests at the protagonist. | ✅ |
+| PR-4 | Player must finish their chores while completing **or avoiding** side quests. | ✅ |
+
+## 3. Technical requirements (from the owner)
+
+| ID | Requirement | Status |
+|----|-------------|--------|
+| TR-1 | Runs in any modern evergreen browser; primary test target is Chrome. | ✅ |
+| TR-2 | Minimise dependencies. (Decision D-1: zero runtime and zero dev dependencies.) | ✅ |
+
+## 4. Process requirements (from the owner)
+
+| ID | Requirement |
+|----|-------------|
+| PROC-1 | When several reasonable solutions exist, pick one or implement several behind a feature flag. |
+| PROC-2 | Always document assumptions and decisions (`docs/DECISIONS.md`). |
+| PROC-3 | Keep this requirements document up to date — enforced via `CLAUDE.md`. |
+| PROC-4 | Iterate fast, commit to git often. |
+| PROC-5 | Model usage: Opus for planning/hard problems/verification, Sonnet for implementation, Haiku for doc lookups. |
+| PROC-6 | Do not ask the owner questions; make and document reasonable assumptions. |
+
+## 5. Gameplay requirements (derived — see DECISIONS.md for rationale)
+
+### 5.1 Core loop
+| ID | Requirement | Status |
+|----|-------------|--------|
+| G-1 | Top-down 2D garden viewed on a single screen (logical 960×540, scaled to fit). | ✅ |
+| G-2 | Player walks with WASD / arrow keys. Holding **Space** (or **E**) next to a task works on it. | ✅ |
+| G-3 | A day lasts a fixed time (default 180 s real time, flag `dayLength`), shown as a clock from 09:00 to 18:00 (sunset). | ✅ |
+| G-4 | **Win**: all chores completed before sunset. **Lose**: sunset with chores left, or Harmony reaches 0. | ✅ |
+| G-5 | End screen shows outcome, chores done, quests completed/failed/avoided, Harmony, and a score. | ✅ |
+| G-6 | Pause with **P** / **Esc**; restart with **R** on the end screen. Title screen: press Space/Enter to start. | ✅ |
+
+### 5.2 Chores (main tasks)
+| ID | Requirement | Status |
+|----|-------------|--------|
+| C-1 | Chore types: **Rake leaves** (leaf piles), **Trim bush**, **Mow lawn patch**, **Water flowers**. | ✅ |
+| C-2 | Each chore instance has a position and a work time; progress accumulates while the player holds the action key in range, and is kept if interrupted. | ✅ |
+| C-3 | Default day has 8 chores (2 of each type). | ✅ |
+| C-4 | Chore progress is shown as a ring/bar above the chore; completed chores change appearance. | ✅ |
+
+### 5.3 The wife and side quests
+| ID | Requirement | Status |
+|----|-------------|--------|
+| W-1 | The wife lives in the house. Periodically she steps onto the patio and looks around. | ✅ |
+| W-2 | Quest-giving mode is selected by flag `wifeMode` (see FLAGS.md): `vision` (default) — she gives a quest only if she **sees** the player (vision cone, blocked by the shed and hedges); `random` — she calls out a quest on a timer regardless of where the player is. | ✅ |
+| W-3 | At most `maxActiveQuests` (default 2) side quests active at once. | ✅ |
+| W-4 | Side quest types are fetch/deliver errands: pick up an item at a spot, deliver it to a spot (often the wife/house door). Examples: groceries from the car, glasses from the garden bench, trash bins to the curb, the cat from the tree, the mail from the mailbox. | ✅ |
+| W-5 | Each side quest has a deadline. Completing it raises Harmony; letting it expire lowers Harmony more. | ✅ |
+| W-6 | **Avoiding** a quest = never getting it: staying out of her sight (vision mode). Each wife appearance that ends without spotting the player counts as an "avoided" quest for the end-screen stat. | ✅ |
+| W-7 | Player can carry only one quest item at a time. Carrying an item does not block chores. | ✅ |
+| W-8 | **Harmony** meter 0–100, starts at 60. +15 per completed quest, −20 per expired quest, slow decay of −1 per in-game hour while any quest is active. | ✅ |
+
+### 5.4 Presentation
+| ID | Requirement | Status |
+|----|-------------|--------|
+| P-1 | All art is procedural canvas drawing (no image assets). | ✅ |
+| P-2 | HUD: clock, Harmony meter, chore count, active quest list with countdown. | ✅ |
+| P-3 | Wife's quest is shown as a speech bubble; her vision cone is drawn faintly when she is out (flag `showVisionCone`). | ✅ |
+| P-4 | Simple WebAudio blips for events (flag `sound`, default on). No audio files. | ✅ |
+| P-5 | Arrow/position indicator toward the current quest target. | ✅ |
+
+## 6. Non-functional
+| ID | Requirement | Status |
+|----|-------------|--------|
+| NF-1 | No build step. Serve the folder statically (`python3 -m http.server`) and open in Chrome. | ✅ |
+| NF-2 | Game logic is DOM-free and unit-tested with Node's built-in test runner (`node --test`). | ✅ |
+| NF-3 | 60 fps target; fixed-timestep simulation independent of frame rate. | ✅ |
+| NF-4 | Deterministic seeded RNG (flag `seed`) so runs are reproducible. | ✅ |
+
+## 7. Out of scope (for now)
+- Touch/mobile controls, gamepad, multiple levels/days, save games, localisation, multiplayer.

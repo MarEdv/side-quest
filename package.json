@@ -1,0 +1,11 @@
+{
+  "name": "side-quest",
+  "version": "0.1.0",
+  "description": "A tiny browser game: finish your garden chores while your wife hands out side quests.",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "start": "python3 -m http.server 8000",
+    "test": "node --test tests/"
+  }
+}
