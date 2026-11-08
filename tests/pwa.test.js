@@ -36,9 +36,8 @@ test('index.html registers nothing absolute and links manifest + real PNG apple-
   assert.ok(m, 'apple-touch-icon link');
   assert.ok(!m[1].startsWith('/') && !m[1].startsWith('data:'));
   assert.deepEqual(pngSize(m[1]), { w: 180, h: 180 });
-  const reg = ['src/main.js', 'src/install.js'].filter((f) => existsSync(join(root, f))).map((f) => read(f).toString()).join('\n');
-  assert.ok(!/register\(['"]\//.test(reg), 'SW registered with a relative URL');
-  assert.match(reg, /register\('sw\.js'\)/);
+  assert.ok(!/register\(['"]\//.test(read('src/install.js').toString()), 'SW registered with a relative URL');
+  assert.match(read('src/install.js').toString(), /register\('sw\.js'\)/);
 });
 
 test('icons: files exist with the right PNG dimensions', () => {

@@ -4,6 +4,7 @@
 // screens (settings, levels, install) with ui.register(). The game itself never sees menu input (uimodel.gateInput).
 import { moveFocus, rankText, bestText, formatDate } from './uimodel.js';
 import { registerSettings } from './settingsui.js';
+import { registerInstall } from './installui.js';
 
 export const END_GUARD_MS = 700; // end-screen buttons ignore clicks this long after the game ends (mashed WORK/Space)
 
@@ -18,7 +19,7 @@ function h(tag, props = {}, ...kids) {
   return e;
 }
 
-// ctx: { actions: {play, resume, quit, again}, scores, settings (see settingsui.js), persistent(), controlsText(), summary(), isTouch(), now() }
+// ctx: { actions: {play, resume, quit, again}, scores, settings (see settingsui.js), install (see installui.js), persistent(), controlsText(), summary(), isTouch(), now() }
 export function createUI(ctx, root = document.body) {
   const host = h('div', { class: 'ui', hidden: true });
   root.appendChild(host);
@@ -71,6 +72,7 @@ export function createUI(ctx, root = document.body) {
       render();
     },
     setLayout(L, chrome) { layout = { L, chrome }; const def = current(); const panel = host.firstChild; if (def && panel) place(panel, def); },
+    get screen() { return stack.length ? stack[stack.length - 1] : null; },
     get open() { return !host.hidden; },
     get modal() { return !host.hidden && stack.length > 1; }, // a sub-screen is on top: it owns the keyboard
     get phase() { return phase; },
@@ -122,7 +124,8 @@ export function createUI(ctx, root = document.body) {
       h('div', { class: 'col' },
         btn('Play', () => A.play(), { primary: true, autofocus: true }),
         btn('Settings', () => api.push('settings')),
-        btn('High scores', () => api.push('scores'))),
+        btn('High scores', () => api.push('scores')),
+        installButton()),
       h('p', { class: 'small' }, ctx.controlsText()),
       h('p', { class: 'small dim' }, `Mode: ${ctx.summary()}`)),
   });
@@ -161,6 +164,7 @@ export function createUI(ctx, root = document.body) {
   });
 
   registerSettings(api, ctx, btn);
+  const { installButton, inviteBlock } = registerInstall(api, ctx, btn);
 
   const endScreen = {
     kind: 'dock', dock: 'bottom',
@@ -171,7 +175,8 @@ export function createUI(ctx, root = document.body) {
         line ? h('p', { class: `banner${r && r.isBest ? ' hi' : ''}` }, line) : null,
         h('div', { class: 'row' },
           btn(ctx.isTouch() ? 'Play again' : 'Play again (R)', () => A.again(), { primary: true, autofocus: true, guard: true }),
-          btn('Menu', () => A.quit(), { guard: true })));
+          btn('Menu', () => A.quit(), { guard: true })),
+        inviteBlock());
     },
   };
   api.register('end-won', { ...endScreen, phase: 'won' });

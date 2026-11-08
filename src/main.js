@@ -9,6 +9,7 @@ import { createAudio } from './audio.js';
 import { createStorage } from './storage.js';
 import { createScores } from './scores.js';
 import { createUI } from './ui.js';
+import { createInstall, registerServiceWorker } from './install.js';
 import { gateInput, shouldRecord, startsDay } from './uimodel.js';
 import { render } from './render.js';
 import { W, H } from './world.js';
@@ -70,12 +71,20 @@ const HINT_TOUCH = {
 };
 let rotateDismissed = false;
 
+// Install invitation (I-1..I-4, D-25). The menus re-render when the browser offers / completes an install, but only the
+// screens that show the button or the invitation (never Settings or scores mid-edit).
+const install = createInstall({
+  storage, isTouch: () => touch.active(), now: () => Date.now(),
+  onChange: () => { if (['main', 'end-won', 'end-lost'].includes(menus.screen)) menus.refresh(); },
+});
+registerServiceWorker();
+
 const controlsText = () => (touch.active() ? HINT_TOUCH[flags.touchScheme] : HINT_KEYS);
 const startDay = () => { debugTainted = false; applyGameplay(); startGame(state); };
 const menus = createUI({
   scores, now: () => performance.now(),
   persistent: () => storage.persistent,
-  controlsText, summary: () => settingsSummary(resolved.flags), isTouch: () => touch.active(),
+  install, controlsText, summary: () => settingsSummary(resolved.flags), isTouch: () => touch.active(),
   settings: {
     state: () => ({ flags: resolved.flags, locked: resolved.locked }),
     pending: pendingKeys,
@@ -140,12 +149,6 @@ window.addEventListener('pointerdown', () => audio.unlock());
 window.addEventListener('pointerup', () => audio.unlock()); // iOS only honours some gestures on release
 window.addEventListener('touchend', () => audio.unlock()); // older WebKit: touchend is the activation event
 
-// Offline support (D-25): relative URL, so the worker's scope is the game's own folder (also under /side-quest/).
-if ('serviceWorker' in navigator) {
-  const reg = () => navigator.serviceWorker.register('sw.js').catch(() => { /* cosmetic: the game works without it */ });
-  if (document.readyState === 'complete') reg(); else window.addEventListener('load', reg, { once: true });
-}
-
 // Auto-pause when the tab loses focus.
 const autoPause = () => { input.clear(); touch.clear(); if (state.phase === 'playing') state.phase = 'paused'; };
 window.addEventListener('blur', autoPause);
@@ -163,6 +166,8 @@ function syncMenus() {
   // A new day starts clean: R on the end screen restarts from game.js without startDay(), and must not inherit the
   // previous day's debug mark (D-24). The frame loop marks it again before the next step if debug is still on.
   if (startsDay(shownPhase, state.phase)) debugTainted = false;
+  if (shownPhase === 'playing' && (state.phase === 'won' || state.phase === 'lost')) install.dayFinished();
+  else if (state.phase !== 'won' && state.phase !== 'lost') install.closeInvite();
   shownPhase = state.phase;
   if (!dayInProgress()) applyGameplay(); // R on the end screen restarts straight from game.js: it must see the new settings
   menus.setPhase(shownPhase);

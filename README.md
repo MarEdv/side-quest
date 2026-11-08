@@ -32,12 +32,13 @@ appear automatically on touch devices (`?touch=on|off|auto`).
 - **Joystick scheme (default):** drag on the left half to steer (the stick appears under your thumb); hold the **WORK** button
   (bottom right) to work / pick up / deliver. Both thumbs work at once.
 - **Tap scheme (`?touchScheme=tap`):** touch and drag to walk toward that point; hold a finger on a chore or quest spot to work on it.
-- Tap **Play** to start; tap the end screen or **Play again** to restart; the **II** button (top right) pauses. "Add to Home Screen" launches it full-screen.
+- Tap **Play** to start; tap the end screen or **Play again** to restart; the **II** button (top right) pauses. "Add to Home Screen" launches it full-screen (see Install and offline).
 
 ## Install and offline
 
 The game is an installable web app (manifest + real PNG icons + a service worker, `sw.js`). It needs HTTPS (or `localhost`).
-Use the browser's menu: **Install app** / **Add to Home Screen**.
+- **Android (Chrome / Edge):** use the **Install app** button on the main menu, or the browser menu. After your first finished day the game also offers it once.
+- **iPhone / iPad:** Safari or another browser's Share menu > **Add to Home Screen** (the menu's Install app shows the steps).
 - **Offline:** the service worker is network-first (a new deploy is picked up on the next online load) and falls back to its cached copy offline. Open the game once online first.
 - **Regenerate the icons** after changing the design in `tools/make-icons.mjs`: `node tools/make-icons.mjs` (no dependencies; writes `icons/*.png`, commit them).
 - When adding a file under `src/` or `icons/`, add it to `PRECACHE` in `sw.js` (`npm test` fails until you do).
@@ -59,4 +60,4 @@ Runs Node's built-in test runner (`node --test`) over `tests/*.test.js`. Game lo
 ## Layout
 
 `src/` game code (`config`, `rng`, `geometry`, `world`, `chores`, `quests`, `wife`, `game` are pure logic;
-`touchmath`, `storage`, `scores`, `uimodel` are pure too; `main`, `render`, `input`, `touch`, `audio`, `ui` touch the browser) · `sw.js` service worker · `icons/` + `tools/make-icons.mjs` · `tests/` · `docs/` (requirements, decisions, flags).
+`touchmath`, `storage`, `scores`, `uimodel`, `installmodel` are pure too; `main`, `render`, `input`, `touch`, `audio`, `ui`, `installui`, `install` touch the browser) · `sw.js` service worker · `icons/` + `tools/make-icons.mjs` · `tests/` · `docs/` (requirements, decisions, flags).

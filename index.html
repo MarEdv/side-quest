@@ -128,6 +128,23 @@
     .ui .sctl:disabled, .ui .stog:disabled { opacity: .5; cursor: not-allowed; }
     .ui .sconfirm { display: flex; flex-direction: column; align-items: center; gap: 8px; }
 
+    /* Install screens (src/installui.js) */
+    .ui .steps { text-align: left; margin: 0; padding: 0 0 0 1.4em; max-width: 30em; display: flex; flex-direction: column; gap: 12px; font-size: 17px; line-height: 1.4; color: #fff; }
+    .ui .sicon { display: inline-flex; align-items: center; gap: 4px; vertical-align: middle; padding: 2px 8px; border-radius: 8px; background: #262b33; border: 1px solid #667; color: #9fd3ff; }
+    .ui .shareicon { display: block; }
+    .ui .invite { display: flex; flex-direction: column; align-items: center; gap: 6px; border-top: 1px solid #445; padding-top: 8px; margin-top: 2px; }
+    .ui .invite .btn { min-width: 0; min-height: 44px; padding: 0 14px; font-size: 15px; }
+    .ui .invite .row { gap: 8px; }
+    /* Short (landscape phone) viewports: the end panel must not cover the stats, so the invitation joins the one button row. */
+    @media (max-height: 500px) {
+      .ui .steps { font-size: 15px; gap: 6px; }
+      .ui .endp:has(.invite) { flex-direction: row; flex-wrap: wrap; justify-content: center; align-items: center; gap: 4px 8px; max-width: 100%; }
+      .ui .endp:has(.invite) > .banner { flex: 0 0 100%; }
+      .ui .endp:has(.invite) > .row, .ui .endp .invite, .ui .endp .invite > .row { display: contents; }
+      .ui .endp .invite { border: 0; padding: 0; margin: 0; }
+      .ui .endp .invite > p { display: none; }
+      .ui .endp:has(.invite) .btn { min-width: 0; min-height: 44px; padding: 0 14px; font-size: 16px; }
+    }
     @media (max-height: 500px) { .ui .sscroll { max-height: calc(100dvh - 120px); } }
     @media (max-height: 500px) {
       .ui .menu { gap: 6px; }

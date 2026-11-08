@@ -355,7 +355,7 @@ prompt API: Share > Add to Home Screen (other iOS browsers can do it from their 
   `inviteKind` (adds: touch device, >= 1 finished day, not `neverAsk`, snooze over), `detectIOS` (UA iPhone/iPad/iPod, or a Mac UA / platform
   `MacIntel` with `maxTouchPoints > 1` = iPadOS in desktop mode; a real Mac has 0), `detectStandalone`. State `sidequest.v1.install` =
   `{v, finishedDays, dismissedUntil, neverAsk, installed}` (sanitised on load). `installed` (set by `appinstalled`, cleared when the browser
-  offers the prompt again) is an extra fact beyond the brief: it hides the UI on iOS-less / non-standalone revisits after an install.
+  offers the prompt again) is an extra fact beyond the brief: after an install it keeps the UI hidden when the game is opened in a normal browser tab.
 - **UI:** the main-menu "Install app" button (shown iff `installKind != none`; also on desktop Chrome, harmless) and an **inline invitation**
   inside the end panel (not a modal sub-screen, so Play again, R and the touch tap-to-restart keep working; focus stays on Play again).
   One invitation per page visit, opened when a day finishes and the rules allow; ignoring it leaves the stored state untouched, so it can
