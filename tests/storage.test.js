@@ -54,3 +54,26 @@ test('unserialisable values are refused', () => {
   assert.equal(st.set('c', o), false);
   assert.equal(st.set('u', undefined), false);
 });
+
+test('after a write failure, keys not written this session are still read from the backend (D-22)', () => {
+  const b = memBackend(); b.m.set('sidequest.v1.progress', '{"v":1}');
+  b.setItem = () => { throw new Error('quota'); };
+  const st = createStorage(b);
+  st.set('scores', { n: 1 });
+  assert.equal(st.persistent, false);
+  assert.deepEqual(st.get('progress'), { v: 1 });
+  assert.deepEqual(st.get('scores'), { n: 1 });
+});
+
+test('a removal the backend refuses does not resurrect the old value (D-22)', () => {
+  const b = memBackend(); b.m.set('sidequest.v1.scores', '{"v":1}');
+  b.removeItem = () => { throw new Error('denied'); };
+  const st = createStorage(b);
+  st.remove('scores');
+  assert.equal(st.get('scores', 'gone'), 'gone');
+});
+
+test('a backend whose getter blows up on every call never throws out of the wrapper', () => {
+  const b = { get getItem() { throw new Error('SecurityError'); }, setItem() {}, removeItem() {} };
+  assert.doesNotThrow(() => { const st = createStorage(b); st.set('a', 1); st.get('a'); st.remove('a'); });
+});

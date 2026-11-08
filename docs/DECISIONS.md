@@ -247,3 +247,12 @@
   persistence across reloads) and 390x844 / 844x390 touch emulation (Play, pause button, Resume, end buttons, tap-to-restart, scores). No console errors.
   Not tried: a real device, a real private window, a full 10-row table scrolling on a phone.
 
+
+### D-22 — High-score verification fixes (2026-11-08) — amends D-21
+Independent review of D-21 plus headless-Chrome checks (full 10-row table at 1280x720 / 844x390 / 375x560 / 390x844 touch,
+garbage and foreign JSON, `setItem` throwing and the `localStorage` getter throwing via `addScriptToEvaluateOnNewDocument`, a real
+keyboard run, end screens in both phone orientations). Fixes:
+- **Storage after a write failure.** Once a write threw (quota), every read came from memory only, so keys not written this session
+  (e.g. level records) vanished until reload. Now reads fall back to the backend for keys this session has not touched; a removal
+  the backend refused leaves a tombstone so cleared scores don't reappear; the capability check itself is inside try/catch.
+- **Docs:** the HS-1/2/3/5 rows had lost their requirement text (status pasted over it); restored.
