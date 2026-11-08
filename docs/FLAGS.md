@@ -18,3 +18,5 @@ Booleans accept `1/0/true/false`. Unknown flags are ignored. **Any new flag must
 | `sound` | bool | `true` | WebAudio blips. |
 | `seed` | int | `random` | RNG seed for reproducible runs. |
 | `debug` | bool | `false` | Show hitboxes, FPS, state overlay. |
+| `touch` | enum | `auto` | Touch controls: `auto` (on touch devices / after first touch), `on`, `off`. |
+| `touchScheme` | enum | `joystick` | `joystick`: floating virtual stick (left) + action button (right). `tap`: tap/drag to walk to a point, hold on a task to work. |

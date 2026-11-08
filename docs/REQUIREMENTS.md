@@ -93,6 +93,20 @@ before sunset while completing — or sneakily avoiding — the side quests.
 | Q-1 | Quest interaction is instant while holding the action key within 40 px of a pickup/drop; quest spots win over chores. | ✅ |
 | Q-2 | Debug overlay (flag `debug`): obstacle boxes, interact range, FPS, wife/player state. | ✅ |
 
+### 5.6 Mobile / touch (added 2026-11-08, D-17)
+| ID | Requirement | Status |
+|----|-------------|--------|
+| M-1 | Playable on phones and tablets (iOS Safari, Android Chrome) with touch only. Keyboard play is unchanged. | 📋 |
+| M-2 | Touch controls appear when flag `touch` = `auto` (default: on if the device reports touch / a coarse pointer, or on the first touch), `on` (always), or `off` (never). | 📋 |
+| M-3 | Control scheme flag `touchScheme`: `joystick` (default) — a floating virtual stick appears wherever the thumb lands on the left half of the screen, and a large hold-to-work **action button** sits bottom-right; `tap` — tap/drag anywhere on the game to walk toward that point (straight line, sliding along obstacles), and hold a finger on/near a chore or quest spot to work on it. | 📋 |
+| M-4 | Multi-touch: steering and the action button work at the same time (two thumbs). | 📋 |
+| M-5 | Tap to start on the title screen and tap to restart on the end screen; an on-screen **pause button** (top-right) pauses and resumes. | 📋 |
+| M-6 | No page scroll, pinch-zoom, double-tap zoom, text selection, long-press callout or pull-to-refresh while playing. Layout uses the dynamic viewport and respects safe-area insets (notch, home bar). | 📋 |
+| M-7 | Landscape fills the screen (letterboxed 16:9). In portrait the game sits at the top and the controls use the free space below; a dismissible "rotate for a bigger view" hint is shown. | 📋 |
+| M-8 | On-screen text adapts to the input: touch players see touch instructions (title screen, hint line, end screen "tap to play again"). | 📋 |
+| M-9 | Sound unlocks on the first touch (iOS needs a user gesture). | 📋 |
+| M-10 | Can be added to the home screen and launched full-screen (web app manifest + Apple meta tags, inline/data-URI icon; no extra assets beyond one small manifest file). | 📋 |
+
 ## 6. Non-functional
 | ID | Requirement | Status |
 |----|-------------|--------|
@@ -103,4 +117,4 @@ before sunset while completing — or sneakily avoiding — the side quests.
 | NF-5 | Published on GitHub Pages at https://maredv.github.io/side-quest/ straight from `main` (repo root, no build/CI). Flags work via the URL query there too. | ✅ |
 
 ## 7. Out of scope (for now)
-- Touch/mobile controls, gamepad, multiple levels/days, save games, localisation, multiplayer.
+- Gamepad, haptics, orientation lock, multiple levels/days, save games, localisation, multiplayer.

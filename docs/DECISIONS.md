@@ -140,3 +140,18 @@
 - **Chosen:** public repo `MarEdv/side-quest`, Pages source = branch `main`, folder `/`. Every push to `main` redeploys.
 - **Alternatives:** a GitHub Actions deploy workflow (unneeded — no build step); a `gh-pages` branch (extra branch to keep in sync); `docs/` folder (would mix docs and site).
 - **Assumptions:** repo is public (Pages on private repos needs a paid plan; the code has nothing secret). All asset paths are relative, so the site works under the `/side-quest/` sub-path. A `.nojekyll` file disables Jekyll processing so files are served as-is.
+
+### D-17 — Mobile support (2026-11-08) — supersedes A-2
+- **Owner request:** "make it playable on mobile as well".
+- **Chosen:** touch controls as an extra input source that feeds the same `{up,down,left,right,action,pause,start,restart}`
+  input object as the keyboard, so `game.js` needs no touch-specific logic except analog movement (see below).
+- **Two schemes behind flag `touchScheme`** (PROC-1): `joystick` (default — the most familiar for top-down mobile games,
+  works without precise aiming on a small screen) and `tap` (tap-to-walk, one-finger play, more casual).
+  Alternatives considered: fixed on-screen D-pad (rejected: imprecise for 8-way movement, and it covers the play area), swipe gestures (rejected: no good way to "hold" a chore).
+- **Analog movement:** the joystick gives a direction vector with magnitude 0–1. The input object gains optional `moveX/moveY`
+  (−1..1); when present they override the digital keys. This keeps keyboard behaviour identical.
+- **Overlay:** controls are drawn on a separate full-viewport layer above the canvas, not inside the 960×540 game,
+  so they can use letterbox space (especially in portrait) and don't cover the garden more than necessary.
+- **Visibility flag `touch`** = `auto|on|off`; `auto` shows controls on touch devices, or after the first touch event, so hybrid laptops work.
+- **Portrait is supported, not forced to landscape:** the Screen Orientation lock API is unavailable on iOS Safari, and
+  forcing it is hostile. We show a hint instead.
