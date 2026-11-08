@@ -25,6 +25,8 @@ export function createInstall(ctx) {
     navStandalone: navigator.standalone === true,
     standaloneMQ: !!window.matchMedia && matchMedia('(display-mode: standalone)').matches,
     fullscreenMQ: !!window.matchMedia && matchMedia('(display-mode: fullscreen)').matches,
+    // The device, not the ?touch= flag: a touch screen or a coarse pointer.
+    touchHardware: (navigator.maxTouchPoints || 0) > 0 || (!!window.matchMedia && matchMedia('(pointer: coarse)').matches),
     referrer: document.referrer,
   });
   const facts = () => ({

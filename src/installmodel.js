@@ -20,7 +20,9 @@ export function inviteKind(f) {
   const kind = installKind(f);
   if (kind === 'none' || !f.isTouch || f.neverAsk) return 'none';
   if ((f.finishedDays || 0) < 1) return 'none';
-  if (f.dismissedUntil && f.now < f.dismissedUntil) return 'none';
+  // Snoozed: "Not now" hides it until dismissedUntil. A date further away than one snooze means the clock was wrong when
+  // it was set (or has been turned back since); treat it as over so a bad clock cannot silence the invitation for good.
+  if (f.dismissedUntil && f.now < f.dismissedUntil && f.dismissedUntil - f.now <= SNOOZE_MS) return 'none';
   return kind;
 }
 
@@ -31,10 +33,12 @@ export function detectIOS({ userAgent = '', platform = '', maxTouchPoints = 0 } 
   return (platform === 'MacIntel' || /Macintosh/.test(userAgent)) && maxTouchPoints > 1;
 }
 
-// Already launched as an installed app? navigator.standalone is iOS only; display-mode is everyone else. A WebKit bug
-// reports fullscreen where standalone was expected, so both modes count.
-export function detectStandalone({ navStandalone = false, standaloneMQ = false, fullscreenMQ = false, referrer = '' } = {}) {
-  return !!(navStandalone || standaloneMQ || fullscreenMQ || String(referrer).startsWith('android-app://'));
+// Already launched as an installed app? navigator.standalone is iOS only; display-mode is everyone else. The manifest asks
+// for fullscreen first (display_override), which is what Android uses, and a WebKit bug reports fullscreen where standalone
+// was expected, so fullscreen counts too - but only on touch hardware: on a desktop it is also what F11 browser fullscreen
+// reports, and installed desktop apps never get fullscreen (they fall back to standalone). D-26.
+export function detectStandalone({ navStandalone = false, standaloneMQ = false, fullscreenMQ = false, touchHardware = false, referrer = '' } = {}) {
+  return !!(navStandalone || standaloneMQ || (fullscreenMQ && touchHardware) || String(referrer).startsWith('android-app://'));
 }
 
 // ----- persisted state (sidequest.v1.install) -----

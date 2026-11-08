@@ -66,7 +66,9 @@ test('detectStandalone: navigator.standalone, display-mode standalone or fullscr
   assert.equal(detectStandalone({}), false);
   assert.equal(detectStandalone({ navStandalone: true }), true);
   assert.equal(detectStandalone({ standaloneMQ: true }), true);
-  assert.equal(detectStandalone({ fullscreenMQ: true }), true);
+  assert.equal(detectStandalone({ fullscreenMQ: true, touchHardware: true }), true); // installed on Android (display_override)
+  assert.equal(detectStandalone({ fullscreenMQ: true }), false); // F11 browser fullscreen on a desktop (D-26)
+  assert.equal(detectStandalone({ fullscreenMQ: true, touchHardware: false, standaloneMQ: true }), true);
   assert.equal(detectStandalone({ referrer: 'android-app://com.example' }), true);
   assert.equal(detectStandalone({ referrer: 'https://example.com/' }), false);
 });
@@ -94,4 +96,11 @@ test('store round trip under sidequest.v1.install, garbage ignored', () => {
   assert.deepEqual(store.load(), { v: 1, finishedDays: 1, dismissedUntil: 0, neverAsk: true, installed: false });
   m.set('sidequest.v1.install', '{not json');
   assert.deepEqual(store.load(), defaultInstall());
+});
+
+test('inviteKind: a snooze further away than 7 days (clock was wrong) counts as over (D-26)', () => {
+  const ok = { hasDeferredPrompt: true };
+  assert.equal(inviteKind(F({ ...ok, dismissedUntil: NOW + SNOOZE_MS })), 'none');
+  assert.equal(inviteKind(F({ ...ok, dismissedUntil: NOW + SNOOZE_MS + 1 })), 'native');
+  assert.equal(inviteKind(F({ ...ok, dismissedUntil: NOW + 365 * 24 * 3600 * 1000 })), 'native');
 });
