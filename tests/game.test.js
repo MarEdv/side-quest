@@ -91,3 +91,23 @@ test('score formula', () => {
   s.stats = { questsCompleted: 1, questsFailed: 1, questsAvoided: 2 };
   assert.equal(computeScore(s), Math.round(100 + 50 + 50 - 40 + 60));
 });
+
+test('restart leaves no trace of the previous day (matches a fresh game with the same seed)', () => {
+  const flags = { seed: 4, questInterval: 3, wifeMode: 'random', dayLength: 30 };
+  const s = playing(flags);
+  for (let i = 0; i < 60 * 31 && s.phase === 'playing'; i++) update(s, script(i), 1 / 60);
+  assert.equal(s.phase, 'lost');
+  update(s, { ...NO_INPUT, restart: true }, 1 / 60);
+  const fresh = playing(flags);
+  fresh.prev = { ...s.prev };
+  assert.deepEqual(JSON.parse(JSON.stringify(s)), JSON.parse(JSON.stringify(fresh)));
+  // RNG state (a closure, invisible to JSON) must also be fresh: both days evolve identically.
+  for (let i = 0; i < 60 * 20; i++) { update(s, script(i), 1 / 60); update(fresh, script(i), 1 / 60); }
+  assert.equal(JSON.stringify(s), JSON.stringify(fresh));
+});
+
+test('holding restart through the end of the day does not auto-restart', () => {
+  const s = playing({ ...quiet, dayLength: 10 });
+  for (let i = 0; i < 60 * 11; i++) update(s, { ...NO_INPUT, restart: true }, 1 / 60);
+  assert.equal(s.phase, 'lost');
+});

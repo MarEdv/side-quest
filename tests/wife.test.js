@@ -107,3 +107,22 @@ test('hiding while the quest cap is full is not counted as avoided', () => {
     assert.equal(h.stats.questsAvoided, 0);
   }
 });
+
+test('W-9: from every chore a hiding spot is reachable in a straight line within the warning', async () => {
+  const { createChores } = await import('../src/chores.js');
+  const { PLAYER_SPEED, PLAYER_HALF } = await import('../src/game.js');
+  const { rectsOverlap, segmentIntersectsAABB } = await import('../src/geometry.js');
+  const reach = PLAYER_SPEED * WIFE.warnTime;
+  const dirs = Array.from({ length: 41 }, (_, i) => WIFE.baseDir - WIFE.sweepAmp + (i / 40) * 2 * WIFE.sweepAmp);
+  const walkable = (x, y) => !world.obstacles.some((o) => rectsOverlap({ x: x - PLAYER_HALF, y: y - PLAYER_HALF, w: 2 * PLAYER_HALF, h: 2 * PLAYER_HALF }, o));
+  // Conservative straight path: inflate obstacles by the player's half-size.
+  const pathClear = (x1, y1, x2, y2) => !world.obstacles.some((o) => segmentIntersectsAABB(x1, y1, x2, y2, { x: o.x - PLAYER_HALF, y: o.y - PLAYER_HALF, w: o.w + 2 * PLAYER_HALF, h: o.h + 2 * PLAYER_HALF }));
+  for (const c of createChores({})) {
+    let found = false;
+    for (let x = 10; x < 950 && !found; x += 6) for (let y = 110; y < 530 && !found; y += 6) {
+      if (Math.hypot(x - c.x, y - c.y) > reach * 0.9 || !walkable(x, y) || !pathClear(c.x, c.y, x, y)) continue;
+      found = dirs.every((dir) => !canSee({ ...world.wifePos, dir }, { x, y }, world.obstacles));
+    }
+    assert.ok(found, `no reachable hiding spot from ${c.type} at ${c.x},${c.y}`);
+  }
+});
