@@ -47,11 +47,11 @@ before sunset while completing — or sneakily avoiding — the side quests.
 | ID | Requirement | Status |
 |----|-------------|--------|
 | G-1 | Top-down 2D garden viewed on a single screen (logical 960×540, scaled to fit). | ✅ |
-| G-2 | Player walks with WASD / arrow keys. Holding **Space** (or **E**) next to a task works on it. | ✅ |
+| G-2 | Player walks with WASD / arrow keys. Holding **Space** (or **E**) next to a task works on it. On touch: virtual stick / tap-to-walk and the WORK button (section 5.6). | ✅ |
 | G-3 | A day lasts a fixed time (default 180 s real time, flag `dayLength`), shown as a clock from 09:00 to 18:00 (sunset); the HUD uses 12-hour format (9:00 AM – 6:00 PM). | ✅ |
 | G-4 | **Win**: all chores completed before sunset. **Lose**: sunset with chores left, or Harmony reaches 0. | ✅ |
 | G-5 | End screen shows outcome, chores done, quests completed/failed/avoided, Harmony, and a score. | ✅ |
-| G-6 | Pause with **P** / **Esc** (also auto-pauses on window blur or when the tab is hidden); restart with **R** on the end screen. Title screen: press Space/Enter to start. | ✅ |
+| G-6 | Pause with **P** / **Esc** (also auto-pauses on window blur or when the tab is hidden); restart with **R** on the end screen. Title screen: press Space/Enter to start. On touch: tap to start / restart and an on-screen pause button (5.6). | ✅ |
 | G-7 | Game keys don't scroll the page (preventDefault on arrows/Space etc.). Keys pressed with Cmd/Ctrl/Alt are ignored so browser shortcuts (reload, close tab) still work; held keys are released on window blur and on Meta keyup (D-11). | ✅ |
 
 ### 5.2 Chores (main tasks)
@@ -96,16 +96,16 @@ before sunset while completing — or sneakily avoiding — the side quests.
 ### 5.6 Mobile / touch (added 2026-11-08, D-17)
 | ID | Requirement | Status |
 |----|-------------|--------|
-| M-1 | Playable on phones and tablets (iOS Safari, Android Chrome) with touch only. Keyboard play is unchanged. | 📋 |
-| M-2 | Touch controls appear when flag `touch` = `auto` (default: on if the device reports touch / a coarse pointer, or on the first touch), `on` (always), or `off` (never). | 📋 |
-| M-3 | Control scheme flag `touchScheme`: `joystick` (default) — a floating virtual stick appears wherever the thumb lands on the left half of the screen, and a large hold-to-work **action button** sits bottom-right; `tap` — tap/drag anywhere on the game to walk toward that point (straight line, sliding along obstacles), and hold a finger on/near a chore or quest spot to work on it. | 🚧 pure logic + flags done (touchmath.js, analog movement); UI pending |
-| M-4 | Multi-touch: steering and the action button work at the same time (two thumbs). | 📋 |
-| M-5 | Tap to start on the title screen and tap to restart on the end screen; an on-screen **pause button** (top-right) pauses and resumes. | 📋 |
-| M-6 | No page scroll, pinch-zoom, double-tap zoom, text selection, long-press callout or pull-to-refresh while playing. Layout uses the dynamic viewport and respects safe-area insets (notch, home bar). | 📋 |
-| M-7 | Landscape fills the screen (letterboxed 16:9). In portrait the game sits at the top and the controls use the free space below; a dismissible "rotate for a bigger view" hint is shown. | 📋 |
-| M-8 | On-screen text adapts to the input: touch players see touch instructions (title screen, hint line, end screen "tap to play again"). | 📋 |
-| M-9 | Sound unlocks on the first touch (iOS needs a user gesture). | 📋 |
-| M-10 | Can be added to the home screen and launched full-screen (web app manifest + Apple meta tags, inline/data-URI icon; no extra assets beyond one small manifest file). | 📋 |
+| M-1 | Playable on phones and tablets (iOS Safari, Android Chrome) with touch only. Keyboard play is unchanged. | ✅ verified in headless Chrome mobile emulation (844x390, 390x844); 🚧 not tested on a real iOS/Android device |
+| M-2 | Touch controls appear when flag `touch` = `auto` (default: on if the device reports touch / a coarse pointer, or on the first touch), `on` (always), or `off` (never). | ✅ auto/on/off implemented (`touchActive`, coarse pointer / maxTouchPoints / first touch); auto path verified in emulation |
+| M-3 | Control scheme flag `touchScheme`: `joystick` (default) — a floating virtual stick appears wherever the thumb lands on the left half of the screen, and a large hold-to-work **action button** sits bottom-right; `tap` — tap/drag anywhere on the game to walk toward that point (straight line, sliding along obstacles), and hold a finger on/near a chore or quest spot to work on it. | ✅ both schemes verified in Chrome emulation (stick moves player; tap-walk and hold-on-task work a chore) |
+| M-4 | Multi-touch: steering and the action button work at the same time (two thumbs). | ✅ verified: stick held + WORK button progressed a chore (CDP multi-touch) |
+| M-5 | Tap to start on the title screen and tap to restart on the end screen; an on-screen **pause button** (top-right) pauses and resumes. | ✅ verified: tap starts, pause button pauses/resumes, tap on paused screen resumes; end-screen tap restart (700 ms guard) covered by logic, not driven in the browser |
+| M-6 | No page scroll, pinch-zoom, double-tap zoom, text selection, long-press callout or pull-to-refresh while playing. Layout uses the dynamic viewport and respects safe-area insets (notch, home bar). | ✅ CSS/meta in place (touch-action none, overscroll-behavior, no select/callout, 100dvh, safe-area); 🚧 pinch/pull-to-refresh not tried on a real device |
+| M-7 | Landscape fills the screen (letterboxed 16:9). In portrait the game sits at the top and the controls use the free space below; a dismissible "rotate for a bigger view" hint is shown. | ✅ verified in both orientations (screenshots); rotate hint dismissible |
+| M-8 | On-screen text adapts to the input: touch players see touch instructions (title screen, hint line, end screen "tap to play again"). | ✅ verified on title and hint line; pause/end texts by code review |
+| M-9 | Sound unlocks on the first touch (iOS needs a user gesture). | 🚧 first pointerdown/pointerup call `audio.unlock()`; audio not verifiable headless / on real iOS |
+| M-10 | Can be added to the home screen and launched full-screen (web app manifest + Apple meta tags, inline/data-URI icon; no extra assets beyond one small manifest file). | 🚧 manifest + Apple/theme metas added (inline SVG data-URI icon, runtime PNG apple-touch-icon); install not tested on a device |
 
 ## 6. Non-functional
 | ID | Requirement | Status |

@@ -23,6 +23,16 @@ then open http://localhost:8000 in Chrome (ES modules need HTTP, not `file://`).
 - **Hold Space or E** next to a chore: work on it; next to a quest spot: pick up / deliver
 - **P / Esc**: pause · **R**: restart on the end screen · **Space / Enter**: start
 
+## Mobile / touch
+
+Works on phones and tablets (landscape recommended; portrait shows the game on top and the controls below). Touch controls
+appear automatically on touch devices (`?touch=on|off|auto`).
+
+- **Joystick scheme (default):** drag on the left half to steer (the stick appears under your thumb); hold the **WORK** button
+  (bottom right) to work / pick up / deliver. Both thumbs work at once.
+- **Tap scheme (`?touchScheme=tap`):** touch and drag to walk toward that point; hold a finger on a chore or quest spot to work on it.
+- Tap to start and to play again; the **II** button (top right) pauses. "Add to Home Screen" launches it full-screen.
+
 ## Flags
 
 Tweak the game with URL query parameters, e.g. `http://localhost:8000/?wifeMode=random&difficulty=hard&debug=1`.
@@ -39,4 +49,4 @@ Runs Node's built-in test runner (`node --test`) over `tests/*.test.js`. Game lo
 ## Layout
 
 `src/` game code (`config`, `rng`, `geometry`, `world`, `chores`, `quests`, `wife`, `game` are pure logic;
-`main`, `render`, `input`, `audio` touch the browser) · `tests/` · `docs/` (requirements, decisions, flags).
+`touchmath` is pure too; `main`, `render`, `input`, `touch`, `audio` touch the browser) · `tests/` · `docs/` (requirements, decisions, flags).

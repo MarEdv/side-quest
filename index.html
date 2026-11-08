@@ -2,19 +2,70 @@
 <html lang="en">
 <head>
   <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
   <title>Side Quest</title>
-  <link rel="icon" href="data:,">
+  <meta name="theme-color" content="#14161a">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="Side Quest">
+  <link rel="manifest" href="manifest.webmanifest">
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect width='100' height='100' rx='18' fill='%235cae4b'/%3E%3Ccircle cx='50' cy='55' r='20' fill='%23f28c28'/%3E%3C/svg%3E">
   <style>
-    html, body { margin: 0; height: 100%; background: #14161a; color: #9aa; font: 13px system-ui, sans-serif; overflow: hidden; }
-    body { display: flex; flex-direction: column; align-items: center; justify-content: center; }
-    #game { display: block; background: #000; box-shadow: 0 0 30px #000a; }
-    #hint { margin-top: 6px; height: 18px; text-align: center; }
+    html, body {
+      margin: 0; width: 100%; height: 100%; height: 100dvh; background: #14161a; color: #9aa;
+      font: 13px system-ui, sans-serif; overflow: hidden; position: fixed; inset: 0;
+      overscroll-behavior: none; touch-action: none;
+      -webkit-user-select: none; user-select: none; -webkit-touch-callout: none; -webkit-tap-highlight-color: transparent;
+      padding: env(safe-area-inset-top, 0px) env(safe-area-inset-right, 0px) env(safe-area-inset-bottom, 0px) env(safe-area-inset-left, 0px);
+      box-sizing: border-box;
+    }
+    #game { position: absolute; display: block; background: #000; box-shadow: 0 0 30px #000a; touch-action: none; }
+    #hint { position: absolute; left: 0; right: 0; text-align: center; height: 18px; line-height: 18px; white-space: nowrap; overflow: hidden; }
+    #probe { position: absolute; visibility: hidden; pointer-events: none; width: 0; height: 0;
+      padding: env(safe-area-inset-top, 0px) env(safe-area-inset-right, 0px) env(safe-area-inset-bottom, 0px) env(safe-area-inset-left, 0px); }
+
+    /* Touch overlay (src/touch.js): full viewport above the canvas. */
+    .tc { position: fixed; inset: 0; z-index: 10; touch-action: none; display: block; }
+    .tc > * { display: none; position: absolute; pointer-events: none; }
+    .tc.on > .tc-pause, .tc.on[data-scheme="joystick"][data-phase="playing"] > .tc-action { display: flex; }
+    .tc-pause { display: none; }
+    .tc:not([data-phase="playing"]):not([data-phase="paused"]) > .tc-pause { display: none !important; }
+    .tc-pause {
+      pointer-events: auto !important; top: calc(env(safe-area-inset-top, 0px) + 6px); right: calc(env(safe-area-inset-right, 0px) + 6px);
+      width: 44px; height: 44px; border-radius: 12px; align-items: center; justify-content: center;
+      background: rgba(10,14,20,.55); border: 2px solid rgba(255,255,255,.55); color: #fff; font: bold 20px system-ui, sans-serif;
+    }
+    .tc-action {
+      pointer-events: auto !important; right: calc(env(safe-area-inset-right, 0px) + 28px); bottom: calc(env(safe-area-inset-bottom, 0px) + 28px);
+      width: 90px; height: 90px; border-radius: 50%; align-items: center; justify-content: center;
+      background: rgba(255,210,63,.30); border: 3px solid rgba(255,255,255,.6); color: #fff; font: bold 16px system-ui, sans-serif;
+    }
+    .tc-action.down { background: rgba(255,210,63,.65); }
+    .tc.on[data-scheme="joystick"][data-phase="playing"] > .tc-idle {
+      display: block; left: calc(env(safe-area-inset-left, 0px) + 40px); bottom: calc(env(safe-area-inset-bottom, 0px) + 36px);
+      width: 100px; height: 100px; border-radius: 50%; border: 2px dashed rgba(255,255,255,.25);
+    }
+    .tc.steer > .tc-idle { display: none !important; }
+    .tc > .tc-base { left: 0; top: 0; margin: -60px 0 0 -60px; width: 120px; height: 120px; border-radius: 50%;
+      background: rgba(255,255,255,.12); border: 2px solid rgba(255,255,255,.4); }
+    .tc.on > .tc-base.show { display: block; }
+    .tc-knob { position: absolute; left: 34px; top: 34px; width: 52px; height: 52px; border-radius: 50%; background: rgba(255,255,255,.55); }
+    .tc > .tc-marker { left: 0; top: 0; margin: -20px 0 0 -20px; width: 40px; height: 40px; border-radius: 50%; border: 3px solid rgba(255,255,255,.7); }
+    .tc.on > .tc-marker.show { display: block; }
+    .tc-marker.work { border-color: #ffd23f; background: rgba(255,210,63,.3); }
+
+    /* Rotate hint (portrait, touch only) */
+    #rotate { position: absolute; left: 50%; transform: translateX(-50%); z-index: 20; display: none; align-items: center; gap: 10px;
+      background: rgba(10,14,20,.85); color: #ffe9a8; border: 1px solid #556; border-radius: 10px; padding: 8px 12px; white-space: nowrap; }
+    #rotate button { all: unset; cursor: pointer; padding: 2px 8px; color: #fff; font-weight: bold; }
   </style>
 </head>
 <body>
+  <div id="probe"></div>
   <canvas id="game" width="960" height="540"></canvas>
   <div id="hint">WASD / arrows: move &middot; hold Space or E: work / interact &middot; P or Esc: pause &middot; R: restart</div>
+  <div id="rotate"><span>Rotate your phone for a bigger view</span><button type="button" aria-label="Dismiss">&#10005;</button></div>
   <script type="module" src="src/main.js"></script>
 </body>
 </html>

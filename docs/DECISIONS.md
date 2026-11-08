@@ -155,3 +155,23 @@
 - **Visibility flag `touch`** = `auto|on|off`; `auto` shows controls on touch devices, or after the first touch event, so hybrid laptops work.
 - **Portrait is supported, not forced to landscape:** the Screen Orientation lock API is unavailable on iOS Safari, and
   forcing it is hostile. We show a hint instead.
+
+### D-18 — Mobile implementation choices (2026-11-08) — implements D-17
+- **DOM overlay, not a second canvas** (`src/touch.js`): CSS handles safe-area insets, the dashed idle ring, the pause button and
+  hit-testing (`e.target`) for free. Alternative: a second canvas (rejected: manual hit-testing and DPR handling).
+- **Pure maths in `src/touchmath.js`**: layout (`computeLayout`, portrait top-aligned / landscape centred), `screenToGame`,
+  `joystickVector` (radius 60 px, dead zone 15 %, rescaled so speed ramps from 0), tap-to-walk, task hit-testing, `mergeInput`.
+- **Merging:** `main.js` ORs keyboard and touch booleans; touch analog `moveX/moveY` override keys when non-zero (`game.js` ignores
+  them when zero, so keyboard behaviour is bit-identical).
+- **Pulses:** touch start/restart/pause stay true until a fixed step has run (`ack()`), because a 120 Hz frame can run zero steps and
+  `game.js` edge-detects. Pointers that go down outside `playing` get role `ui` and never steer or work, so the start tap is inert.
+- **Tap scheme magnet:** a finger within 40 game px of an open task snaps the walk target to the spot (otherwise stopping 3 px short of a
+  finger 40 px away could leave the player just outside the 40 px interaction range). `action` is set once the player is in range.
+- **End-screen guard:** new touches within 700 ms of the game ending do not restart, so a mashed WORK button cannot skip the results.
+- **Pause:** top-right 44 px button; a tap anywhere on the paused screen also resumes.
+- **Hint line:** swapped for touch; hidden in landscape touch (saves 30 px of a ~390 px screen), shown under the canvas in portrait.
+- **Manifest `orientation: "any"`** instead of landscape-only, consistent with D-17 (no orientation forcing). Icon is an inline SVG data URI;
+  iOS ignores SVG so main.js also draws a 180 px PNG `apple-touch-icon` at runtime (best effort, untested on iOS).
+- **`window.__state`** is exposed when `debug=1`, used by the headless-Chrome self-check.
+- **Verification:** headless Chrome via CDP (mobile emulation 844x390 / 390x844, DPR 3, `Input.dispatchTouchEvent`); no real devices.
+
