@@ -198,3 +198,18 @@
   left as is: `pointercancel`/`lostpointercapture` both release the pointer; `setPointerCapture` keeps moves flowing outside the overlay; blur and
   `visibilitychange` clear pointers and pulses; the start tap's pointer stays role `ui`; the manifest's `./` paths and data-URI icon are
   valid under `/side-quest/` (Chrome reports no manifest errors); the logic modules stay DOM-free (now a unit test).
+
+### D-20 — Menus, settings, scores, levels (plan) (2026-11-08)
+- **Menus are DOM overlays** (main menu, settings, high scores, level select, pause, end actions) above the canvas,
+  not canvas-drawn: free keyboard focus/Tab order, accessibility, native form controls, and easy touch targets.
+  The canvas keeps drawing the garden behind them. Alternative (canvas UI) rejected: re-implementing focus & forms.
+- **Storage:** one small module `src/storage.js` wrapping `localStorage` in try/catch with an in-memory fallback;
+  keys `sidequest.v1.settings`, `sidequest.v1.scores`, `sidequest.v1.progress`, `sidequest.v1.install`.
+  Score/progress logic lives in a pure module (`src/scores.js`) taking a storage object, so it is unit-testable.
+- **Settings precedence** URL > saved > default keeps every existing shareable link working (S-2).
+- **Levels are data** (`src/levels.js`: name, briefing, flag overrides). Gameplay flags come from the level;
+  control/display flags (`touch`, `touchScheme`, `sound`, `showVisionCone`, `debug`) come from settings.
+- **`hybrid` wife mode** is the "mix" for the hardest level: roaming + vision, and when a trip ends without spotting
+  the player she calls a quest anyway with probability 0.4. It gives hiding *partial* value — a new feel, not just bigger numbers.
+- **No name entry / no online leaderboard** — local device only, as asked.
+- Order of work follows the owner's list; each feature is implemented → verified → deployed before the next.

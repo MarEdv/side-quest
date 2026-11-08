@@ -107,6 +107,46 @@ before sunset while completing — or sneakily avoiding — the side quests.
 | M-9 | Sound unlocks on the first touch (iOS needs a user gesture). | 🚧 `audio.unlock()` runs synchronously inside the window `pointerdown`, `pointerup` and `touchend` handlers (pointerup/touchend are the activation events for touch) and also resumes an iOS `interrupted` context (D-19). Not audible headless; not tried on real iOS |
 | M-10 | Can be added to the home screen and launched full-screen (web app manifest + Apple meta tags, inline/data-URI icon; no extra assets beyond one small manifest file). | 🚧 Chrome parses the manifest with no errors when served under `/side-quest/` (relative `start_url`/`scope` `./`); install / home-screen launch not tested on a device |
 
+### 5.7 Menus, settings, high scores, levels, install (added 2026-11-08, D-20)
+Owner request: "add, one by one: high score on local device; settings with all play modes now configured through
+query params; ask player to install as app on mobile device; add 4 more levels by mixing the existing play modes,
+ensure gradually increased difficulty; keep the current play mode as an 'arcade play mode'". Built in that order (levels + arcade together).
+
+**Feature 1 — High scores (local device)**
+| ID | Requirement | Status |
+|----|-------------|--------|
+| HS-1 | Scores are saved in `localStorage` on this device only (no server, no account). Storage failures (private mode, quota) never break the game. | 📋 |
+| HS-2 | Arcade keeps a top-10 table: score, outcome (won/lost), date, and a short settings summary (e.g. "vision·roam·normal"). | 📋 |
+| HS-3 | Each level keeps its best score and whether it has been won (feeds level unlocking, L-3). | 📋 |
+| HS-4 | End screen shows "New high score!" / the rank achieved and the current best. A High scores screen lists them, with a "Clear scores" action that asks for confirmation inside the page. | 📋 |
+| HS-5 | No name entry (single-player, one device). Data is versioned (`sidequest.v1.*`) so later formats can migrate. | 📋 |
+
+**Feature 2 — Settings screen**
+| ID | Requirement | Status |
+|----|-------------|--------|
+| S-1 | A Settings screen exposes **every** flag in FLAGS.md, grouped: Gameplay (arcade only), Controls, Display & sound, Advanced (seed, debug). Each shows a one-line explanation. | 📋 |
+| S-2 | Settings persist in `localStorage`. Precedence: URL query param > saved setting > default. A flag forced by the URL is shown as locked with a note, so links like `?wifeMode=random` keep working. | 📋 |
+| S-3 | "Reset to defaults" action. Changing a control/display setting applies immediately; gameplay settings apply from the next day. | 📋 |
+| S-4 | Fully usable by keyboard (Tab/arrows/Enter/Esc) and touch (large targets). | 📋 |
+
+**Feature 3 — Install prompt (mobile)**
+| ID | Requirement | Status |
+|----|-------------|--------|
+| I-1 | On mobile/touch devices not already running as an installed app, the player is invited to install the game. Shown after their first finished day (not on first load), and always available as a menu item. | 📋 |
+| I-2 | Browsers with `beforeinstallprompt` (Chrome/Edge/Samsung on Android): an "Install" button triggers the native prompt. iOS/iPadOS Safari (no API): show illustrated "Share → Add to Home Screen" instructions. Elsewhere: menu item hidden. | 📋 |
+| I-3 | "Not now" hides the invitation for 7 days; "Don't ask again" hides it permanently (menu item stays). Never shown when installed (display-mode standalone/fullscreen or `navigator.standalone`). | 📋 |
+| I-4 | The app meets current installability criteria (manifest with real PNG icons; service worker if needed — see D-21) and works offline once installed. | 📋 |
+
+**Features 4 & 5 — Levels and Arcade**
+| ID | Requirement | Status |
+|----|-------------|--------|
+| L-1 | Main menu offers **Levels** and **Arcade**. Arcade = the current game, configured by Settings (the "arcade play mode"). | 📋 |
+| L-2 | Four levels, each a fixed mix of existing modes with rising difficulty (gameplay settings ignored in levels; control/display settings still apply): **1 "Saturday Morning"** — vision, patio only, easy, 1 quest at a time, relaxed timing. **2 "Honey-Do List"** — random calls (no hiding), normal, 2 quests. **3 "Eyes Everywhere"** — vision + roaming, normal, longer sight, 2 quests, more frequent trips. **4 "The Inspection"** — new `hybrid` mode (she roams with vision *and*, if she doesn't spot you, may call a quest anyway), hard, 3 quests, frequent, shorter day. | 📋 |
+| L-3 | Level 1 is unlocked; winning a level unlocks the next. Arcade is always available. | 📋 |
+| L-4 | Difficulty increases monotonically L1→L4, verified by a scripted bot: win rate and time slack at sunset must not increase from one level to the next (numbers recorded in DECISIONS). | 📋 |
+| L-5 | Level intro card (name + one-line briefing of what's new) before play; end screen offers Next level / Retry / Menu. | 📋 |
+| L-6 | `wifeMode=hybrid` is also selectable in Arcade settings (new flag value). | 📋 |
+
 ## 6. Non-functional
 | ID | Requirement | Status |
 |----|-------------|--------|
