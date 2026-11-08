@@ -5,10 +5,10 @@ export const INTERACT_RANGE = 40;
 
 // Base work seconds per chore type at normal difficulty.
 export const CHORE_TYPES = {
-  rake: { label: 'Rake leaves', time: 10 },
-  trim: { label: 'Trim bush', time: 12 },
-  mow: { label: 'Mow lawn patch', time: 14 },
-  water: { label: 'Water flowers', time: 9 },
+  rake: { label: 'Rake leaves', time: 11 },
+  trim: { label: 'Trim bush', time: 13 },
+  mow: { label: 'Mow lawn patch', time: 15 },
+  water: { label: 'Water flowers', time: 10 },
 };
 
 export function choreScale(difficulty) {

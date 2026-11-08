@@ -81,7 +81,7 @@ function step(s, input, dt) {
   if (p.moving) {
     const len = Math.hypot(dx, dy);
     if (dx !== 0) p.facing = dx > 0 ? 1 : -1;
-    moveWithCollision(p, (dx / len) * PLAYER_SPEED * dt, (dy / len) * PLAYER_SPEED * dt, PLAYER_HALF, s.world.obstacles, s.world);
+    moveWithCollision(p, (dx / len) * PLAYER_SPEED * dt, (dy / len) * PLAYER_SPEED * dt, PLAYER_HALF, s.world.obstacles, { w: s.world.width, h: s.world.height });
   }
 
   // Wife
