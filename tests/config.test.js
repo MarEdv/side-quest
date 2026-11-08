@@ -8,10 +8,10 @@ test('empty query gives defaults', () => {
 });
 
 test('parses and coerces every flag', () => {
-  const f = parseFlags('?wifeMode=random&dayLength=120&maxActiveQuests=3&questInterval=9.5&difficulty=hard&showVisionCone=0&wifeRoam=off&visionRange=250.5&sound=false&seed=42&debug=1');
+  const f = parseFlags('?wifeMode=random&dayLength=120&maxActiveQuests=3&questInterval=9.5&difficulty=hard&showVisionCone=0&wifeRoam=off&visionRange=250.5&sound=false&seed=42&debug=1&touch=ON&touchScheme=Tap');
   assert.deepEqual(f, {
     wifeMode: 'random', dayLength: 120, maxActiveQuests: 3, questInterval: 9.5,
-    difficulty: 'hard', showVisionCone: false, wifeRoam: false, visionRange: 250.5, sound: false, seed: 42, debug: true,
+    difficulty: 'hard', showVisionCone: false, wifeRoam: false, visionRange: 250.5, sound: false, seed: 42, debug: true, touch: 'on', touchScheme: 'tap',
   });
 });
 
@@ -37,4 +37,14 @@ test('wifeRoam and visionRange: defaults, parsing and bounds', () => {
   assert.equal(parseFlags('visionRange=10').visionRange, 320); // below min -> default
   assert.equal(parseFlags('visionRange=abc').visionRange, 320);
   assert.equal(parseFlags('visionRange=').visionRange, 320);
+});
+
+test('touch / touchScheme: defaults, valid values, invalid fall back', () => {
+  assert.equal(DEFAULT_FLAGS.touch, 'auto');
+  assert.equal(DEFAULT_FLAGS.touchScheme, 'joystick');
+  assert.equal(parseFlags('touch=off').touch, 'off');
+  assert.equal(parseFlags('touch=auto&touchScheme=tap').touchScheme, 'tap');
+  const bad = parseFlags('touch=yes&touchScheme=dpad');
+  assert.equal(bad.touch, 'auto');
+  assert.equal(bad.touchScheme, 'joystick');
 });

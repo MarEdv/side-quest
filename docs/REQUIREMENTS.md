@@ -98,7 +98,7 @@ before sunset while completing — or sneakily avoiding — the side quests.
 |----|-------------|--------|
 | M-1 | Playable on phones and tablets (iOS Safari, Android Chrome) with touch only. Keyboard play is unchanged. | 📋 |
 | M-2 | Touch controls appear when flag `touch` = `auto` (default: on if the device reports touch / a coarse pointer, or on the first touch), `on` (always), or `off` (never). | 📋 |
-| M-3 | Control scheme flag `touchScheme`: `joystick` (default) — a floating virtual stick appears wherever the thumb lands on the left half of the screen, and a large hold-to-work **action button** sits bottom-right; `tap` — tap/drag anywhere on the game to walk toward that point (straight line, sliding along obstacles), and hold a finger on/near a chore or quest spot to work on it. | 📋 |
+| M-3 | Control scheme flag `touchScheme`: `joystick` (default) — a floating virtual stick appears wherever the thumb lands on the left half of the screen, and a large hold-to-work **action button** sits bottom-right; `tap` — tap/drag anywhere on the game to walk toward that point (straight line, sliding along obstacles), and hold a finger on/near a chore or quest spot to work on it. | 🚧 pure logic + flags done (touchmath.js, analog movement); UI pending |
 | M-4 | Multi-touch: steering and the action button work at the same time (two thumbs). | 📋 |
 | M-5 | Tap to start on the title screen and tap to restart on the end screen; an on-screen **pause button** (top-right) pauses and resumes. | 📋 |
 | M-6 | No page scroll, pinch-zoom, double-tap zoom, text selection, long-press callout or pull-to-refresh while playing. Layout uses the dynamic viewport and respects safe-area insets (notch, home bar). | 📋 |

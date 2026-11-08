@@ -11,11 +11,15 @@ export const DEFAULT_FLAGS = Object.freeze({
   sound: true,
   seed: 'random',
   debug: false,
+  touch: 'auto',
+  touchScheme: 'joystick',
 });
 
 const ENUMS = {
   wifeMode: ['vision', 'random'],
   difficulty: ['easy', 'normal', 'hard'],
+  touch: ['auto', 'on', 'off'],
+  touchScheme: ['joystick', 'tap'],
 };
 
 // [min, max] inclusive bounds for numeric flags; `int` flags must be whole numbers.

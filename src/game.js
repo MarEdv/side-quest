@@ -1,6 +1,6 @@
 // Game state & fixed-step update. Pure (no DOM).
 //
-// Input: {up,down,left,right,action,pause,start,restart} booleans = current key state (level).
+// Input: {up,down,left,right,action,pause,start,restart} booleans (+ optional analog moveX/moveY in -1..1) = current key state (level).
 // pause/start/restart are EDGE-triggered here: game.js remembers the previous value in state.prev,
 // so input.js just reports "is the key down".
 import { createRng } from './rng.js';
@@ -77,14 +77,24 @@ function step(s, input, dt) {
   s.time += dt;
   const p = s.player;
 
-  // Movement
-  let dx = (input.right ? 1 : 0) - (input.left ? 1 : 0);
-  let dy = (input.down ? 1 : 0) - (input.up ? 1 : 0);
-  p.moving = dx !== 0 || dy !== 0;
-  if (p.moving) {
+  // Movement. Optional analog moveX/moveY (touch stick, tap-to-walk) override the keys when non-zero:
+  // direction as given, speed scaled by magnitude (capped at 1). Keyboard path is unchanged.
+  const ax = Number(input.moveX) || 0, ay = Number(input.moveY) || 0;
+  const am = Math.hypot(ax, ay);
+  let vx, vy; // velocity as a fraction of PLAYER_SPEED
+  if (am > 0) {
+    const k = Math.min(1, am) / am;
+    vx = ax * k; vy = ay * k;
+  } else {
+    const dx = (input.right ? 1 : 0) - (input.left ? 1 : 0);
+    const dy = (input.down ? 1 : 0) - (input.up ? 1 : 0);
     const len = Math.hypot(dx, dy);
-    if (dx !== 0) p.facing = dx > 0 ? 1 : -1;
-    moveWithCollision(p, (dx / len) * PLAYER_SPEED * dt, (dy / len) * PLAYER_SPEED * dt, PLAYER_HALF, s.world.obstacles, { w: s.world.width, h: s.world.height });
+    vx = len ? dx / len : 0; vy = len ? dy / len : 0;
+  }
+  p.moving = vx !== 0 || vy !== 0;
+  if (p.moving) {
+    if (vx !== 0 && (am === 0 || Math.abs(vx) > 0.1)) p.facing = vx > 0 ? 1 : -1;
+    moveWithCollision(p, vx * PLAYER_SPEED * dt, vy * PLAYER_SPEED * dt, PLAYER_HALF, s.world.obstacles, { w: s.world.width, h: s.world.height });
   }
 
   // Wife
