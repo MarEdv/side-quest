@@ -74,6 +74,7 @@ watchDpr();
 window.addEventListener('keydown', () => audio.unlock());
 window.addEventListener('pointerdown', () => audio.unlock());
 window.addEventListener('pointerup', () => audio.unlock()); // iOS only honours some gestures on release
+window.addEventListener('touchend', () => audio.unlock()); // older WebKit: touchend is the activation event
 
 // iOS ignores SVG apple-touch-icon: draw a small PNG at runtime.
 try {

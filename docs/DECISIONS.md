@@ -191,3 +191,10 @@
   restarted, resumed nor steered. That dead zone showed up when a start tap landed on it in emulation. Now `#rotate` is `pointer-events: none`
   except its ✕, whose padding grew to a ~38 px target. Alternative: a tap anywhere on the hint dismisses it (rejected: it would eat the first
   start tap).
+- **iOS hardening, by code review only (no device):** `touch.js` preventDefaults Safari's `gesturestart/change/end` and `touchmove` (non-passive)
+  while the controls are shown. CSS `touch-action` is the primary guard, and these back it up against pinch zoom and rubber-banding.
+  `touchstart` is deliberately left alone so iOS still treats the tap as a gesture. `audio.unlock()` now also listens to `touchend` (older
+  WebKit's activation event) and resumes any non-running context, which covers iOS's `interrupted` state after a call or backgrounding. Reviewed and
+  left as is: `pointercancel`/`lostpointercapture` both release the pointer; `setPointerCapture` keeps moves flowing outside the overlay; blur and
+  `visibilitychange` clear pointers and pulses; the start tap's pointer stays role `ui`; the manifest's `./` paths and data-URI icon are
+  valid under `/side-quest/` (Chrome reports no manifest errors); the logic modules stay DOM-free (now a unit test).
