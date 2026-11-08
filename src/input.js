@@ -32,5 +32,6 @@ export function createInput(target = window) {
       return state;
     },
     anyKeyDown: () => down.size > 0,
+    clear: () => down.clear(),
   };
 }

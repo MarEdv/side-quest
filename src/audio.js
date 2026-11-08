@@ -8,7 +8,7 @@ export function createAudio(enabled) {
       if (!AC) return null;
       try { ctx = new AC(); } catch { return null; }
     }
-    if (ctx.state === 'suspended') ctx.resume();
+    if (ctx.state === 'suspended') ctx.resume().catch(() => {}); // rejects if not allowed yet; retried next gesture
     return ctx;
   };
   function blip(freq, dur = 0.1, type = 'square', vol = 0.06, slide = 0, delay = 0) {

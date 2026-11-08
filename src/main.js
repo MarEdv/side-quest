@@ -27,18 +27,27 @@ function resize() {
   canvas.height = Math.round(H * scale * dpr);
 }
 window.addEventListener('resize', resize);
+// DPR can change without a resize event (window dragged to another monitor): re-arm a one-shot query each time.
+function watchDpr() {
+  if (!window.matchMedia) return;
+  matchMedia(`(resolution: ${window.devicePixelRatio || 1}dppx)`).addEventListener('change', () => { resize(); watchDpr(); }, { once: true });
+}
 resize();
+watchDpr();
 
 // Browsers need a gesture before audio can start.
 window.addEventListener('keydown', () => audio.unlock());
 window.addEventListener('pointerdown', () => audio.unlock());
 
 // Auto-pause when the tab loses focus.
-window.addEventListener('blur', () => { if (state.phase === 'playing') state.phase = 'paused'; });
+const autoPause = () => { input.clear(); if (state.phase === 'playing') state.phase = 'paused'; };
+window.addEventListener('blur', autoPause);
+document.addEventListener('visibilitychange', () => { if (document.hidden) autoPause(); });
 
 let last = performance.now(), acc = 0, fps = 60, tickT = 0;
 function frame(now) {
-  let dt = (now - last) / 1000;
+  // rAF's timestamp can precede the performance.now() taken at load, so clamp both ends.
+  let dt = Math.max(0, (now - last) / 1000);
   last = now;
   if (dt > MAX_FRAME) dt = MAX_FRAME;
   if (dt > 0) fps = fps * 0.95 + (1 / dt) * 0.05;

@@ -82,3 +82,14 @@
 - **Chosen:** `game.js` counts `avoided` only if `canGiveQuest()` is true when she goes back in. This mirrors D-9,
   where being spotted at the cap is "carry on" and not counted. **Alternative:** count it but score it 0 (two
   stats with the same name meaning different things; rejected).
+
+### D-13 — Loop, DPR and audio robustness (2026-11-08)
+- Frame dt is clamped at 0 as well as 0.25 s: the first rAF timestamp can precede the `performance.now()` read at load.
+- A one-shot `matchMedia('(resolution: Xdppx)')` listener re-runs `resize()` when devicePixelRatio changes without a
+  resize event (window dragged to a monitor with a different DPR), and re-arms itself for the new DPR.
+- Auto-pause also fires on `visibilitychange` → hidden, and clears held keys (`input.clear()`), not just on window blur.
+- `AudioContext.resume()` rejection is caught (it is retried on the next gesture anyway). The context is still
+  created lazily inside the first keydown/pointerdown handler, which counts as a user gesture.
+- The wife's speech bubble is not drawn on the won/lost screens (it overlapped the title). `index.html` gets an empty
+  data: favicon so the console has no 404.
+- FLAGS.md now spells out what `questInterval` measures (time inside, not the full cycle). Behaviour unchanged.

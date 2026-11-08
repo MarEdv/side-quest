@@ -48,7 +48,7 @@ before sunset while completing — or sneakily avoiding — the side quests.
 | G-3 | A day lasts a fixed time (default 180 s real time, flag `dayLength`), shown as a clock from 09:00 to 18:00 (sunset). | ✅ |
 | G-4 | **Win**: all chores completed before sunset. **Lose**: sunset with chores left, or Harmony reaches 0. | ✅ |
 | G-5 | End screen shows outcome, chores done, quests completed/failed/avoided, Harmony, and a score. | ✅ |
-| G-6 | Pause with **P** / **Esc** (also auto-pauses on window blur); restart with **R** on the end screen. Title screen: press Space/Enter to start. | ✅ |
+| G-6 | Pause with **P** / **Esc** (also auto-pauses on window blur or when the tab is hidden); restart with **R** on the end screen. Title screen: press Space/Enter to start. | ✅ |
 | G-7 | Game keys don't scroll the page (preventDefault on arrows/Space etc.). Keys pressed with Cmd/Ctrl/Alt are ignored so browser shortcuts (reload, close tab) still work; held keys are released on window blur and on Meta keyup (D-11). | ✅ |
 
 ### 5.2 Chores (main tasks)
@@ -94,7 +94,7 @@ before sunset while completing — or sneakily avoiding — the side quests.
 |----|-------------|--------|
 | NF-1 | No build step. Serve the folder statically (`python3 -m http.server`) and open in Chrome. | ✅ |
 | NF-2 | Game logic is DOM-free and unit-tested with Node's built-in test runner (`node --test`). | ✅ |
-| NF-3 | 60 fps target; fixed-timestep simulation independent of frame rate. | ✅ |
+| NF-3 | 60 fps target; fixed-timestep simulation (1/60 s) independent of frame rate; frame dt clamped to [0, 0.25 s]. Canvas re-sizes on window resize and on devicePixelRatio change (D-13). | ✅ |
 | NF-4 | Deterministic seeded RNG (flag `seed`) so runs are reproducible. | ✅ |
 
 ## 7. Out of scope (for now)

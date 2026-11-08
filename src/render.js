@@ -389,7 +389,7 @@ export function render(c, s, info = { fps: 60, time: 0 }) {
   if (s.carry != null) { c.fillStyle = '#4fc3f7'; c.strokeStyle = '#fff'; c.fillRect(p.x - 5, p.y - 36, 10, 10); c.strokeRect(p.x - 5, p.y - 36, 10, 10); }
   drawTreeCanopy(c, s);
   if (s.phase === 'playing' || s.phase === 'paused') drawArrow(c, s, t);
-  drawBubble(c, s.wife);
+  if (s.phase !== 'won' && s.phase !== 'lost') drawBubble(c, s.wife); // it collided with the end-screen title
   if (s.phase !== 'title') drawHUD(c, s);
   if (s.flags.debug) drawDebug(c, s, info);
   if (s.phase === 'title') drawTitle(c, s, t);
