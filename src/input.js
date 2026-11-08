@@ -17,6 +17,8 @@ export function createInput(target = window) {
     // Leave browser shortcuts (Cmd/Ctrl+R, Cmd+W, ...) alone. Also, macOS sends no keyup for keys released
     // while Cmd is held, so recording them would leave e.g. "left" stuck after Cmd+A.
     if (e.metaKey || e.ctrlKey || e.altKey) return;
+    // Space/Enter on a menu button belong to the button (activate it), not the game: no preventDefault, no "action".
+    if ((e.code === 'Space' || e.code === 'Enter') && e.target && e.target.closest && e.target.closest('.ui button')) return;
     if (GAME_KEYS.has(e.code)) e.preventDefault(); // no page scroll on arrows/space
     down.add(e.code);
   });

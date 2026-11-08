@@ -213,3 +213,37 @@
   the player she calls a quest anyway with probability 0.4. It gives hiding *partial* value — a new feel, not just bigger numbers.
 - **No name entry / no online leaderboard** — local device only, as asked.
 - Order of work follows the owner's list; each feature is implemented → verified → deployed before the next.
+
+### D-21 — High scores and the menu system (2026-11-08) — implements D-20 for Feature 1
+- **Modules:** `storage.js` (pure; `createStorage(backend)`: JSON under `sidequest.v1.*`, try/catch on every access, in-memory fallback once
+  the backend throws or is missing, `persistent` flag), `scores.js` (pure; arcade top 10 + per-level records on a storage object),
+  `uimodel.js` (pure helpers: `gateInput`, rank/best texts, date format, arrow-key focus), `ui.js` (DOM screens). `main.js` passes
+  `window.localStorage` inside a try/catch, because merely reading the property throws in some privacy modes.
+- **Screen system:** `ui.register(name, {phase?, kind: 'page'|'dock', build(api), onEsc?})`, `push`/`back` for sub-screens, `setPhase`
+  called by `main.js` when `state.phase` changes. A root screen is tied to a phase: `title` = main menu, `paused`, `won`, `lost`. Later
+  features (Settings, Levels, Install) just register more screens and push them. Page screens dim the garden and take all pointer events;
+  dock screens (pause, end) are small panels over the lower canvas (below the canvas in portrait) so a tap elsewhere still reaches the touch
+  overlay (tap to resume / restart).
+- **Game phases unchanged:** `title` now means "main menu shown". `game.js` gained `startGame(s)` / `toMenu(s)` / `resetGame(s, phase)` (all keep
+  the key-edge memory) and `state.summary`. `gateInput(phase, input)` is applied in `main.js` before `update()`: nothing reaches the game on the menu,
+  only pause while paused, only restart on the end screen, and start/restart are dropped while playing. So Space/Enter on a menu button never walks or
+  "works", and Enter on "Quit to menu" cannot also start a game. `input.js` ignores Space/Enter keydowns whose target is a menu button (no
+  preventDefault, so the button activates natively). `touch.js` leaves `touchmove` alone inside `.ui-scroll` so the scores table scrolls.
+- **End-screen guard:** the DOM end buttons ignore clicks for 700 ms after the game ends, like the touch tap guard (a mashed Space or WORK would
+  otherwise "press" the focused Play again). R still restarts immediately, as before.
+- **Recording:** `main.js` records a score on the transition playing -> won/lost (once per day), including debug/seeded runs and any flag combination,
+  with the summary string. Alternative (skip scores when `debug`/`seed`/`dayLength` are overridden) rejected: the summary does not show them, but
+  excluding them would make links like `?difficulty=hard` unrecorded and complicate verification. Revisit when Settings/levels exist.
+- **Ranking:** a new score goes after all entries with an equal or higher score (earlier entry ranks higher). `isBest` = rank 1, so tying the best is
+  "#2 on your board". A score that misses the top 10 gets no rank, no banner line except "Best: N". Negative scores are valid (failed quests).
+- **Summary string** (`settingsSummary` in `config.js`): `wifeMode·roam|patio·difficulty` in vision mode, `random·difficulty` in random mode
+  (roaming does not exist there). Day length, vision range and the rest are not included.
+- **Clear scores** wipes the arcade board and the level records (`clearAll`), because the owner asked for one "Clear scores" action and level
+  records are scores too. When levels land and unlocking depends on them, revisit (maybe keep unlocks, clear bests).
+- **Canvas vs DOM:** the canvas end screen keeps its stats; its "Press R" line and the whole title text moved to the DOM (title, buttons, controls line,
+  mode line). The hint line and rotate hint are hidden behind the menu.
+- **Verification:** headless Chrome over CDP under `/side-quest/`: desktop 1280x720 keyboard (menu navigation, Space on Play does not act, a 10 s day via
+  `dayLength=10` (the minimum, `dayLength=5` is rejected by the flag parser), end banner, guard, Play again, Menu, scores table, clear with confirm,
+  persistence across reloads) and 390x844 / 844x390 touch emulation (Play, pause button, Resume, end buttons, tap-to-restart, scores). No console errors.
+  Not tried: a real device, a real private window, a full 10-row table scrolling on a phone.
+

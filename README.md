@@ -21,7 +21,8 @@ then open http://localhost:8000 in Chrome (ES modules need HTTP, not `file://`).
 
 - **WASD / arrow keys**: walk
 - **Hold Space or E** next to a chore: work on it; next to a quest spot: pick up / deliver
-- **P / Esc**: pause · **R**: restart on the end screen · **Space / Enter**: start
+- **P / Esc**: pause (menu: Resume / Quit to menu) · **R**: play again on the end screen
+- **Menus**: Tab / arrow keys move focus, **Enter / Space** activate, **Esc** goes back. The main menu has **Play** and **High scores** (top 10 on this device, stored in `localStorage`)
 
 ## Mobile / touch
 
@@ -31,7 +32,7 @@ appear automatically on touch devices (`?touch=on|off|auto`).
 - **Joystick scheme (default):** drag on the left half to steer (the stick appears under your thumb); hold the **WORK** button
   (bottom right) to work / pick up / deliver. Both thumbs work at once.
 - **Tap scheme (`?touchScheme=tap`):** touch and drag to walk toward that point; hold a finger on a chore or quest spot to work on it.
-- Tap to start and to play again; the **II** button (top right) pauses. "Add to Home Screen" launches it full-screen.
+- Tap **Play** to start; tap the end screen or **Play again** to restart; the **II** button (top right) pauses. "Add to Home Screen" launches it full-screen.
 
 ## Flags
 
@@ -49,4 +50,4 @@ Runs Node's built-in test runner (`node --test`) over `tests/*.test.js`. Game lo
 ## Layout
 
 `src/` game code (`config`, `rng`, `geometry`, `world`, `chores`, `quests`, `wife`, `game` are pure logic;
-`touchmath` is pure too; `main`, `render`, `input`, `touch`, `audio` touch the browser) · `tests/` · `docs/` (requirements, decisions, flags).
+`touchmath`, `storage`, `scores`, `uimodel` are pure too; `main`, `render`, `input`, `touch`, `audio`, `ui` touch the browser) · `tests/` · `docs/` (requirements, decisions, flags).

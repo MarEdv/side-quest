@@ -69,7 +69,7 @@ export function createTouch({ mode = 'auto', scheme = 'joystick', root = documen
   overlay.addEventListener('contextmenu', (e) => e.preventDefault());
   // iOS Safari belt and braces (touch-action alone has not always stopped pinch / rubber-banding there): block its
   // proprietary pinch gesture events and native touch panning while the touch controls are shown (D-19).
-  const block = (e) => { if (active) e.preventDefault(); };
+  const block = (e) => { if (active && !(e.target && e.target.closest && e.target.closest('.ui-scroll'))) e.preventDefault(); };
   for (const t of ['gesturestart', 'gesturechange', 'gestureend']) document.addEventListener(t, block, { passive: false });
   document.addEventListener('touchmove', block, { passive: false });
 

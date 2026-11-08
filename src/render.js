@@ -317,23 +317,8 @@ function drawHUD(c, s) {
 
 function overlay(c, alpha = 0.6) { c.fillStyle = `rgba(10,14,20,${alpha})`; c.fillRect(0, 0, W, H); }
 
-function drawTitle(c, s, t, touch) {
-  overlay(c, 0.72);
-  text(c, 'SIDE QUEST', W / 2, 150, 64, '#ffd23f', 'center');
-  text(c, 'Finish the garden before sunset. Your wife has other plans.', W / 2, 205, 18, '#fff', 'center', 'normal');
-  const how = !touch ? 'WASD / arrows: walk     Hold Space or E: work, pick up, deliver'
-    : s.flags.touchScheme === 'tap' ? 'Touch and drag: walk there     Hold a finger on a task: work, pick up, deliver'
-    : 'Left thumb: steer     Hold the WORK button: work, pick up, deliver';
-  const lines = [
-    how,
-    'Chores: rake leaves, trim bushes, mow long grass, water flowers',
-    'Stay out of her line of sight (hedges and the shed block it) to dodge errands.',
-    'Keep Harmony up: finished errands help, missed ones hurt. ' + (touch ? 'The II button pauses.' : 'P / Esc pauses.'),
-  ];
-  lines.forEach((l, i) => text(c, l, W / 2, 275 + i * 26, 15, '#cde', 'center', 'normal'));
-  if (Math.floor(t * 2) % 2 === 0) text(c, touch ? 'Tap to start' : 'Press Space or Enter to start', W / 2, 430, 22, '#ffd23f', 'center');
-  text(c, `mode: ${s.flags.wifeMode}  difficulty: ${s.flags.difficulty}`, W / 2, 480, 13, '#8a9', 'center', 'normal');
-}
+// The title / menu text is DOM (src/ui.js); the canvas only dims the garden behind it.
+function drawTitle(c) { overlay(c, 0.72); }
 function drawPause(c, touch) {
   overlay(c, 0.55);
   text(c, 'PAUSED', W / 2, H / 2 - 10, 54, '#fff', 'center');
@@ -358,7 +343,6 @@ function drawEnd(c, s, touch) {
     text(c, k, W / 2 - 130, y, 20, i === 5 ? '#ffd23f' : '#cde', 'left', i === 5 ? 'bold' : 'normal');
     text(c, String(v), W / 2 + 130, y, 20, i === 5 ? '#ffd23f' : '#fff', 'right');
   });
-  text(c, touch ? 'Tap to play again' : 'Press R to play again', W / 2, 468, 22, '#ffd23f', 'center');
 }
 
 function drawDebug(c, s, info) {
@@ -396,7 +380,7 @@ export function render(c, s, info = { fps: 60, time: 0 }) {
   if (s.phase !== 'won' && s.phase !== 'lost') drawBubble(c, s.wife); // it collided with the end-screen title
   if (s.phase !== 'title') drawHUD(c, s);
   if (s.flags.debug) drawDebug(c, s, info);
-  if (s.phase === 'title') drawTitle(c, s, t, touch);
+  if (s.phase === 'title') drawTitle(c);
   else if (s.phase === 'paused') drawPause(c, touch);
   else if (s.phase === 'won' || s.phase === 'lost') drawEnd(c, s, touch);
 }

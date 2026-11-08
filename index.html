@@ -61,6 +61,56 @@
     /* Only the X takes touches: taps on the text fall through to the overlay (start / restart / steer), D-19. */
     #rotate { pointer-events: none; }
     #rotate button { all: unset; cursor: pointer; padding: 10px 12px; margin: -8px -10px -8px 0; color: #fff; font-weight: bold; pointer-events: auto; touch-action: none; }
+
+    /* Menus (src/ui.js): DOM overlay above the canvas and the touch controls. Page screens (main menu, scores) dim the
+       garden and take all pointer events; dock screens (pause, end) only the panel does, so a tap elsewhere still
+       resumes / restarts through the touch overlay. */
+    .tc[data-phase="title"] { display: none; }
+    .ui { position: fixed; inset: 0; z-index: 30; box-sizing: border-box; display: flex; align-items: center; justify-content: center;
+      padding: calc(env(safe-area-inset-top, 0px) + 8px) calc(env(safe-area-inset-right, 0px) + 12px) calc(env(safe-area-inset-bottom, 0px) + 8px) calc(env(safe-area-inset-left, 0px) + 12px);
+      color: #cde; font: 16px system-ui, -apple-system, "Segoe UI", sans-serif; touch-action: manipulation; }
+    .ui[hidden] { display: none; }
+    .ui[data-kind="page"] { background: rgba(10,14,20,.78); }
+    .ui[data-kind="dock"] { display: block; pointer-events: none; }
+    .ui-panel { pointer-events: auto; box-sizing: border-box; max-width: 100%; max-height: 100%; }
+    .ui[data-kind="dock"] .ui-panel { position: absolute; left: 50%; transform: translateX(-50%); width: max-content; max-width: calc(100% - 24px); }
+    .ui .menu, .ui .endp { display: flex; flex-direction: column; align-items: center; gap: 10px; text-align: center; }
+    .ui h1 { margin: 0; color: #ffd23f; font-size: clamp(34px, 9vw, 64px); letter-spacing: .04em; line-height: 1.05; }
+    .ui h2 { margin: 0; color: #ffd23f; font-size: 28px; }
+    .ui p { margin: 0; }
+    .ui .tag { color: #fff; font-size: 17px; max-width: 34em; }
+    .ui .small { font-size: 13px; color: #cde; max-width: 40em; }
+    .ui .dim { color: #8a9; }
+    .ui .warn { color: #ffb08a; font-size: 17px; }
+    .ui .col { display: flex; flex-direction: column; gap: 10px; width: min(280px, 100%); margin: 6px 0; }
+    .ui .row { display: flex; flex-wrap: wrap; justify-content: center; gap: 10px; }
+    .ui .btn { box-sizing: border-box; min-height: 48px; min-width: 150px; padding: 0 22px; border-radius: 12px; cursor: pointer;
+      font: bold 18px system-ui, -apple-system, "Segoe UI", sans-serif; color: #fff; background: #262b33; border: 2px solid #667; }
+    .ui .btn.primary { background: #ffd23f; color: #14161a; border-color: #ffd23f; }
+    .ui .btn:disabled { opacity: .4; cursor: default; }
+    .ui .btn:focus-visible { outline: 3px solid #fff; outline-offset: 2px; }
+    .ui .btn:active:not(:disabled) { filter: brightness(1.2); }
+    .ui .banner { font-size: 20px; font-weight: bold; color: #fff; text-shadow: 0 1px 4px #000; }
+    .ui .banner.hi { color: #ffd23f; }
+    .ui .endp { gap: 8px; }
+    .ui[data-kind="dock"] .btn { background-color: #262b33; }
+    .ui[data-kind="dock"] .btn.primary { background-color: #ffd23f; }
+    .ui-scroll { overflow-y: auto; max-height: calc(100dvh - 210px); min-height: 60px; touch-action: pan-y; overscroll-behavior: contain; width: min(560px, 100%);
+      border: 1px solid #445; border-radius: 10px; background: rgba(10,14,20,.6); -webkit-overflow-scrolling: touch; }
+    table.scores { border-collapse: collapse; width: 100%; font-size: 16px; }
+    table.scores th { position: sticky; top: 0; background: #1d2128; color: #ffd23f; text-align: left; font-size: 13px; }
+    table.scores th, table.scores td { padding: 7px 10px; white-space: nowrap; }
+    table.scores td { border-top: 1px solid #333a44; text-align: left; }
+    table.scores td.num { font-weight: bold; color: #fff; }
+    @media (max-height: 500px) {
+      .ui .menu { gap: 6px; }
+      .ui h1 { font-size: 36px; } .ui h2 { font-size: 22px; }
+      .ui .tag { font-size: 14px; }
+      .ui .col { flex-direction: row; width: auto; margin: 2px 0; }
+      .ui-scroll { max-height: calc(100dvh - 150px); }
+      table.scores { font-size: 14px; } table.scores th, table.scores td { padding: 4px 8px; }
+    }
+    @media (max-width: 480px) { table.scores { font-size: 14px; } table.scores th, table.scores td { padding: 6px 5px; } table.scores td:nth-child(5) { white-space: normal; font-size: 12px; } }
   </style>
 </head>
 <body>

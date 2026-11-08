@@ -1,10 +1,14 @@
 // Browser entry: fixed-timestep loop, canvas sizing, input, audio, rendering.
 import { parseFlags } from './config.js';
-import { createGame, update } from './game.js';
+import { createGame, update, startGame, toMenu } from './game.js';
 import { createInput } from './input.js';
 import { createTouch } from './touch.js';
 import { computeLayout, chromeLayout, mergeInput } from './touchmath.js';
 import { createAudio } from './audio.js';
+import { createStorage } from './storage.js';
+import { createScores } from './scores.js';
+import { createUI } from './ui.js';
+import { gateInput } from './uimodel.js';
 import { render } from './render.js';
 import { W, H } from './world.js';
 
@@ -19,6 +23,12 @@ const audio = createAudio(flags.sound);
 const state = createGame(flags);
 if (flags.debug) window.__state = state; // inspection hook for browser self-checks
 
+// Even reading window.localStorage can throw (blocked cookies / sandboxed iframes): guard it, fall back to memory.
+let backend = null;
+try { backend = window.localStorage; } catch { backend = null; }
+const storage = createStorage(backend);
+const scores = createScores(storage);
+
 const hintEl = document.getElementById('hint');
 const rotateEl = document.getElementById('rotate');
 const probe = document.getElementById('probe');
@@ -28,6 +38,19 @@ const HINT_TOUCH = {
   tap: 'Tap / drag: walk \u00b7 hold on a task: work \u00b7 II: pause',
 };
 let rotateDismissed = false;
+
+const controlsText = () => (touch.active() ? HINT_TOUCH[flags.touchScheme] : HINT_KEYS);
+const menus = createUI({
+  scores, now: () => performance.now(),
+  persistent: () => storage.persistent,
+  controlsText, summary: () => state.summary, isTouch: () => touch.active(),
+  actions: {
+    play: () => { audio.unlock(); startGame(state); },
+    again: () => startGame(state),
+    resume: () => { if (state.phase === 'paused') state.phase = 'playing'; },
+    quit: () => toMenu(state),
+  },
+});
 
 let ready = false;
 const touch = createTouch({ mode: flags.touch, scheme: flags.touchScheme, onChange: () => { if (ready) resize(); } });
@@ -44,18 +67,19 @@ function resize() {
   // Keyboard players get the hint line under the canvas. Touch players only see it in portrait (free space there).
   const showHint = !isTouch || portrait;
   const L = computeLayout(vw, vh, { insets, hintH: isTouch ? 0 : 30 });
-  const ui = chromeLayout(L, isTouch);
-  touch.setLayout(L, ui);
+  const chrome = chromeLayout(L, isTouch);
+  touch.setLayout(L, chrome);
+  menus.setLayout(L, chrome);
   canvas.style.left = `${L.left}px`; canvas.style.top = `${L.top}px`;
   canvas.style.width = `${L.width}px`; canvas.style.height = `${L.height}px`;
   canvas.width = Math.round(L.width * dpr);
   canvas.height = Math.round(L.height * dpr);
   hintEl.textContent = isTouch ? HINT_TOUCH[flags.touchScheme] : HINT_KEYS;
   hintEl.style.display = showHint ? '' : 'none';
-  hintEl.style.top = `${ui.hintTop}px`;
+  hintEl.style.top = `${chrome.hintTop}px`;
   const showRotate = isTouch && portrait && !rotateDismissed;
   rotateEl.style.display = showRotate ? 'flex' : 'none';
-  rotateEl.style.top = `${ui.rotateTop}px`;
+  rotateEl.style.top = `${chrome.rotateTop}px`;
 }
 rotateEl.querySelector('button').addEventListener('click', () => { rotateDismissed = true; resize(); });
 window.addEventListener('resize', resize);
@@ -93,6 +117,20 @@ const autoPause = () => { input.clear(); touch.clear(); if (state.phase === 'pla
 window.addEventListener('blur', autoPause);
 document.addEventListener('visibilitychange', () => { if (document.hidden) autoPause(); });
 
+// Menu hand-off: when the phase changes, record a finished day and show the matching DOM screen.
+let shownPhase = null;
+function syncMenus() {
+  if (state.phase === shownPhase) return;
+  if ((state.phase === 'won' || state.phase === 'lost') && shownPhase === 'playing') {
+    menus.setEndResult(scores.recordArcade({ score: state.score, won: state.phase === 'won', date: new Date().toISOString(), summary: state.summary }));
+  }
+  shownPhase = state.phase;
+  menus.setPhase(shownPhase);
+  const menu = shownPhase === 'title';
+  hintEl.style.visibility = menu ? 'hidden' : '';
+  rotateEl.style.visibility = menu ? 'hidden' : '';
+}
+
 let last = performance.now(), acc = 0, fps = 60, tickT = 0;
 function frame(now) {
   // rAF's timestamp can precede the performance.now() taken at load, so clamp both ends.
@@ -101,13 +139,14 @@ function frame(now) {
   if (dt > MAX_FRAME) dt = MAX_FRAME;
   if (dt > 0) fps = fps * 0.95 + (1 / dt) * 0.05;
   acc += dt;
-  const inp = mergeInput(input.read(), touch.read(state));
+  const inp = gateInput(state.phase, mergeInput(input.read(), touch.read(state)));
   let steps = 0;
   while (acc >= STEP) {
     update(state, inp, STEP);
     acc -= STEP; steps++;
   }
   if (steps > 0) touch.ack(); // taps are held until a step has seen them (game.js edge-detects)
+  syncMenus();
   for (const e of state.events) audio.play(e.type);
   state.events.length = 0;
   if (state.player.working && state.phase === 'playing') {
