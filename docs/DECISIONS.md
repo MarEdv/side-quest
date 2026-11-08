@@ -48,3 +48,14 @@
 ### D-8 — Score formula (2026-11-08)
 - `score = 100·choresDone + 50·questsCompleted + 25·questsAvoided − 40·questsFailed + Harmony + (win ? 500 : 0)`.
   Tunable; lives in `game.js`.
+
+### D-9 — Implementation assumptions (2026-11-08)
+- **Input edges:** `input.js` reports level state only; `game.js` edge-detects `pause`/`start`/`restart` via `state.prev`. `Space` is both `start` and `action`; `Enter` also starts. `P`/`Esc` pause (and also resume); on the end screen `R` restarts straight into a new day (same seed if a numeric `seed` was given, else a fresh random one).
+- **Quest interaction:** instant on holding the action key within 40 px of a pickup spot (hands empty) or the drop spot of the carried quest; quest spots take priority over chores. Only one quest item carried; other pickups are ignored while hands are full. Delivery targets are the front door (or the curb for bins) — no need for the wife to be outside.
+- **Vision mode:** she walks onto the patio after a 1.5 s warning (door rattles + blinking "!"), stays 5 s sweeping the cone (±57° around straight down, 4.5 s period, 70° wide, 320 px range). On spotting the player she calls out a quest (bubble) and stays at least 3 s more; if she leaves without having spotted him it counts as `avoided`. If the quest cap is reached when spotted she just says "carry on" (no quest, not counted as avoided). Sight is blocked by the shed, the three hedges and the tree trunk (not the car or bench).
+- **Random mode:** same warning/appearance cycle, but she calls out a quest as soon as she steps out (cap permitting); no "avoided" stat is counted in this mode.
+- **Quest picking:** random template not already active; deadlines 40–50 s × difficulty (easy ×1.3, hard ×0.75). Harmony decay is `1 / (dayLength/9)` per second while any quest is active; Harmony clamped 0–100.
+- **Tuning:** chore times 11/13/15/10 s (rake/trim/mow/water, ×0.75 easy, ×1.25 hard) → 98 s of work per normal day; with walking a scripted bot finishes in about 105–130 s of the 180 s day (~60–70%).
+- **Canvas scaling:** the canvas CSS size is `960·s × 540·s` and the backing store `960·s·dpr × 540·s·dpr`; each frame `setTransform(k,0,0,k,0,0)` with `k = backing/960` (= `s·dpr`). Sharper than a fixed `960·dpr` store when upscaled.
+- **Auto-pause** when the window loses focus; large frame gaps are clamped to 250 ms.
+- **Tests:** `npm test` runs `node --test` (auto-discovers `tests/*.test.js`; `tests/helpers.js` is shared fixture code).

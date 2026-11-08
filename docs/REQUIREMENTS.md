@@ -48,14 +48,14 @@ before sunset while completing — or sneakily avoiding — the side quests.
 | G-3 | A day lasts a fixed time (default 180 s real time, flag `dayLength`), shown as a clock from 09:00 to 18:00 (sunset). | ✅ |
 | G-4 | **Win**: all chores completed before sunset. **Lose**: sunset with chores left, or Harmony reaches 0. | ✅ |
 | G-5 | End screen shows outcome, chores done, quests completed/failed/avoided, Harmony, and a score. | ✅ |
-| G-6 | Pause with **P** / **Esc**; restart with **R** on the end screen. Title screen: press Space/Enter to start. | ✅ |
+| G-6 | Pause with **P** / **Esc** (also auto-pauses on window blur); restart with **R** on the end screen. Title screen: press Space/Enter to start. | ✅ |
 
 ### 5.2 Chores (main tasks)
 | ID | Requirement | Status |
 |----|-------------|--------|
 | C-1 | Chore types: **Rake leaves** (leaf piles), **Trim bush**, **Mow lawn patch**, **Water flowers**. | ✅ |
 | C-2 | Each chore instance has a position and a work time; progress accumulates while the player holds the action key in range, and is kept if interrupted. | ✅ |
-| C-3 | Default day has 8 chores (2 of each type). | ✅ |
+| C-3 | Default day has 8 chores (2 of each type). Work times: rake 11 s, trim 13 s, mow 15 s, water 10 s (scaled by difficulty); total work+walking targets ~60–70% of `dayLength`. | ✅ |
 | C-4 | Chore progress is shown as a ring/bar above the chore; completed chores change appearance. | ✅ |
 
 ### 5.3 The wife and side quests
@@ -78,6 +78,15 @@ before sunset while completing — or sneakily avoiding — the side quests.
 | P-3 | Wife's quest is shown as a speech bubble; her vision cone is drawn faintly when she is out (flag `showVisionCone`). | ✅ |
 | P-4 | Simple WebAudio blips for events (flag `sound`, default on). No audio files. | ✅ |
 | P-5 | Arrow/position indicator toward the current quest target. | ✅ |
+
+### 5.5 Implementation notes (added with first implementation)
+| ID | Requirement | Status |
+|----|-------------|--------|
+| W-9 | The wife gives a ~1.5 s warning before appearing (door rattles, blinking "!") so the player can avoid her. After spotting the player she stays ≥3 s with a speech bubble. | ✅ |
+| W-10 | Sight blockers: shed, hedges, tree trunk. Car and bench do not block sight. | ✅ |
+| W-11 | In `random` mode no "avoided" stat is counted (quests cannot be dodged). | ✅ |
+| Q-1 | Quest interaction is instant while holding the action key within 40 px of a pickup/drop; quest spots win over chores. | ✅ |
+| Q-2 | Debug overlay (flag `debug`): obstacle boxes, interact range, FPS, wife/player state. | ✅ |
 
 ## 6. Non-functional
 | ID | Requirement | Status |
