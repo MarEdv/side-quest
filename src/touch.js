@@ -9,9 +9,7 @@ import {
 const END_GUARD_MS = 700; // ignore taps right after the game ends so a mashed action button doesn't restart it
 
 export function createTouch({ mode = 'auto', scheme = 'joystick', root = document.body, onChange = () => {} } = {}) {
-  if (mode === 'off') {
-    return { enabled: false, active: () => false, read: () => ({}), ack() {}, clear() {}, setLayout() {}, refresh() {} };
-  }
+  // mode and scheme can change while running (Settings): 'off' just keeps the overlay inert and hidden.
   const mk = (cls, parent, text = '') => {
     const el = document.createElement('div');
     el.className = cls; el.textContent = text; parent.appendChild(el); return el;
@@ -26,7 +24,7 @@ export function createTouch({ mode = 'auto', scheme = 'joystick', root = documen
   const marker = mk('tc-marker', overlay);
   pauseBtn.setAttribute('aria-label', 'Pause');
 
-  let hasTouch = mode === 'auto' && (
+  let hasTouch = (
     (typeof matchMedia === 'function' && matchMedia('(pointer: coarse)').matches) || (navigator.maxTouchPoints || 0) > 0);
   let active = touchActive(mode, hasTouch);
   const sync = () => { overlay.classList.toggle('on', active); onChange(active); };
@@ -41,6 +39,7 @@ export function createTouch({ mode = 'auto', scheme = 'joystick', root = documen
   const now = () => performance.now();
 
   overlay.addEventListener('pointerdown', (e) => {
+    if (mode === 'off') return;
     if (e.pointerType === 'mouse' && mode !== 'on') return;
     e.preventDefault();
     if (!active && mode === 'auto') { hasTouch = true; active = true; sync(); }
@@ -122,5 +121,13 @@ export function createTouch({ mode = 'auto', scheme = 'joystick', root = documen
     },
     // Position helper for main.js: dock the rotate hint etc. is done in CSS; nothing to do here.
     refresh: sync,
+    // Change mode / scheme live. Drops held pointers (a stick held across a scheme change would be meaningless).
+    setOptions(o = {}) {
+      if (o.mode) mode = o.mode;
+      if (o.scheme) { scheme = o.scheme; overlay.dataset.scheme = scheme; }
+      ptrs.clear();
+      active = touchActive(mode, hasTouch);
+      sync();
+    },
   };
 }

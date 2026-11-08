@@ -1,5 +1,6 @@
 // Tiny WebAudio blips. Context is created lazily on the first user gesture.
-export function createAudio(enabled) {
+export function createAudio(initiallyEnabled) {
+  let enabled = !!initiallyEnabled;
   let ctx = null;
   const ensure = () => {
     if (!enabled) return null;
@@ -42,6 +43,7 @@ export function createAudio(enabled) {
   };
   return {
     unlock: ensure, // call from a user gesture
+    setEnabled(on) { enabled = !!on; }, // Settings toggles sound live
     play(type) { const f = SOUNDS[type]; if (f) f(); },
     tick() { blip(180 + Math.random() * 40, 0.03, 'square', 0.015); },
   };

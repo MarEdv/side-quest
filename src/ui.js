@@ -3,6 +3,7 @@
 // push()/back() navigate sub-screens (e.g. High scores on top of the main menu). Later features register more
 // screens (settings, levels, install) with ui.register(). The game itself never sees menu input (uimodel.gateInput).
 import { moveFocus, rankText, bestText, formatDate } from './uimodel.js';
+import { registerSettings } from './settingsui.js';
 
 export const END_GUARD_MS = 700; // end-screen buttons ignore clicks this long after the game ends (mashed WORK/Space)
 
@@ -17,7 +18,7 @@ function h(tag, props = {}, ...kids) {
   return e;
 }
 
-// ctx: { actions: {play, resume, quit, again}, scores, persistent(), controlsText(), summary(), isTouch(), now() }
+// ctx: { actions: {play, resume, quit, again}, scores, settings (see settingsui.js), persistent(), controlsText(), summary(), isTouch(), now() }
 export function createUI(ctx, root = document.body) {
   const host = h('div', { class: 'ui', hidden: true });
   root.appendChild(host);
@@ -25,7 +26,7 @@ export function createUI(ctx, root = document.body) {
   let stack = [], phase = null, endResult = null, shownAt = 0, layout = null, local = {};
 
   const current = () => (stack.length ? screens.get(stack[stack.length - 1]) : null);
-  const focusables = () => [...host.querySelectorAll('button:not([disabled])')];
+  const focusables = () => [...host.querySelectorAll('button:not([disabled]):not([hidden]), input:not([disabled]), select:not([disabled])')];
 
   function render(focusSel) {
     const def = current();
@@ -71,6 +72,7 @@ export function createUI(ctx, root = document.body) {
     },
     setLayout(L, chrome) { layout = { L, chrome }; const def = current(); const panel = host.firstChild; if (def && panel) place(panel, def); },
     get open() { return !host.hidden; },
+    get modal() { return !host.hidden && stack.length > 1; }, // a sub-screen is on top: it owns the keyboard
     get phase() { return phase; },
     guardOk: () => ctx.now() - shownAt >= END_GUARD_MS,
   };
@@ -92,6 +94,9 @@ export function createUI(ctx, root = document.body) {
     // Auto-repeat of a key held since the game (WORK on Space, D-22) must not activate the newly focused button.
     if (e.repeat && (e.code === 'Space' || e.code === 'Enter' || e.code === 'NumpadEnter')) { e.preventDefault(); return; }
     if (!e.key.startsWith('Arrow') && e.key !== 'Tab' && e.key !== 'Enter' && e.code !== 'Space') return;
+    const ae = document.activeElement;
+    // Selects and text / number inputs keep their own arrow keys (change the option, step the number, move the caret); Tab leaves them.
+    if (e.key.startsWith('Arrow') && ae && (ae.tagName === 'SELECT' || (ae.tagName === 'INPUT' && ae.type !== 'checkbox'))) return;
     const items = focusables();
     const idx = items.indexOf(document.activeElement);
     if (idx < 0 && items.length && e.key !== 'Tab') { // focus got lost (clicked the backdrop): grab it back
@@ -116,6 +121,7 @@ export function createUI(ctx, root = document.body) {
       h('p', { class: 'tag' }, 'Finish the garden before sunset. Your wife has other plans.'),
       h('div', { class: 'col' },
         btn('Play', () => A.play(), { primary: true, autofocus: true }),
+        btn('Settings', () => api.push('settings')),
         btn('High scores', () => api.push('scores'))),
       h('p', { class: 'small' }, ctx.controlsText()),
       h('p', { class: 'small dim' }, `Mode: ${ctx.summary()}`)),
@@ -150,8 +156,11 @@ export function createUI(ctx, root = document.body) {
     phase: 'paused', kind: 'dock',
     build: () => h('div', { class: 'row' },
       btn('Resume', () => A.resume(), { primary: true, autofocus: true }),
+      btn('Settings', () => api.push('settings')),
       btn('Quit to menu', () => A.quit())),
   });
+
+  registerSettings(api, ctx, btn);
 
   const endScreen = {
     kind: 'dock', dock: 'bottom',

@@ -82,3 +82,9 @@ test('shouldRecord: only playing -> won/lost, never a quit from pause, a restart
   assert.equal(shouldRecord(null, 'title', f), false);
   assert.equal(shouldRecord('playing', 'won', { debug: true }), false);
 });
+
+test('gateInput: a modal sub-screen swallows every key, even the pause key', () => {
+  const g = gateInput('paused', { ...all, pause: true }, true);
+  assert.ok(Object.values(g).every((v) => v === false || v === 0));
+  assert.equal(gateInput('paused', { ...all, pause: true }).pause, true);
+});

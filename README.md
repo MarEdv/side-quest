@@ -22,7 +22,7 @@ then open http://localhost:8000 in Chrome (ES modules need HTTP, not `file://`).
 - **WASD / arrow keys**: walk
 - **Hold Space or E** next to a chore: work on it; next to a quest spot: pick up / deliver
 - **P / Esc**: pause (menu: Resume / Quit to menu) · **R**: play again on the end screen
-- **Menus**: Tab / arrow keys move focus, **Enter / Space** activate, **Esc** goes back. The main menu has **Play** and **High scores** (top 10 on this device, stored in `localStorage`)
+- **Menus**: Tab / arrow keys move focus, **Enter / Space** activate, **Esc** goes back. The main menu has **Play**, **Settings** and **High scores** (top 10 on this device, stored in `localStorage`)
 
 ## Mobile / touch
 
@@ -36,7 +36,8 @@ appear automatically on touch devices (`?touch=on|off|auto`).
 
 ## Flags
 
-Tweak the game with URL query parameters, e.g. `http://localhost:8000/?wifeMode=random&difficulty=hard&debug=1`.
+Every flag can be changed in **Settings** (main menu or pause screen; saved on this device). Flags in the URL win over saved
+settings and show as locked there. You can also tweak the game with URL query parameters, e.g. `http://localhost:8000/?wifeMode=random&difficulty=hard&debug=1`.
 All flags are documented in [docs/FLAGS.md](docs/FLAGS.md).
 
 ## Test

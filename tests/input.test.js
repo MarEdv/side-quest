@@ -40,3 +40,14 @@ test('blur and Meta keyup clear held keys', () => {
   t.dispatchEvent(key('keyup', 'MetaLeft', { key: 'Meta' }));
   assert.equal(inp.read().right, false);
 });
+
+test('typing in a form field is not game input', () => {
+  const t = new EventTarget(), inp = createInput(t);
+  for (const tagName of ['INPUT', 'SELECT']) {
+    const e = key('keydown', 'KeyW');
+    Object.defineProperty(e, 'target', { value: { tagName, type: 'number' } });
+    t.dispatchEvent(e);
+    assert.equal(e.defaultPrevented, false);
+    assert.equal(inp.read().up, false);
+  }
+});

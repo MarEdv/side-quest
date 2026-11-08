@@ -3,6 +3,16 @@
 Flags live in `src/config.js` (`DEFAULT_FLAGS`). Override any flag via URL query string, e.g.
 `http://localhost:8000/?wifeMode=random&dayLength=120&debug=1`.
 
+**Settings screen.** Every flag below can also be edited in the game (main menu or pause screen > Settings). Choices are saved
+on this device (`localStorage` key `sidequest.v1.settings`). Precedence: **URL query > saved setting > default**
+(`resolveFlags` in `src/settings.js`). A flag set by a valid URL parameter is shown locked in Settings ("Set by link (?wifeMode=random)");
+"Clear link overrides" reloads without the query string, "Reset to defaults" forgets the saved choices. Saved values go through the
+same validation and clamps as URL values; unusable ones are ignored. Two kinds of flag:
+
+- **Control / display / debug** (`touch`, `touchScheme`, `showVisionCone`, `sound`, `debug`): apply immediately and will also apply in Levels.
+- **Gameplay** (`wifeMode`, `wifeRoam`, `difficulty`, `dayLength`, `maxActiveQuests`, `questInterval`, `visionRange`, `seed`): apply when the next day
+  starts, never to a day in progress; Levels will ignore them (`GAMEPLAY_FLAGS` / `CONTROL_FLAGS` in `src/settings.js`).
+
 Booleans accept `1/0/true/false`. Unknown flags are ignored. **Any new flag must be added here and in REQUIREMENTS.md.**
 
 | Flag | Type | Default | Values / meaning |

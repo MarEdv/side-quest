@@ -2,8 +2,11 @@
 
 // Which game inputs may reach update() in each phase. While a menu is shown the game must not see walking,
 // "action" (Space on a menu button) or "start" (Enter on a button would start/leave a screen twice).
-export function gateInput(phase, inp) {
+// `modal` = a sub-screen (Settings, High scores) is open on top of the phase's own screen: it takes every key, so Esc
+// from Settings-over-pause goes back instead of also resuming the game.
+export function gateInput(phase, inp, modal = false) {
   const out = { up: false, down: false, left: false, right: false, action: false, pause: false, start: false, restart: false, moveX: 0, moveY: 0 };
+  if (modal) return out;
   if (phase === 'playing') return { ...out, ...inp, start: false, restart: false };
   if (phase === 'paused') return { ...out, pause: !!inp.pause };
   if (phase === 'won' || phase === 'lost') return { ...out, restart: !!inp.restart };

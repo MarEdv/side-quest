@@ -102,6 +102,31 @@
     table.scores th, table.scores td { padding: 7px 10px; white-space: nowrap; }
     table.scores td { border-top: 1px solid #333a44; text-align: left; }
     table.scores td.num { font-weight: bold; color: #fff; }
+
+    /* Settings screen (src/settingsui.js) */
+    .ui [hidden] { display: none !important; }
+    .ui .settings { width: min(600px, 100%); }
+    .ui .sscroll { width: 100%; text-align: left; padding: 4px 12px 10px; box-sizing: border-box; max-height: calc(100dvh - 190px); }
+    .ui .sgroup { border: 0; margin: 10px 0 0; padding: 0; min-width: 0; }
+    .ui .sgroup legend { color: #ffd23f; font-weight: bold; font-size: 18px; padding: 0; border-bottom: 1px solid #445; width: 100%; margin-bottom: 4px; }
+    .ui .sgnote { margin: 2px 0 6px; }
+    .ui .srow { padding: 8px 0; border-top: 1px solid #2b313a; display: flex; flex-direction: column; gap: 4px; }
+    .ui .sgnote + .srow { border-top: 0; }
+    .ui .srow > label, .ui .tlabel { color: #fff; font-weight: bold; font-size: 16px; }
+    .ui .tlabel { display: flex; align-items: center; justify-content: space-between; gap: 12px; min-height: 44px; cursor: pointer; }
+    .ui .stog { width: 28px; height: 28px; flex: none; accent-color: #ffd23f; cursor: pointer; margin: 0 6px; }
+    .ui .sctl { box-sizing: border-box; min-height: 44px; width: 100%; padding: 0 10px; border-radius: 10px; border: 2px solid #667; background: #1d2128; color: #fff; font: 16px system-ui, -apple-system, "Segoe UI", sans-serif; }
+    .ui .sctl[aria-invalid="true"] { border-color: #ff8a65; }
+    .ui .sctl:focus-visible, .ui .stog:focus-visible { outline: 3px solid #fff; outline-offset: 2px; }
+    .ui .shelp { font-size: 13px; color: #aab; }
+    .ui .snote { font-size: 13px; color: #ffd23f; min-height: 0; }
+    .ui .snote:empty { display: none; }
+    .ui .snote.lock { color: #9fd3ff; }
+    .ui .snote.bad { color: #ff8a65; }
+    .ui .srow.off .tlabel, .ui .srow.off > label { opacity: .6; }
+    .ui .sctl:disabled, .ui .stog:disabled { opacity: .5; cursor: not-allowed; }
+    .ui .sconfirm { display: flex; flex-direction: column; align-items: center; gap: 8px; }
+    @media (max-height: 500px) { .ui .sscroll { max-height: calc(100dvh - 120px); } }
     @media (max-height: 500px) {
       .ui .menu { gap: 6px; }
       .ui h1 { font-size: 36px; } .ui h2 { font-size: 22px; }

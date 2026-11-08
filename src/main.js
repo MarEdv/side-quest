@@ -1,5 +1,6 @@
 // Browser entry: fixed-timestep loop, canvas sizing, input, audio, rendering.
-import { parseFlags } from './config.js';
+import { DEFAULT_FLAGS, settingsSummary } from './config.js';
+import { resolveFlags, withSetting, createSettingsStore, gameplayOf, controlOf, GAMEPLAY_FLAGS } from './settings.js';
 import { createGame, update, startGame, toMenu } from './game.js';
 import { createInput } from './input.js';
 import { createTouch } from './touch.js';
@@ -15,19 +16,48 @@ import { W, H } from './world.js';
 const STEP = 1 / 60;
 const MAX_FRAME = 0.25; // clamp big gaps (tab switches)
 
-const flags = parseFlags(location.search);
 const canvas = document.getElementById('game');
 const ctx = canvas.getContext('2d');
 const input = createInput(window);
-const audio = createAudio(flags.sound);
-const state = createGame(flags);
-if (flags.debug) window.__state = state; // inspection hook for browser self-checks
 
 // Even reading window.localStorage can throw (blocked cookies / sandboxed iframes): guard it, fall back to memory.
 let backend = null;
 try { backend = window.localStorage; } catch { backend = null; }
 const storage = createStorage(backend);
 const scores = createScores(storage);
+const settingsStore = createSettingsStore(storage);
+
+// Flags, three layers (D-23). `resolved` = URL > saved > default, what Settings shows. `flags` = what the running game
+// reads (state.flags is this same object): control/display flags follow `resolved` at once, gameplay flags are copied
+// in by applyGameplay() only when no day is in progress, so a change never alters a day already running.
+let saved = settingsStore.load();
+let resolved = resolveFlags(DEFAULT_FLAGS, saved, location.search);
+const flags = { ...resolved.flags };
+const audio = createAudio(flags.sound);
+const state = createGame(flags);
+if (flags.debug) window.__state = state; // inspection hook for browser self-checks
+
+const dayInProgress = () => state.phase === 'playing' || state.phase === 'paused';
+const pendingKeys = () => GAMEPLAY_FLAGS.filter((k) => flags[k] !== resolved.flags[k]);
+function applyGameplay() { Object.assign(flags, gameplayOf(resolved.flags)); }
+let debugTainted = false; // a day with debug on at any moment is never recorded (D-22/D-23)
+
+function applyControl() {
+  Object.assign(flags, controlOf(resolved.flags));
+  audio.setEnabled(flags.sound);
+  touch.setOptions({ mode: flags.touch, scheme: flags.touchScheme });
+  if (flags.debug) window.__state = state;
+}
+function setSetting(key, value) {
+  saved = withSetting(saved, key, value, DEFAULT_FLAGS);
+  settingsStore.save(saved);
+  refreshResolved();
+}
+function refreshResolved() {
+  resolved = resolveFlags(DEFAULT_FLAGS, saved, location.search);
+  applyControl();
+  if (!dayInProgress()) { applyGameplay(); if (state.phase === 'title') toMenu(state); }
+}
 
 const hintEl = document.getElementById('hint');
 const rotateEl = document.getElementById('rotate');
@@ -40,15 +70,24 @@ const HINT_TOUCH = {
 let rotateDismissed = false;
 
 const controlsText = () => (touch.active() ? HINT_TOUCH[flags.touchScheme] : HINT_KEYS);
+const startDay = () => { debugTainted = false; applyGameplay(); startGame(state); };
 const menus = createUI({
   scores, now: () => performance.now(),
   persistent: () => storage.persistent,
-  controlsText, summary: () => state.summary, isTouch: () => touch.active(),
+  controlsText, summary: () => settingsSummary(resolved.flags), isTouch: () => touch.active(),
+  settings: {
+    state: () => ({ flags: resolved.flags, locked: resolved.locked }),
+    pending: pendingKeys,
+    dayInProgress,
+    set: setSetting,
+    reset() { saved = settingsStore.reset(); refreshResolved(); },
+    clearLinks() { location.assign(location.pathname + location.hash); }, // reload without the query string
+  },
   actions: {
-    play: () => { audio.unlock(); startGame(state); },
-    again: () => startGame(state),
+    play: () => { audio.unlock(); startDay(); },
+    again: () => startDay(),
     resume: () => { if (state.phase === 'paused') state.phase = 'playing'; },
-    quit: () => toMenu(state),
+    quit: () => { applyGameplay(); toMenu(state); },
   },
 });
 
@@ -121,12 +160,13 @@ document.addEventListener('visibilitychange', () => { if (document.hidden) autoP
 let shownPhase = null;
 function syncMenus() {
   if (state.phase === shownPhase) return;
-  if (shouldRecord(shownPhase, state.phase, flags)) {
+  if (shouldRecord(shownPhase, state.phase, { debug: debugTainted || flags.debug })) {
     menus.setEndResult(scores.recordArcade({ score: state.score, won: state.phase === 'won', date: new Date().toISOString(), summary: state.summary }));
   } else if (state.phase === 'won' || state.phase === 'lost') {
-    menus.setEndResult(flags.debug ? { rank: null, isBest: false, best: null, note: 'Debug run: not recorded' } : null);
+    menus.setEndResult((debugTainted || flags.debug) ? { rank: null, isBest: false, best: null, note: 'Debug run: not recorded' } : null);
   }
   shownPhase = state.phase;
+  if (!dayInProgress()) applyGameplay(); // R on the end screen restarts straight from game.js: it must see the new settings
   menus.setPhase(shownPhase);
   const menu = shownPhase === 'title';
   hintEl.style.visibility = menu ? 'hidden' : '';
@@ -141,7 +181,8 @@ function frame(now) {
   if (dt > MAX_FRAME) dt = MAX_FRAME;
   if (dt > 0) fps = fps * 0.95 + (1 / dt) * 0.05;
   acc += dt;
-  const inp = gateInput(state.phase, mergeInput(input.read(), touch.read(state)));
+  if (flags.debug && state.phase === 'playing') debugTainted = true;
+  const inp = gateInput(state.phase, mergeInput(input.read(), touch.read(state)), menus.modal);
   let steps = 0;
   while (acc >= STEP) {
     update(state, inp, STEP);

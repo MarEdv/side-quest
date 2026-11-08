@@ -271,3 +271,39 @@ Checked and fine as is: XSS (stored strings only reach the DOM as text nodes; an
 menu: nothing; scores: back / cancel confirm; pause: resume; end screen: nothing), touchmove still blocked outside `.ui-scroll`,
 the touch overlay is hidden on the main menu and dock panels take their own taps, logic modules have no DOM access, the end panel
 never overlaps the canvas stats.
+
+### D-23 — Settings screen (2026-11-08) — implements D-20 for Feature 2
+- **Pure model, thin UI.** `src/settings.js` (no DOM) holds the control list, the gameplay/control split, `resolveFlags(defaults, saved, urlQuery)`
+  (URL > saved > default, returns `flags`, per-flag `source`, `locked` = values forced by the URL), `sanitizeSaved`, `withSetting` and a small
+  store over storage.js. `src/settingsui.js` builds the screen. `config.js` gained `parseFlagValue` / `parseFlagEntries`; `parseFlags` and the
+  saved-value sanitiser both use them, so there is one validator (clamps, enums, seed). Only primitives are accepted from storage.
+- **Gameplay vs control split** is `GAMEPLAY_FLAGS` / `CONTROL_FLAGS` (+ `splitFlags`). `seed` counts as gameplay (it shapes the day; Levels will
+  fix their own). `debug` is a control flag. Levels will take `gameplayOf(...)` from the level and `controlOf(...)` from Settings.
+- **What is saved:** only the player's choices (`{v:1, flags:{...}}`); choosing the default value removes the key, so a later change of a default
+  reaches people who never customised it. Invalid URL values neither apply nor lock (matches `parseFlags`). A locked flag keeps its saved value
+  underneath; it is only shown read-only with the URL's value.
+- **Three flag layers in main.js:** `resolved` (what Settings shows), `flags` (what the game reads, `state.flags` is the same object). Control flags
+  are copied to `flags` at once (sound via `audio.setEnabled`, touch mode/scheme via `touch.setOptions`, cone and debug are read each frame).
+  Gameplay flags are copied only when no day is in progress (title, end screens) and at day start / Quit to menu, so a pause-menu change never
+  alters the running day; R on the end screen restarts from game.js and therefore also sees them. Alternative (apply gameplay mid-day) rejected:
+  it would change deadlines and the wife's pattern under the player.
+- **Settings is reachable from pause** (and the main menu), because sound / cone / touch scheme are exactly what players want to fix mid-day, and
+  the day stays paused. Not on the end screens (they have Menu). The menu's Mode line shows `settingsSummary(resolved)`; scores record the
+  summary of the day actually played (`state.summary`).
+- **Debug and scores:** a day is never recorded if debug was on at any moment while playing (`debugTainted`), so toggling it off mid-day does not
+  sneak a debug run onto the board (D-22 rule extended).
+- **Controls:** selects for enums, checkbox toggles (a real `<label>` wraps text + box, 44 px rows), number inputs with min/max from config.js and
+  inline errors (valid values save as you type, a bad entry is reverted on blur), seed is a text field (empty = random). Chosen over +/- steppers
+  (extra tab stops, phones have numeric keypads). Selects and number fields keep their own arrow keys; Tab is trapped inside the screen and Tab / Shift+Tab
+  reach every control. Panel updates in place, so focus and scroll survive a change.
+- **Input isolation:** `input.js` ignores keys typed in input/select fields; `gateInput(phase, inp, modal)` returns nothing while a sub-screen is open
+  (otherwise Esc from Settings-over-pause would also resume the game). The `touch.js` early-return stub for `touch=off` was removed; the module
+  always exists and `setOptions` flips it live.
+- **Reset** forgets saved choices only; link overrides remain (Clear link overrides is the other button). Confirmation is in-page (Esc cancels).
+- **Not done / unsure:** the lock note prints the normalised value (`?debug=true` for `?debug=1`); no screen-reader or real-device test; native select
+  popups on touch devices are the OS picker (not screenshot-verified); `wifeMode=hybrid` and level settings come with Levels.
+- **Verification:** headless Chrome over CDP under `/side-quest/`, desktop 1280x720 keyboard-only (open, wifeMode random, difficulty hard via
+  type-ahead, bad / good dayLength, Esc, reload persists, Play shows mode and day length applied via `window.__state`, pause > Settings > Esc returns
+  to pause, `?wifeMode=vision` locked) and 390x844 touch (scroll the panel, toggle sound / cone, locked debug stays, Reset with confirmation, change
+  from pause applies cone live and difficulty only after Quit to menu). No console errors.
+
