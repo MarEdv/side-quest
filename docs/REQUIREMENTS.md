@@ -67,7 +67,7 @@ before sunset while completing — or sneakily avoiding — the side quests.
 | W-3 | At most `maxActiveQuests` (default 2) side quests active at once. | ✅ |
 | W-4 | Side quest types are fetch/deliver errands: pick up an item at a spot, deliver it to a spot (often the wife/house door). Examples: groceries from the car, glasses from the garden bench, trash bins to the curb, the cat from the tree, the mail from the mailbox. | ✅ |
 | W-5 | Each side quest has a deadline. Completing it raises Harmony; letting it expire lowers Harmony more. | ✅ |
-| W-6 | **Avoiding** a quest = never getting it: staying out of her sight (vision mode). Each wife appearance that ends without spotting the player counts as an "avoided" quest for the end-screen stat. | ✅ |
+| W-6 | **Avoiding** a quest = never getting it: staying out of her sight (vision mode). Each wife appearance that ends without spotting the player counts as an "avoided" quest for the end-screen stat — only if she could have given a quest (cap not full, D-12). | ✅ |
 | W-7 | Player can carry only one quest item at a time. Carrying an item does not block chores. | ✅ |
 | W-8 | **Harmony** meter 0–100, starts at 60. +15 per completed quest, −20 per expired quest, slow decay of −1 per in-game hour while any quest is active. | ✅ |
 

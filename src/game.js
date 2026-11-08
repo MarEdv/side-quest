@@ -7,7 +7,7 @@ import { createRng } from './rng.js';
 import { createWorld } from './world.js';
 import { moveWithCollision } from './geometry.js';
 import { createChores, findChoreInRange, workOnChore, choresDoneCount, allChoresDone } from './chores.js';
-import { HARMONY, giveQuest, tryQuestInteraction, updateQuests } from './quests.js';
+import { HARMONY, canGiveQuest, giveQuest, tryQuestInteraction, updateQuests } from './quests.js';
 import { createWife, updateWife, sayBubble } from './wife.js';
 import { DEFAULT_FLAGS } from './config.js';
 
@@ -61,7 +61,10 @@ function handleWife(s, dt) {
     if (e === 'warning') s.events.push({ type: 'warning' });
     else if (e === 'out') s.events.push({ type: 'wifeOut' });
     else if (e === 'left') s.events.push({ type: 'wifeLeft' });
-    else if (e === 'avoided') { s.stats.questsAvoided++; s.events.push({ type: 'avoided' }); }
+    else if (e === 'avoided') {
+      // Only a dodge if she had a quest to give; with the cap full there was nothing to avoid (D-12).
+      if (canGiveQuest(s)) { s.stats.questsAvoided++; s.events.push({ type: 'avoided' }); }
+    }
     else if (e === 'spotted' || e === 'callout') {
       if (e === 'spotted') s.events.push({ type: 'spotted' });
       const q = giveQuest(s);

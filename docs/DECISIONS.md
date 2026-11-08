@@ -75,3 +75,10 @@
   keyup clears all held keys. **Alternative:** track modifiers and filter only known shortcuts (more code, same
   outcome for a game that uses no modified keys).
 - Covered by `tests/input.test.js`, which drives `createInput` with Node's built-in `EventTarget`.
+
+### D-12 — "Avoided" only counts when a quest was possible (2026-11-08)
+- **Problem:** with `maxActiveQuests` reached (or set to 0) she has nothing to hand out, yet every appearance spent
+  hidden still added `questsAvoided` (+25 score each, D-8). Hiding with two quests open farmed points.
+- **Chosen:** `game.js` counts `avoided` only if `canGiveQuest()` is true when she goes back in. This mirrors D-9,
+  where being spotted at the cap is "carry on" and not counted. **Alternative:** count it but score it 0 (two
+  stats with the same name meaning different things; rejected).

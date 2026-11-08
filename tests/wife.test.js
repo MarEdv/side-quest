@@ -4,6 +4,7 @@ import { canSee, WIFE, updateWife, createWife, sightDistance } from '../src/wife
 import { createWorld } from '../src/world.js';
 import { createRng } from '../src/rng.js';
 import { update } from '../src/game.js';
+import { giveQuest } from '../src/quests.js';
 import { playing, NO_INPUT, mkFlags } from './helpers.js';
 
 const world = createWorld();
@@ -93,4 +94,16 @@ test('sightDistance: full range in the open, clipped at a hedge, and consistent 
   const just = (k) => ({ x: 480 + Math.cos(a) * (d + k), y: 128 + Math.sin(a) * (d + k) });
   assert.equal(canSee({ ...w, dir: a }, just(-2), world.obstacles), true);
   assert.equal(canSee({ ...w, dir: a }, just(40), world.obstacles), false);
+});
+
+test('hiding while the quest cap is full is not counted as avoided', () => {
+  for (const flags of [{ questInterval: 3, maxActiveQuests: 0 }, { questInterval: 3, maxActiveQuests: 1 }]) {
+    const h = playing(flags);
+    if (flags.maxActiveQuests === 1) giveQuest(h);
+    h.wife.phase = 'out'; h.wife.timer = 0.05; h.wife.sweepT = 0;
+    h.player.x = 330; h.player.y = 240;
+    for (let i = 0; i < 10; i++) update(h, NO_INPUT, 1 / 60);
+    assert.equal(h.wife.phase, 'inside');
+    assert.equal(h.stats.questsAvoided, 0);
+  }
 });
