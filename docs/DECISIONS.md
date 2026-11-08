@@ -314,4 +314,10 @@ Independent review and headless-Chrome check of Feature 2 (S-1..S-4) under `/sid
   check only covered Esc from inside a field, which `input.js` already ignored. Fix: `input.js` ignores keydowns that are already
   `defaultPrevented` (the menu took them). Alternatives: `stopPropagation` in ui.js (hides the event from every other listener),
   or swallowing input for a frame after a sub-screen closes (timing-based) - rejected. Unit test in `tests/input.test.js`.
+- **A debug mark leaked into the next day.** `debugTainted` was reset only by `startDay()` (Play / Play again buttons); R on the end
+  screen restarts straight from game.js, so after a day that had debug on at some point, a clean R-restarted day was silently not
+  recorded. Fix: `main.js` resets it whenever a phase change starts a day (`startsDay(prev, phase)` in uimodel.js, unit-tested).
+  Verified in the browser: dayLength 10, debug on, debug switched off from pause, day 1 "Debug run: not recorded", R, day 2 recorded.
+- **`window.__state` stayed exposed after debug was switched off** in Settings. It is now deleted when debug goes off (the hook is
+  for debug runs only; turning debug back on re-exposes it).
 

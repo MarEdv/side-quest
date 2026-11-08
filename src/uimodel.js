@@ -16,6 +16,10 @@ export function gateInput(phase, inp, modal = false) {
 // Whether a phase change finishes a day that goes on the high-score board (D-22): only playing -> won/lost, so a day
 // quit from the pause menu, a restart or a re-render never records, and never in debug mode (its overlay shows the wife's
 // state and window.__state is exposed for scripted browser checks, which must not fill the owner's board).
+// Whether a phase change begins a new day (Play, Play again, or R on the end screen straight from game.js), as
+// opposed to resuming from pause. main.js resets its per-day "debug was on" mark here (D-24).
+export const startsDay = (prevPhase, phase) => phase === 'playing' && prevPhase !== 'playing' && prevPhase !== 'paused';
+
 export function shouldRecord(prevPhase, phase, flags) {
   return prevPhase === 'playing' && (phase === 'won' || phase === 'lost') && !(flags && flags.debug);
 }

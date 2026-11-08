@@ -88,3 +88,13 @@ test('gateInput: a modal sub-screen swallows every key, even the pause key', () 
   assert.ok(Object.values(g).every((v) => v === false || v === 0));
   assert.equal(gateInput('paused', { ...all, pause: true }).pause, true);
 });
+
+test('startsDay: Play / Play again / R restart begin a day; resuming from pause does not (D-24)', async () => {
+  const { startsDay } = await import('../src/uimodel.js');
+  assert.equal(startsDay('title', 'playing'), true);
+  assert.equal(startsDay('won', 'playing'), true);
+  assert.equal(startsDay('lost', 'playing'), true);
+  assert.equal(startsDay('paused', 'playing'), false);
+  assert.equal(startsDay('playing', 'playing'), false);
+  assert.equal(startsDay('playing', 'won'), false);
+});

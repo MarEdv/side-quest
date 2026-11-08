@@ -9,7 +9,7 @@ import { createAudio } from './audio.js';
 import { createStorage } from './storage.js';
 import { createScores } from './scores.js';
 import { createUI } from './ui.js';
-import { gateInput, shouldRecord } from './uimodel.js';
+import { gateInput, shouldRecord, startsDay } from './uimodel.js';
 import { render } from './render.js';
 import { W, H } from './world.js';
 
@@ -47,6 +47,7 @@ function applyControl() {
   audio.setEnabled(flags.sound);
   touch.setOptions({ mode: flags.touch, scheme: flags.touchScheme });
   if (flags.debug) window.__state = state;
+  else delete window.__state; // the inspection hook only exists while debug is on (D-24)
 }
 function setSetting(key, value) {
   saved = withSetting(saved, key, value, DEFAULT_FLAGS);
@@ -165,6 +166,9 @@ function syncMenus() {
   } else if (state.phase === 'won' || state.phase === 'lost') {
     menus.setEndResult((debugTainted || flags.debug) ? { rank: null, isBest: false, best: null, note: 'Debug run: not recorded' } : null);
   }
+  // A new day starts clean: R on the end screen restarts from game.js without startDay(), and must not inherit the
+  // previous day's debug mark (D-24). The frame loop marks it again before the next step if debug is still on.
+  if (startsDay(shownPhase, state.phase)) debugTainted = false;
   shownPhase = state.phase;
   if (!dayInProgress()) applyGameplay(); // R on the end screen restarts straight from game.js: it must see the new settings
   menus.setPhase(shownPhase);
