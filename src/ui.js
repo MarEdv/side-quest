@@ -89,6 +89,8 @@ export function createUI(ctx, root = document.body) {
       if (stack.length > 1) { e.preventDefault(); api.back(); }
       return; // pause / end: Esc is the game's pause key
     }
+    // Auto-repeat of a key held since the game (WORK on Space, D-22) must not activate the newly focused button.
+    if (e.repeat && (e.code === 'Space' || e.code === 'Enter' || e.code === 'NumpadEnter')) { e.preventDefault(); return; }
     if (!e.key.startsWith('Arrow') && e.key !== 'Tab' && e.key !== 'Enter' && e.code !== 'Space') return;
     const items = focusables();
     const idx = items.indexOf(document.activeElement);
@@ -155,7 +157,7 @@ export function createUI(ctx, root = document.body) {
     kind: 'dock', dock: 'bottom',
     build: () => {
       const r = api.endResult;
-      const line = [rankText(r), bestText(r)].filter(Boolean).join('  ·  ');
+      const line = [rankText(r), bestText(r), r && r.note].filter(Boolean).join('  ·  ');
       return h('div', { class: 'endp' },
         line ? h('p', { class: `banner${r && r.isBest ? ' hi' : ''}` }, line) : null,
         h('div', { class: 'row' },

@@ -252,7 +252,22 @@
 Independent review of D-21 plus headless-Chrome checks (full 10-row table at 1280x720 / 844x390 / 375x560 / 390x844 touch,
 garbage and foreign JSON, `setItem` throwing and the `localStorage` getter throwing via `addScriptToEvaluateOnNewDocument`, a real
 keyboard run, end screens in both phone orientations). Fixes:
+- **Held Space restarted the day.** Holding Space (WORK) through the end of the day: the key's auto-repeat keydowns land on the
+  autofocused "Play again" and, once the 700 ms guard passed, releasing Space clicked it. `ui.js` now preventDefaults repeated
+  Space/Enter keydowns while a menu is open, so only a fresh press activates a button. Alternative (no autofocus on the end screen)
+  rejected: keyboard players would lose Enter-to-replay. R still restarts as before.
 - **Storage after a write failure.** Once a write threw (quota), every read came from memory only, so keys not written this session
   (e.g. level records) vanished until reload. Now reads fall back to the backend for keys this session has not touched; a removal
   the backend refused leaves a tombstone so cleared scores don't reappear; the capability check itself is inside try/catch.
+- **Debug runs are not recorded** (reverses that part of D-21). `debug=1` shows the wife's internals and exposes `window.__state`
+  for scripted browser checks; recording those runs would fill the owner's board with test days. The end screen says
+  "Debug run: not recorded". `dayLength` / `seed` overrides still record (the mode column shows the gameplay mode). The rule lives in
+  `uimodel.shouldRecord(prev, phase, flags)`: only playing -> won/lost records, so quitting from pause, restarting, Menu and
+  re-renders never do (unit-tested; also checked in the browser).
+- **Narrow tables:** a long unbreakable summary overflowed the 390 px table sideways (and `pan-y` forbids sideways panning); the mode
+  cell now wraps anywhere on narrow screens.
 - **Docs:** the HS-1/2/3/5 rows had lost their requirement text (status pasted over it); restored.
+Checked and fine as is: XSS (stored strings only reach the DOM as text nodes; an `<img onerror>` summary renders as text), Esc (main
+menu: nothing; scores: back / cancel confirm; pause: resume; end screen: nothing), touchmove still blocked outside `.ui-scroll`,
+the touch overlay is hidden on the main menu and dock panels take their own taps, logic modules have no DOM access, the end panel
+never overlaps the canvas stats.

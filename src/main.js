@@ -8,7 +8,7 @@ import { createAudio } from './audio.js';
 import { createStorage } from './storage.js';
 import { createScores } from './scores.js';
 import { createUI } from './ui.js';
-import { gateInput } from './uimodel.js';
+import { gateInput, shouldRecord } from './uimodel.js';
 import { render } from './render.js';
 import { W, H } from './world.js';
 
@@ -121,8 +121,10 @@ document.addEventListener('visibilitychange', () => { if (document.hidden) autoP
 let shownPhase = null;
 function syncMenus() {
   if (state.phase === shownPhase) return;
-  if ((state.phase === 'won' || state.phase === 'lost') && shownPhase === 'playing') {
+  if (shouldRecord(shownPhase, state.phase, flags)) {
     menus.setEndResult(scores.recordArcade({ score: state.score, won: state.phase === 'won', date: new Date().toISOString(), summary: state.summary }));
+  } else if (state.phase === 'won' || state.phase === 'lost') {
+    menus.setEndResult(flags.debug ? { rank: null, isBest: false, best: null, note: 'Debug run: not recorded' } : null);
   }
   shownPhase = state.phase;
   menus.setPhase(shownPhase);

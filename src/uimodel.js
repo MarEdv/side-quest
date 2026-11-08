@@ -10,6 +10,13 @@ export function gateInput(phase, inp) {
   return out; // title: the main menu is DOM, nothing from the game inputs applies
 }
 
+// Whether a phase change finishes a day that goes on the high-score board (D-22): only playing -> won/lost, so a day
+// quit from the pause menu, a restart or a re-render never records, and never in debug mode (its overlay shows the wife's
+// state and window.__state is exposed for scripted browser checks, which must not fill the owner's board).
+export function shouldRecord(prevPhase, phase, flags) {
+  return prevPhase === 'playing' && (phase === 'won' || phase === 'lost') && !(flags && flags.debug);
+}
+
 export const rankText = (res) => (!res || res.rank == null ? '' : res.isBest ? 'New high score!' : `#${res.rank} on your board`);
 export const bestText = (res) => (!res || res.best == null ? '' : `Best: ${res.best}`);
 

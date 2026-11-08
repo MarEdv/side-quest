@@ -68,3 +68,17 @@ test('startGame keeps held-key edge memory (no instant pause toggle)', () => {
   update(s, { ...NO_INPUT, pause: true }, 1 / 60);
   assert.equal(s.phase, 'playing');
 });
+
+test('shouldRecord: only playing -> won/lost, never a quit from pause, a restart, a re-render or a debug run (D-22)', async () => {
+  const { shouldRecord } = await import('../src/uimodel.js');
+  const f = { debug: false };
+  assert.equal(shouldRecord('playing', 'won', f), true);
+  assert.equal(shouldRecord('playing', 'lost', f), true);
+  assert.equal(shouldRecord('paused', 'title', f), false);   // quit from pause
+  assert.equal(shouldRecord('paused', 'lost', f), false);
+  assert.equal(shouldRecord('won', 'won', f), false);        // re-render of the end screen
+  assert.equal(shouldRecord('won', 'playing', f), false);    // restart
+  assert.equal(shouldRecord('lost', 'title', f), false);     // Menu from the end screen
+  assert.equal(shouldRecord(null, 'title', f), false);
+  assert.equal(shouldRecord('playing', 'won', { debug: true }), false);
+});
