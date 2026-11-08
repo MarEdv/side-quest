@@ -51,3 +51,13 @@ test('typing in a form field is not game input', () => {
     assert.equal(inp.read().up, false);
   }
 });
+
+test('a key the menu already handled (defaultPrevented in capture) is not game input: Esc closing Settings over pause (D-24)', () => {
+  const t = new EventTarget(), inp = createInput(t);
+  const esc = key('keydown', 'Escape');
+  esc.preventDefault(); // ui.js capture listener took it (Settings back)
+  t.dispatchEvent(esc);
+  assert.equal(inp.read().pause, false);
+  t.dispatchEvent(key('keydown', 'Escape')); // a plain Esc still pauses / resumes
+  assert.equal(inp.read().pause, true);
+});

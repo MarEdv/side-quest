@@ -21,6 +21,9 @@ export function createInput(target = window) {
     if (e.metaKey || e.ctrlKey || e.altKey) return;
     // Typing in a form field (Settings number / seed inputs, selects) is never game input: no walking, no preventDefault.
     if (isField(e.target)) return;
+    // A key the menu (ui.js, capture phase) already handled is not game input either: Esc that closes Settings over the
+    // pause screen must not also reach game.js as a pause toggle and resume the day (D-24).
+    if (e.defaultPrevented) return;
     // Space/Enter on a menu button belong to the button (activate it), not the game: no preventDefault, no "action".
     if ((e.code === 'Space' || e.code === 'Enter') && e.target && e.target.closest && e.target.closest('.ui button, .ui input[type="checkbox"]')) return;
     if (GAME_KEYS.has(e.code)) e.preventDefault(); // no page scroll on arrows/space

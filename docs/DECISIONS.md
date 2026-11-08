@@ -307,3 +307,11 @@ never overlaps the canvas stats.
   to pause, `?wifeMode=vision` locked) and 390x844 touch (scroll the panel, toggle sound / cone, locked debug stays, Reset with confirmation, change
   from pause applies cone live and difficulty only after Quit to menu). No console errors.
 
+### D-24 — Settings verification fixes (2026-11-08)
+Independent review and headless-Chrome check of Feature 2 (S-1..S-4) under `/side-quest/`.
+- **Esc from Settings over pause resumed the day** when a button (e.g. Back) had focus: `ui.js` handled Esc in the capture phase
+  (back to pause) but `input.js` still recorded it, and once the sub-screen closed `gateInput` let the pause edge through. D-23's
+  check only covered Esc from inside a field, which `input.js` already ignored. Fix: `input.js` ignores keydowns that are already
+  `defaultPrevented` (the menu took them). Alternatives: `stopPropagation` in ui.js (hides the event from every other listener),
+  or swallowing input for a frame after a sub-screen closes (timing-based) - rejected. Unit test in `tests/input.test.js`.
+
