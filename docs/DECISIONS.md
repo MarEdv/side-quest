@@ -573,3 +573,18 @@ Cache-Control, so heuristic freshness hid some effects and showed others that Gi
   while a `page`-kind screen is open (`body:has(...)`, `!important` to beat the inline style main.js sets; `:has` is in every evergreen
   browser). Alternative: a callback from ui.js to main.js on every push/back, more code for the same result. Regression test in
   `tests/pwa.test.js`; browser: hidden on Settings-over-pause and intro-over-end, visible again after Back.
+- **Browser verification** (headless Chrome 157 over CDP; a `mktemp -d` dir with a `side-quest` symlink served by `http.server`; recorded wins
+  by the D-27 kept-reference method). **Upgrade:** a `c28c484` worktree loaded twice (worker controlling, 30 cache entries, old menu "Play"),
+  an Arcade score and a saved setting written; the symlink then switched to a `git archive` of HEAD extracted with fresh mtimes (so
+  `http.server`'s If-Modified-Since check could not answer 304 with the old files). After one load the new worker was active with no waiting
+  worker, the cache had 32 entries including `src/levels.js` and `src/levelsui.js`, all 27 cached JS/HTML files were byte-identical to HEAD,
+  every module (incl. the two new ones) loaded, the menu showed Levels / Arcade, the score and setting were kept, and a reload and an offline
+  reload showed the new build. **Screens** (each looked at): Clear confirmation at 1280x720 / 844x390 / 390x844 (width cap holds, text names
+  scores and progress, the wipe removes both keys and the menu returns to "1 of 4 unlocked"); Settings with Hybrid selected (`wifeRoam`
+  disabled with "Hybrid mode always roams", saved); Levels list; L4 intro and a recorded L4 run (flags hybrid / hard / 3 / 12 / 320 / 175 s,
+  random seed, HUD "L4 · The Inspection", a forced-or-spotted Glasses quest at 9:20); pause in a level (label, Resume / Settings / Quit); Quit
+  from pause left the progress key unchanged; L4 win (no Next level after the last level, "New best! · Level best: 1360"); R replayed L4 with
+  the same flags; L4 sunset loss; L3 win at 844x390 and 390x844 (Next level / Retry / Menu, "The Inspection unlocked!", panel inside the
+  viewport, stats not covered); Next level -> intro, where R did not touch the ended day. Console: no errors or warnings in any run.
+- **Verdict:** ready to deploy after these commits. Open items for the owner, not blockers: the bots are not humans (L4 at ~22-38 % for a
+  perfect-pathing bot will be hard for people), and failing quests on purpose is a strong strategy (sloppy bot, above).
