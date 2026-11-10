@@ -1,4 +1,4 @@
-# Side Quest — Requirements
+# Garden Day — Requirements
 
 > **Living document.** Every change to gameplay, controls, tech, or flags MUST update this file
 > in the same commit. See `CLAUDE.md`. Requirement IDs are stable; never reuse a retired ID.
@@ -18,7 +18,7 @@ before sunset while completing — or sneakily avoiding — the side quests.
 
 | ID | Requirement | Status |
 |----|-------------|--------|
-| PR-1 | Game is called **"Side Quest"**, single player. | ✅ |
+| PR-1 | Game is called **"Garden Day"** (was "Side Quest" until 2026-11-10, D-30), single player. | ✅ |
 | PR-2 | Protagonist is a homeowner doing garden chores (raking leaves, trimming bushes, etc.). | ✅ |
 | PR-3 | The wife throws side quests at the protagonist. | ✅ |
 | PR-4 | Player must finish their chores while completing **or avoiding** side quests. | ✅ |
@@ -154,7 +154,7 @@ ensure gradually increased difficulty; keep the current play mode as an 'arcade 
 | NF-2 | Game logic is DOM-free and unit-tested with Node's built-in test runner (`node --test`). | ✅ |
 | NF-3 | 60 fps target; fixed-timestep simulation (1/60 s) independent of frame rate; frame dt clamped to [0, 0.25 s]. Canvas re-sizes on window resize and on devicePixelRatio change (D-13). | ✅ |
 | NF-4 | Deterministic seeded RNG (flag `seed`) so runs are reproducible. | ✅ |
-| NF-5 | Published on GitHub Pages at https://maredv.github.io/side-quest/games/side-quest/ as part of the Side Quest Project monorepo (root GitHub Actions workflow runs `npm test`, then deploys; no build step). Flags work via the URL query there too. | ✅ moved 2026-11-10 (root D-1, D-2); live at the new path |
+| NF-5 | Published on GitHub Pages at https://maredv.github.io/side-quest/games/garden-day/ as part of the Side Quest Project monorepo (root GitHub Actions workflow runs `npm test`, then deploys; no build step). Flags work via the URL query there too. | ✅ moved 2026-11-10 (root D-1, D-2); renamed folder to `garden-day` the same day (D-30) |
 
 ## 7. Out of scope (for now)
 - Gamepad, haptics, orientation lock, multiple levels/days, save games, localisation, multiplayer.

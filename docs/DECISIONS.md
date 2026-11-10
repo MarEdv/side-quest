@@ -49,3 +49,17 @@
 |----|------|------------|
 | A-1 | 2026-11-10 | The repo name stays `side-quest`, so the Pages URL stays https://maredv.github.io/side-quest/. |
 | A-2 | 2026-11-10 | Games don't need a link back to the launcher for now (browser back works); can be added per game. |
+
+### D-5 — Side Quest renamed to Garden Day; folder games/garden-day/ (2026-11-10)
+- **Chosen:** Owner renamed the game. The folder (and URL) moved to `games/garden-day/`; the player-facing name changed in the
+  title, menu heading, web app manifest, install texts, launcher card and docs. Kept: the gameplay term "side quests",
+  localStorage keys (`sidequest.v1.*`) and cache names (`sidequest-*`), so scores, levels and settings survive.
+- **Old URL:** `games/side-quest/` became a redirect stub (`game.json` `{ "movedTo": "garden-day" }`, skipped by the
+  registry; `index.html` redirects with the query kept) plus a retire `sw.js` that drops cache entries under that folder and
+  unregisters itself, for anyone who installed the game there.
+- **Root `sw.js` amended:** it no longer deletes a cache it emptied, because the game's worker shares the cache name and could
+  be filling it at the same moment.
+- **Alternatives:** rename the display name only (stable URL, but a folder name that no longer matches the game); also rename
+  storage keys (would wipe players' progress).
+- **Trade-off:** an install from the old `games/side-quest/` address keeps opening the redirect; players who want a
+  home-screen icon reinstall from `games/garden-day/`. The game was only at that path for a few hours.

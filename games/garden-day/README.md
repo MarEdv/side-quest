@@ -1,4 +1,4 @@
-# Side Quest
+# Garden Day
 
 A tiny single-player browser game. You are a homeowner who just wants to finish his garden chores
 before sunset. Your wife keeps handing you "side quests" (fetch the groceries, rescue the cat, take
@@ -7,7 +7,7 @@ sleeping on the couch. Stay out of her line of sight (hedges and the shed block 
 
 Zero dependencies: vanilla JS ES modules, Canvas 2D, WebAudio. No build step.
 
-**Play online:** https://maredv.github.io/side-quest/games/side-quest/ (part of the [Side Quest Project](../../README.md); deployed from `main` via GitHub Actions)
+**Play online:** https://maredv.github.io/side-quest/games/garden-day/ (part of the [Side Quest Project](../../README.md); deployed from `main` via GitHub Actions)
 
 ## Run
 

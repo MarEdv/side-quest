@@ -19,6 +19,13 @@ export function collect(root = ROOT) {
     if (!existsSync(join(dir, 'game.json'))) { errors.push(`games/${d.name}/game.json is missing`); continue; }
     let meta;
     try { meta = JSON.parse(readFileSync(join(dir, 'game.json'), 'utf8')); } catch (e) { errors.push(`games/${d.name}/game.json: ${e.message}`); continue; }
+    if (meta && typeof meta === 'object' && 'movedTo' in meta) {
+      // A renamed game's old folder: a redirect stub, not listed in the launcher.
+      if (typeof meta.movedTo !== 'string' || !existsSync(join(gamesDir, meta.movedTo, 'game.json'))) {
+        errors.push(`games/${d.name}/game.json: "movedTo" must name another game folder`);
+      }
+      continue;
+    }
     const errs = validateMeta(d.name, meta);
     if (meta?.thumbnail && !existsSync(join(dir, meta.thumbnail))) errs.push(`games/${d.name}/game.json: thumbnail ${meta.thumbnail} not found`);
     errors.push(...errs);

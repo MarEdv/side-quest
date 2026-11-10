@@ -1,10 +1,10 @@
 [
   {
-    "slug": "side-quest",
-    "path": "games/side-quest/",
-    "title": "Side Quest",
+    "slug": "garden-day",
+    "path": "games/garden-day/",
+    "title": "Garden Day",
     "description": "Finish the garden chores before sunset while your wife hands out side quests. Stay out of sight!",
-    "thumbnail": "games/side-quest/icons/icon-512.png",
+    "thumbnail": "games/garden-day/icons/icon-512.png",
     "tags": [
       "keyboard",
       "touch",

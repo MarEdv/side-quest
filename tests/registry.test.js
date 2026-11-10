@@ -16,6 +16,14 @@ test('games.json is in sync with the game folders (run npm run registry)', () =>
   assert.equal(readFileSync(join(ROOT, 'games.json'), 'utf8'), serialize(games));
 });
 
+test('a "movedTo" redirect stub is not listed, and its target is a listed game', () => {
+  const { games } = collect();
+  const stub = JSON.parse(readFileSync(join(ROOT, 'games', 'side-quest', 'game.json'), 'utf8'));
+  assert.equal(stub.movedTo, 'garden-day');
+  assert.ok(!games.some((g) => g.slug === 'side-quest'));
+  assert.ok(games.some((g) => g.slug === 'garden-day'));
+});
+
 test('validateMeta rejects bad slugs and missing fields', () => {
   assert.deepEqual(validateMeta('ok-game', { title: 'T', description: 'D' }), []);
   assert.equal(validateMeta('Bad_Slug', { title: 'T', description: 'D' }).length, 1);

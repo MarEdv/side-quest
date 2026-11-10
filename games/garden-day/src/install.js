@@ -5,7 +5,7 @@ import {
   withFinishedDay, withSnooze, withNeverAsk, withInstalled,
 } from './installmodel.js';
 
-// Relative URL: resolves against the page, so the worker's scope is the game's own folder (also under /side-quest/).
+// Relative URL: resolves against the page, so the worker's scope is the game's own folder (on Pages: /side-quest/games/garden-day/).
 export function registerServiceWorker() {
   if (!('serviceWorker' in navigator)) return;
   const reg = () => navigator.serviceWorker.register('sw.js').catch(() => { /* cosmetic: the game works without it */ });

@@ -1,7 +1,7 @@
 {
   "id": "./",
-  "name": "Side Quest",
-  "short_name": "Side Quest",
+  "name": "Garden Day",
+  "short_name": "Garden Day",
   "description": "Finish the garden chores before sunset while your wife hands out side quests.",
   "start_url": "./",
   "scope": "./",

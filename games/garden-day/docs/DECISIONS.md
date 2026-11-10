@@ -596,3 +596,11 @@ Cache-Control, so heuristic freshness hid some effects and showed others that Gi
   through the root GitHub Actions workflow (tests first); `.nojekyll` and the game's `.gitignore` moved to the root.
 - **Old root worker:** retired by the root `sw.js` (root `docs/DECISIONS.md` D-2), which leaves this game's cache entries alone.
 - **Alternatives / rationale:** see root `docs/DECISIONS.md` D-1.
+
+### D-30 — Renamed to "Garden Day" (2026-11-10) — amends PR-1, NF-5; supersedes the name in A-5 and earlier entries
+- **Chosen:** The game is now called **Garden Day** (owner's request) and lives in `games/garden-day/`. Changed: page title,
+  Apple web app title, manifest `name` / `short_name`, the main-menu heading, the install screens, `package.json` name,
+  README and agent rules. Earlier entries in this log keep the old name (append-only).
+- **Kept on purpose:** "side quests" as the in-game term for the wife's errands; the `sidequest.v1.*` localStorage keys and
+  `sidequest-*` cache names, so players keep their scores, level progress and settings.
+- **Old URL:** `games/side-quest/` redirects here; its retire worker is described in root `docs/DECISIONS.md` D-5.

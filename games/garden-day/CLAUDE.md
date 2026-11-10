@@ -1,4 +1,4 @@
-# Side Quest — rules for agents working in this repo
+# Garden Day — rules for agents working in this repo
 
 ## Non-negotiable
 1. **Keep `docs/REQUIREMENTS.md` up to date.** Any change to gameplay, controls, flags, tech, or scope must update the

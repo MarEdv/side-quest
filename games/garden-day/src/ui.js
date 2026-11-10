@@ -120,7 +120,7 @@ export function createUI(ctx, root = document.body) {
   api.register('main', {
     phase: 'title',
     build: () => h('div', { class: 'menu' },
-      h('h1', {}, 'SIDE QUEST'),
+      h('h1', {}, 'GARDEN DAY'),
       h('p', { class: 'tag' }, 'Finish the garden before sunset. Your wife has other plans.'),
       h('div', { class: 'col' },
         btn([h('span', {}, 'Levels'), h('small', {}, `${ctx.levels.unlockedCount()} of ${ctx.levels.list.length} unlocked`)], () => api.push('levels'), { primary: true, autofocus: true }),

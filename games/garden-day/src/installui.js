@@ -22,12 +22,12 @@ export function registerInstall(api, ctx, btn) {
 
   api.register('install-ios', {
     build: (a) => h('div', { class: 'menu' },
-      h('h2', {}, 'Install Side Quest'),
+      h('h2', {}, 'Install Garden Day'),
       h('p', { class: 'tag' }, 'iPhone and iPad have no install button, but it takes three taps:'),
       h('ol', { class: 'steps' },
         h('li', {}, 'Tap the ', h('span', { class: 'sicon' }, shareIcon(), h('b', {}, 'Share')), ' button. Safari shows it in the toolbar; other browsers keep it in their menu or address bar.'),
         h('li', {}, 'Scroll the sheet and tap ', h('b', {}, 'Add to Home Screen'), '.'),
-        h('li', {}, 'Tap ', h('b', {}, 'Add'), '. Side Quest now opens full-screen from your home screen and works offline.')),
+        h('li', {}, 'Tap ', h('b', {}, 'Add'), '. Garden Day now opens full-screen from your home screen and works offline.')),
       h('div', { class: 'row' }, h('button', { type: 'button', class: 'btn primary', 'data-autofocus': true, onclick: () => a.back() }, 'Back'))),
   });
 
@@ -38,7 +38,7 @@ export function registerInstall(api, ctx, btn) {
   const inviteBlock = () => {
     if (I.inviteKind() === 'none') return null;
     return h('div', { class: 'invite', role: 'group', 'aria-label': 'Install the app' },
-      h('p', { class: 'small' }, 'Add Side Quest to your home screen to play it like an app, even offline.'),
+      h('p', { class: 'small' }, 'Add Garden Day to your home screen to play it like an app, even offline.'),
       h('div', { class: 'row' },
         btn('Install app', doInstall, { guard: true }),
         btn('Not now', () => I.snooze(), { guard: true }),

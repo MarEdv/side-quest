@@ -47,6 +47,15 @@ git remote remove my-game
 Then move anything that must live at the repo root (CI workflows, `.gitignore` entries) out of `games/my-game/`, add
 `game.json` and run `npm run registry`. `git log --follow games/my-game/<file>` shows the full history.
 
+## Renaming a game
+
+1. `git mv games/<old> games/<new>` and change the title in `game.json`, `index.html` and any manifest.
+2. Leave a stub at `games/<old>/`: a `game.json` containing `{ "movedTo": "<new>" }` (the registry skips it and checks the
+   target exists) and an `index.html` that redirects to `../<new>/`, keeping `location.search` and `location.hash`.
+3. If the game had a service worker, also put a retire worker at `games/<old>/sw.js` (see `games/side-quest/sw.js`):
+   installed copies keep their old registration until a worker at that exact URL unregisters itself.
+4. Keep localStorage keys and cache names unchanged so players keep their progress. Run `npm run registry` and `npm test`.
+
 ## Things to watch
 
 - **Service workers**: register with a relative URL (`register('sw.js')`) so the scope stays inside the game folder, and use

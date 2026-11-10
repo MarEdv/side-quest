@@ -35,7 +35,7 @@ async function main() {
   }
 }
 
-// The old Side Quest home-screen app opens this page now (its start URL used to be the site root).
+// The old Side Quest (now Garden Day) home-screen app opens this page now (its start URL used to be the site root).
 if (matchMedia('(display-mode: standalone), (display-mode: fullscreen)').matches) {
   document.getElementById('moved').hidden = false;
 }
