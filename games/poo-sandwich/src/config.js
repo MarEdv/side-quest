@@ -4,7 +4,7 @@ export const CONFIG = {
   player: { r: 12, speed: 170 },
   boss: { r: 17, speed: 70, windup: 0.6, wanderPause: [0.5, 1.5] },
   // Sandwich speed (px/s) and throw interval (s) ramp with day progress 0..1
-  throwInterval: { start: 4.5, end: 1.8 },
+  throwInterval: { start: 5, end: 2.3 },
   sandwichSpeed: { start: 150, end: 330 },
   sandwichSpread: 0.07, // radians
   sandwichLead: 0.25, // seconds of lead on player velocity
@@ -15,16 +15,16 @@ export const CONFIG = {
     spawnInterval: { start: 7, end: 4 },
     firstSpawns: 2,
     expireStress: 0, // regular tasks do not expire; they pile up
-    pileStressPerSec: 0.35, // per task beyond 2 active
+    pileStressPerSec: 0.25, // per task beyond 2 active
     points: 100,
     stressRelief: 4,
     coffeeRelief: 6,
   },
   poo: {
-    deadline: 28,
+    deadline: 34,
     deadlineChoice: 36,
-    hitStress: 8,
-    expireStress: 25,
+    hitStress: 6,
+    expireStress: 16,
     points: 300,
     choicePoints: 450,
     ignoreStress: 4,

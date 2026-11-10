@@ -165,9 +165,7 @@ export function createRenderer(canvas) {
       } else {
         ctx.setLineDash([4, 6]); ctx.lineWidth = 1.5; ctx.strokeStyle = 'rgba(255,255,255,.18)'; ctx.stroke(); ctx.setLineDash([]);
       }
-      const label = st.id === 'desk' ? '' : st.label;
-      if (label) text(label, st.x, st.y + st.r + 10, 11, 'rgba(255,255,255,.55)');
-      else text('Your desk', st.x, st.y + st.r - 62, 11, 'rgba(255,255,255,.55)');
+      if (st.id !== 'desk' && st.id !== 'meeting') text(st.label, st.x, st.y + st.r + 10, 11, 'rgba(255,255,255,.55)');
       // marker of what is waiting here
       if (t) emoji(t.kind === 'poo' ? '💩' : st.icon, st.x, st.y - 2, 22 + (t.kind === 'poo' ? 2 * Math.sin(now * 8) : 0));
     }
@@ -287,7 +285,7 @@ export function createRenderer(canvas) {
     text(`🕘 ${clockString(s)}`, 12, TOP_H / 2, fs + 2, COL.text, 'left', '800');
     const sc = `⭐ ${s.score}`;
     text(sc, W - 58, TOP_H / 2, fs + 2, COL.warn, 'right', '800');
-    const bw = Math.min(380, W - (small ? 170 : 280)), bh = 18, bx = (W - bw) / 2 + (small ? 6 : 0), by = TOP_H / 2 - bh / 2;
+    const bw = small ? W - 246 : Math.min(380, W - 280), bh = 18, bx = small ? 104 : (W - bw) / 2, by = TOP_H / 2 - bh / 2;
     ctx.fillStyle = '#2a3042'; rrect(bx, by, bw, bh, 9); ctx.fill();
     const f = Math.max(0, Math.min(1, s.stress / C.stress.max));
     const col = f < 0.5 ? COL.good : f < 0.75 ? COL.warn : COL.bad;
