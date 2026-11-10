@@ -163,7 +163,9 @@ export function spawnTask(s) {
 
 export function addPooTask(s, accepted = false) {
   if (s.tasks.filter((t) => t.kind === 'poo').length >= C.poo.maxActive) return null;
-  const tpl = pick(s, POO_TASKS);
+  const poo = s.tasks.filter((t) => t.kind === 'poo');
+  const free = POO_TASKS.filter((tpl) => !poo.some((t) => t.label === tpl.label));
+  const tpl = pick(s, free.length ? free : POO_TASKS);
   const dl = s.flags.poo === 'choice' ? C.poo.deadlineChoice : C.poo.deadline;
   const task = {
     id: s.nextId++, kind: 'poo', station: tpl.station, icon: tpl.icon, label: tpl.label, hold: tpl.hold,
@@ -234,7 +236,7 @@ function updatePlayer(s, dt, input) {
   const ox = p.x, oy = p.y;
   const np = moveCircle(p.x, p.y, mx * sp * dt, my * sp * dt, p.r);
   p.x = np.x; p.y = np.y;
-  p.vx = (p.x - ox) / dt; p.vy = (p.y - oy) / dt;
+  p.vx = dt > 0 ? (p.x - ox) / dt : 0; p.vy = dt > 0 ? (p.y - oy) / dt : 0;
   if (Math.abs(mx) > 0.1) p.face = mx > 0 ? 1 : -1;
   p.hitFlash = Math.max(0, p.hitFlash - dt);
 }
@@ -308,21 +310,34 @@ function updateProjectiles(s, dt) {
   const p = s.player;
   const keep = [];
   for (const pr of s.projectiles) {
-    const step = Math.hypot(pr.vx, pr.vy) * dt;
-    pr.x += pr.vx * dt; pr.y += pr.vy * dt;
-    pr.traveled += step;
     pr.rot += dt * 12;
-    if (dist(pr.x, pr.y, p.x, p.y) < pr.r + p.r) { onHit(s, pr); continue; }
-    if (OBSTACLES.some((rc) => rc.kind !== 'table' && pointInRect(pr.x, pr.y, rc))) { splat(s, pr.x, pr.y, false); s.stats.dodged++; continue; }
-    if (pr.traveled >= pr.dist) {
-      splat(s, pr.x, pr.y, s.flags.poo === 'choice');
-      s.stats.dodged++;
-      emit(s, 'dodged', { x: pr.x, y: pr.y });
-      continue;
+    // sub-step so fast sandwiches cannot tunnel through 12 px walls on slow frames
+    const n = Math.max(1, Math.ceil((Math.hypot(pr.vx, pr.vy) * dt) / 6));
+    const h = dt / n;
+    let done = false;
+    for (let i = 0; i < n && !done; i++) {
+      pr.x += pr.vx * h; pr.y += pr.vy * h;
+      pr.traveled += Math.hypot(pr.vx, pr.vy) * h;
+      done = stepProjectile(s, pr, p);
     }
-    keep.push(pr);
+    if (!done) keep.push(pr);
   }
   s.projectiles = keep;
+}
+
+// Returns true when the projectile is consumed (hit, wall splat or landed).
+function stepProjectile(s, pr, p) {
+  if (dist(pr.x, pr.y, p.x, p.y) < pr.r + p.r) { onHit(s, pr); return true; }
+  if (OBSTACLES.some((rc) => rc.kind !== 'table' && pointInRect(pr.x, pr.y, rc))) { splat(s, pr.x, pr.y, false); s.stats.dodged++; return true; }
+  if (pr.traveled >= pr.dist) {
+    // a pickup landing on the meeting table would be unreachable
+    const onTable = OBSTACLES.some((rc) => rc.kind === 'table' && pointInRect(pr.x, pr.y, rc));
+    splat(s, pr.x, pr.y, s.flags.poo === 'choice' && !onTable);
+    s.stats.dodged++;
+    emit(s, 'dodged', { x: pr.x, y: pr.y });
+    return true;
+  }
+  return false;
 }
 
 function onHit(s, pr) {

@@ -170,3 +170,36 @@ test('difficulty ramps: sandwiches get faster, throws more frequent', async () =
   assert.ok(throwInterval(1) < throwInterval(0));
   assert.ok(sandwichSpeed(1) > sandwichSpeed(0));
 });
+
+test('zero dt frame (start/resume) keeps player velocity finite', () => {
+  const s = quiet(createGame({}, 1));
+  update(s, 0, {});
+  assert.ok(Number.isFinite(s.player.vx) && Number.isFinite(s.player.vy));
+});
+
+test('fast sandwich on a slow frame cannot tunnel through a thin wall', () => {
+  const s = quiet(createGame({}, 1));
+  s.player.x = 600; s.player.y = 470;
+  // meeting-room east wall spans x 260..272; 330 px/s * 0.05 s = 16.5 px per frame
+  s.projectiles.push({ id: 99, x: 240, y: 100, vx: 330, vy: 0, tx: 440, ty: 100, traveled: 0, dist: 200, rot: 0, r: C.sandwichR });
+  for (let i = 0; i < 20; i++) update(s, 0.05, {});
+  assert.equal(s.projectiles.length, 0);
+  assert.equal(s.splats.length, 1);
+  assert.ok(s.splats[0].x <= 272, 'splatted at the wall, not beyond it');
+});
+
+test('choice mode: a sandwich landing on the meeting table is not a pickup', () => {
+  const s = quiet(createGame({ poo: 'choice' }, 1));
+  s.player.x = 600; s.player.y = 470;
+  s.projectiles.push({ id: 99, x: 100, y: 78, vx: 150, vy: 0, tx: 145, ty: 78, traveled: 0, dist: 45, rot: 0, r: C.sandwichR });
+  for (let i = 0; i < 30; i++) update(s, 1 / 60, {});
+  assert.equal(s.splats.length, 1);
+  assert.equal(s.splats[0].pickup, false);
+});
+
+test('active poo tasks are not duplicated', () => {
+  const s = quiet(createGame({}, 1));
+  for (let i = 0; i < C.poo.maxActive; i++) addPooTask(s);
+  const labels = s.tasks.map((t) => t.label);
+  assert.equal(new Set(labels).size, labels.length);
+});

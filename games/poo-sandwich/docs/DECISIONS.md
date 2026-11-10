@@ -60,3 +60,10 @@
 
 ## D15 — 2026-11-10 — Pause behaviour
 - Pausing also happens on tab hide and window blur. Enter/Space start, restart or resume from screens.
+
+## D16 — 2026-11-10 — Verification review: logic fixes
+- **Zero-dt frames:** the first frame after start/resume has `dt = 0`, which made player velocity `0/0 = NaN` (harmless only by luck, since the boss aims with it). Velocity is now 0 for zero-dt frames.
+- **Projectile tunneling:** at the 0.05 s dt cap a late-day sandwich moves 16.5 px per update, more than the 12 px meeting-room walls. Projectiles now sub-step in <= 6 px steps.
+- **Unreachable pickups:** in `choice` mode a sandwich could land on the meeting table (it flies over tables), leaving a pickup the player cannot reach and guaranteed "ignored" stress. Landings on the table now splat without a pickup.
+- **Duplicate poo tasks:** two identical poo tasks could be active at once; poo templates are now drawn from those not already active (like regular tasks).
+- **Not changed:** `CONFIG.stress.passiveRegen` is unused; wiring it in would change the tuned balance (D13), so it is left as dead config.
