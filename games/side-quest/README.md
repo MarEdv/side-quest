@@ -7,7 +7,7 @@ sleeping on the couch. Stay out of her line of sight (hedges and the shed block 
 
 Zero dependencies: vanilla JS ES modules, Canvas 2D, WebAudio. No build step.
 
-**Play online:** https://maredv.github.io/side-quest/ (deployed from `main` via GitHub Pages)
+**Play online:** https://maredv.github.io/side-quest/games/side-quest/ (part of the [Side Quest Project](../../README.md); deployed from `main` via GitHub Actions)
 
 ## Run
 

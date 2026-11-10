@@ -2,7 +2,7 @@
 
 A tiny single-player browser game: survive the office work day while your boss throws poo sandwiches at you.
 
-**Play:** https://maredv.github.io/poo-sandwich/
+**Play:** https://maredv.github.io/side-quest/games/poo-sandwich/ (part of the [Side Quest Project](../../README.md))
 
 - Requirements: [docs/REQUIREMENTS.md](docs/REQUIREMENTS.md)
 - Decisions & assumptions: [docs/DECISIONS.md](docs/DECISIONS.md)

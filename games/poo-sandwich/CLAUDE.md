@@ -17,4 +17,4 @@
 - Tests: `npm test` (runs `node --test`)
 
 ## Deploy
-- Push to `main` → GitHub Actions → GitHub Pages: https://maredv.github.io/poo-sandwich/
+- This game lives in the Side Quest Project monorepo (see the root `CLAUDE.md`). Push to `main` → GitHub Actions (root workflow) → GitHub Pages: https://maredv.github.io/side-quest/games/poo-sandwich/

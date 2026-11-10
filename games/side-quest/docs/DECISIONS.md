@@ -588,3 +588,11 @@ Cache-Control, so heuristic freshness hid some effects and showed others that Gi
   viewport, stats not covered); Next level -> intro, where R did not touch the ended day. Console: no errors or warnings in any run.
 - **Verdict:** ready to deploy after these commits. Open items for the owner, not blockers: the bots are not humans (L4 at ~22-38 % for a
   perfect-pathing bot will be hard for people), and failing quests on purpose is a strong strategy (sloppy bot, above).
+
+### D-29 — Moved into the Side Quest Project monorepo (2026-11-10) — amends NF-5, D-25 (scope)
+- **Chosen:** The game now lives in `games/side-quest/` of the same repo, served at
+  https://maredv.github.io/side-quest/games/side-quest/; the site root is a launcher for several games. Game code is
+  unchanged: all URLs are relative, so `sw.js` now registers with scope `/side-quest/games/side-quest/`. Deploys go
+  through the root GitHub Actions workflow (tests first); `.nojekyll` and the game's `.gitignore` moved to the root.
+- **Old root worker:** retired by the root `sw.js` (root `docs/DECISIONS.md` D-2), which leaves this game's cache entries alone.
+- **Alternatives / rationale:** see root `docs/DECISIONS.md` D-1.

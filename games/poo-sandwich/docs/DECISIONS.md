@@ -77,3 +77,8 @@
 - **Restart:** floating texts / screen shake from the previous day were carried into a new game; `renderer.reset()` clears them on start. Verified that restart keeps a single RAF loop (game time advances 1.0 s per real second after several restarts) and that P/Esc/Space/blur pause and resume correctly.
 - **Canvas CSS:** `100vh` replaced by `100%` (iOS Safari's 100vh is taller than the visible area); the size is set from `innerWidth/innerHeight` anyway.
 - **Known, not changed:** in portrait the 16:9 world is scaled to ~0.4 (characters ~10 px on a 390 px phone) with spare space below the to-do list; a rotated or zoomed camera would be a design change. In `auto` controls a touch on the right half of the screen does nothing (by design, D12).
+
+## D18 — 2026-11-10 — Moved into the Side Quest Project monorepo
+- History imported into `MarEdv/side-quest` under `games/poo-sandwich/` (git filter-repo + merge); now served at
+  https://maredv.github.io/side-quest/games/poo-sandwich/ behind the project launcher. Game code unchanged (all URLs relative).
+- The Pages workflow moved to the repo root and now runs every game's tests before deploying. See root `docs/DECISIONS.md` D-1.
