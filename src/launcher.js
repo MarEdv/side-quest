@@ -1,5 +1,6 @@
 // Launcher: reads games.json and renders one card per game. Browser glue only; the rules live in registry.js.
 import { sortGames } from './registry.js';
+import { installKind, detectIOS, detectStandalone } from './installmodel.js';
 
 const list = document.getElementById('games');
 const status = document.getElementById('status');
@@ -35,9 +36,51 @@ async function main() {
   }
 }
 
-// The old Side Quest (now Garden Day) home-screen app opens this page now (its start URL used to be the site root).
-if (matchMedia('(display-mode: standalone), (display-mode: fullscreen)').matches) {
-  document.getElementById('moved').hidden = false;
+// Install as an app (L-7, D-6): a native prompt where the browser offers one, Share > Add to Home Screen steps on iOS.
+// No service worker: Chromium no longer needs one to install, and the root sw.js is reserved (D-2).
+function setupInstall() {
+  const button = document.getElementById('install');
+  const ios = document.getElementById('ios-install');
+  let deferred = null;
+  let installed = false;
+  const isIOS = detectIOS({ userAgent: navigator.userAgent, platform: navigator.platform, maxTouchPoints: navigator.maxTouchPoints || 0 });
+  const isStandalone = () => detectStandalone({
+    navStandalone: navigator.standalone === true,
+    standaloneMQ: matchMedia('(display-mode: standalone)').matches,
+    fullscreenMQ: matchMedia('(display-mode: fullscreen)').matches,
+    touchHardware: (navigator.maxTouchPoints || 0) > 0 || matchMedia('(pointer: coarse)').matches,
+    referrer: document.referrer,
+  });
+  const kind = () => installKind({ isStandalone: isStandalone(), installed, hasDeferredPrompt: !!deferred, isIOS });
+  const refresh = () => {
+    button.hidden = kind() === 'none';
+    if (button.hidden) ios.hidden = true;
+  };
+
+  window.addEventListener('beforeinstallprompt', (e) => {
+    e.preventDefault(); // prompt from our own button instead of the browser's mini-infobar
+    deferred = e;
+    refresh();
+  });
+  window.addEventListener('appinstalled', () => { installed = true; deferred = null; refresh(); });
+  button.addEventListener('click', async () => {
+    if (kind() === 'native') {
+      const prompt = deferred;
+      deferred = null; // each event can prompt once
+      try {
+        await prompt.prompt();
+        if ((await prompt.userChoice).outcome === 'accepted') installed = true;
+      } catch (_) { /* the browser refused to show it: treat as dismissed */ }
+      refresh();
+    } else if (kind() === 'ios-instructions') {
+      ios.hidden = false;
+      document.getElementById('ios-install-close').focus();
+    }
+  });
+  document.getElementById('ios-install-close').addEventListener('click', () => { ios.hidden = true; button.focus(); });
+  refresh();
 }
+
+setupInstall();
 
 main();

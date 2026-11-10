@@ -9,6 +9,9 @@ A collection of small single-player browser games about getting distracted, behi
 | [Garden Day](games/garden-day/) | Finish the garden chores before sunset while your wife hands out side quests. |
 | [Poo Sandwich](games/poo-sandwich/) | Survive the office work day while your boss throws poo sandwiches at you. |
 
+Install it as an app with the **Install app** button (Chrome, Edge, Android), or on iPhone / iPad via Share > **Add to Home
+Screen**. Games open inside the app.
+
 Zero dependencies: vanilla JS ES modules, no build step. Each game lives in its own folder with its own README,
 tests and docs.
 

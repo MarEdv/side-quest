@@ -29,8 +29,10 @@ without changing the launcher.
 | L-2 | A card is a normal link to `games/<slug>/` (no iframe), so each game keeps full-screen, input and its own PWA. | ✅ |
 | L-3 | Works with keyboard (cards are focusable links with a visible focus ring), mouse and touch; responsive down to 320 px. | ✅ |
 | L-4 | Follows the system dark/light theme; respects reduced motion. | ✅ |
-| L-5 | When opened as the old installed Side Quest app (standalone display mode), shows a "Side Quest is now Garden Day" notice linking to it. | 🚧 Not tried on a device. |
+| L-5 | ~~When opened as the old installed Side Quest app (standalone display mode), shows a "Side Quest is now Garden Day" notice.~~ | ❌ Retired 2026-11-10 (D-6): the launcher is now an app itself, so standalone no longer means "old Side Quest app". The Garden Day card says "Formerly called Side Quest" instead. |
 | L-6 | If `games.json` can't be loaded, shows an error message instead of an empty page. | ✅ |
+| L-7 | The launcher can be installed as an app ("Side Quests" on the home screen): web app manifest (scope = whole site, so games open inside the app), real PNG icons (`any` + `maskable`, `apple-touch-icon`), Apple meta tags. An **Install app** button uses the browser's prompt where one exists (Chromium), shows Share > Add to Home Screen steps on iOS / iPadOS, and is hidden elsewhere and when already running as an app. | ✅ Chrome 157 reports no installability errors; native path (prompt, accept → hidden), iOS steps at 390 px and the hidden-when-standalone case checked in headless Chrome (D-6). 🚧 not installed on a real phone. |
+| L-8 | Installing needs no service worker; the launcher doesn't work offline (games with their own worker, such as Garden Day, still do once visited). | ✅ D-6 |
 
 ## 4. Registry
 
