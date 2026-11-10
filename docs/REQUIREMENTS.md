@@ -19,7 +19,7 @@ without changing the launcher.
 | PR-2 | The git history of each imported game is kept. | ✅ D-1: `git log --follow games/<slug>/…` reaches each game's first commit. |
 | PR-3 | A web app lets the player pick one of the games. | ✅ Launcher at the site root (L-1). |
 | PR-4 | More games can be added dynamically. | ✅ Folder + `game.json` + `npm run registry` (R-1..R-3, `docs/ADDING-A-GAME.md`). |
-| PR-5 | Published on GitHub Pages. | 🚧 Workflow in place (DP-1); first deploy pending. |
+| PR-5 | Published on GitHub Pages. | ✅ https://maredv.github.io/side-quest/ (DP-1). |
 
 ## 3. Launcher
 
@@ -46,5 +46,6 @@ without changing the launcher.
 |----|-------------|--------|
 | T-1 | Zero dependencies, vanilla ES modules, no build step; `npm start` serves everything. | ✅ |
 | T-2 | Root `npm test` runs the root tests and every game's own `npm test` in its folder. | ✅ `tools/test-all.mjs` |
-| DP-1 | Push to `main` → Actions runs `npm test`, then deploys the repo root to Pages at https://maredv.github.io/side-quest/. | 🚧 Pages source must be set to "GitHub Actions". |
+| DP-1 | Push to `main` → Actions runs `npm test`, then deploys the repo root to Pages at https://maredv.github.io/side-quest/. | ✅ Pages source set to GitHub Actions; first deploy 2026-11-10 green, launcher, `games.json`, `sw.js` and both games return 200. |
+| DP-3 | The old https://maredv.github.io/poo-sandwich/ URL redirects to `games/poo-sandwich/` (query string kept); `MarEdv/poo-sandwich` is archived. | ✅ |
 | DP-2 | The old Side Quest root service worker is retired without breaking the relocated game's offline cache. | ✅ Root `sw.js` (D-2), unit-tested in `tests/sw.test.js`. 🚧 not tried on a device with the old app installed. |
