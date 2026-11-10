@@ -1,0 +1,27 @@
+[
+  {
+    "slug": "side-quest",
+    "path": "games/side-quest/",
+    "title": "Side Quest",
+    "description": "Finish the garden chores before sunset while your wife hands out side quests. Stay out of sight!",
+    "thumbnail": "games/side-quest/icons/icon-512.png",
+    "tags": [
+      "keyboard",
+      "touch",
+      "installable"
+    ],
+    "order": 1
+  },
+  {
+    "slug": "poo-sandwich",
+    "path": "games/poo-sandwich/",
+    "title": "Poo Sandwich",
+    "description": "Survive the office work day while your boss throws poo sandwiches at you.",
+    "icon": "🥪",
+    "tags": [
+      "keyboard",
+      "touch"
+    ],
+    "order": 2
+  }
+]
