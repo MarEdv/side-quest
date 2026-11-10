@@ -8,7 +8,8 @@ html, body {
   touch-action: none; overscroll-behavior: none; -webkit-user-select: none; user-select: none;
 }
 body { position: fixed; inset: 0; padding: env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left); }
-canvas { position: fixed; left: 0; top: 0; width: 100vw; height: 100vh; display: block; touch-action: none; }
+/* size is set from innerWidth/innerHeight in render.js; 100% (not 100vh) avoids iOS Safari's tall 100vh before that */
+canvas { position: fixed; left: 0; top: 0; width: 100%; height: 100%; display: block; touch-action: none; }
 
 .icon-btn {
   position: fixed; top: calc(3px + env(safe-area-inset-top)); right: calc(6px + env(safe-area-inset-right));
@@ -22,7 +23,7 @@ canvas { position: fixed; left: 0; top: 0; width: 100vw; height: 100vh; display:
 }
 .screen[hidden], .icon-btn[hidden] { display: none; }
 .card {
-  background: var(--panel); border-radius: 18px; padding: 22px 24px; width: min(520px, 100%); max-height: 100%;
+  background: var(--panel); border-radius: 18px; padding: 22px 24px; width: min(520px, 100%);
   box-shadow: 0 12px 40px rgba(0, 0, 0, .5); text-align: center; margin: auto;
 }
 h1 { margin: 0 0 4px; font-size: clamp(26px, 6vw, 36px); }
@@ -43,4 +44,17 @@ button.big:active { transform: translateY(1px); filter: brightness(.9); }
 @media (max-height: 520px) {
   .card { padding: 12px 18px; } .howto { font-size: 13px; margin: 8px 0; } .howto li { margin: 4px 0; }
   button.big { min-height: 44px; font-size: 16px; margin-top: 6px; }
+}
+/* landscape phones: keep the title card (and its Start button) within one screen */
+@media (max-height: 420px) {
+  .screen { padding-top: calc(6px + env(safe-area-inset-top)); padding-bottom: calc(6px + env(safe-area-inset-bottom)); }
+  .card { padding: 8px 16px; width: min(640px, 100%); }
+  h1 { font-size: 24px; } h2 { font-size: 22px; margin-bottom: 4px; }
+  p { margin: 4px 0; line-height: 1.3; }
+  .howto { font-size: 12.5px; line-height: 1.3; margin: 6px 0; } .howto li { margin: 2px 0; }
+  .controls, .flags, .best { font-size: 12px; }
+  button.big { min-height: 40px; }
+}
+@media (max-width: 360px) {
+  .card { padding: 14px 14px; } .howto { font-size: 13.5px; } .howto li { margin: 5px 0; }
 }

@@ -67,3 +67,13 @@
 - **Unreachable pickups:** in `choice` mode a sandwich could land on the meeting table (it flies over tables), leaving a pickup the player cannot reach and guaranteed "ignored" stress. Landings on the table now splat without a pickup.
 - **Duplicate poo tasks:** two identical poo tasks could be active at once; poo templates are now drawn from those not already active (like regular tasks).
 - **Not changed:** `CONFIG.stress.passiveRegen` is unused; wiring it in would change the tuned balance (D13), so it is left as dead config.
+
+## D17 — 2026-11-10 — Verification review: layout and mobile fixes
+- **Method:** headless Chrome 157 driven over the DevTools protocol from a scratch Node script (outside the repo): `Emulation.setDeviceMetricsOverride` (DPR 3, mobile), touch emulation, `Emulation.setSafeAreaInsetsOverride` for iPhone-style insets, CDP mouse/touch/key events, and `?debug=1`'s `window.__game` to stage mid-game states (wind-up, sandwich in flight, progress ring, poo tasks, game over). No extra debug flag was needed.
+- **Safe areas:** with `viewport-fit=cover` the canvas HUD was drawn under the notch/status bar while the HTML pause button respected `env(safe-area-inset-*)`, so in portrait the button sat over the map and in landscape it covered the score. The renderer now reads the insets (from the body's `env()` padding) and lays out top bar, world and to-do panel inside the safe area; only backgrounds bleed to the edges.
+- **Title card on landscape phones:** the card had `max-height: 100%`, so on 390 px tall screens its content spilled out below the card. The cap is removed (the overlay scrolls) and a `max-height: 420px` rule compacts the card so the Start button fits on 844x390 / 568x320.
+- **Small HUD:** at 320 px wide the stress bar is ~74 px and "STRESS 62%" overflowed it; narrow bars show only the percentage.
+- **Overlay mode:** the "EXEC SUITE" label showed through the semi-transparent to-do panel; it is not drawn when the panel covers it.
+- **Restart:** floating texts / screen shake from the previous day were carried into a new game; `renderer.reset()` clears them on start. Verified that restart keeps a single RAF loop (game time advances 1.0 s per real second after several restarts) and that P/Esc/Space/blur pause and resume correctly.
+- **Canvas CSS:** `100vh` replaced by `100%` (iOS Safari's 100vh is taller than the visible area); the size is set from `innerWidth/innerHeight` anyway.
+- **Known, not changed:** in portrait the 16:9 world is scaled to ~0.4 (characters ~10 px on a 390 px phone) with spare space below the to-do list; a rotated or zoomed camera would be a design change. In `auto` controls a touch on the right half of the screen does nothing (by design, D12).

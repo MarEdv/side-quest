@@ -45,6 +45,7 @@ function describeFlags() {
 function start() {
   state = createGame(flags, (Date.now() & 0x7fffffff) || 1);
   input.reset();
+  renderer.reset();
   last = 0;
   setMode('playing');
 }

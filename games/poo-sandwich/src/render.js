@@ -16,36 +16,40 @@ const COL = {
 export function createRenderer(canvas) {
   const ctx = canvas.getContext('2d');
   let W = 0, H = 0, dpr = 1;
+  let inset = { t: 0, r: 0, b: 0, l: 0 }; // safe-area insets (CSS px)
   let layout = null;
   let fx = []; // floating texts
   let shake = 0;
   let lastNow = 0;
   let fps = 60;
 
+  // Everything is laid out inside the safe area (notch, home indicator); only backgrounds bleed.
   function computeLayout() {
-    const portrait = H / W > 1.15;
+    const L = inset.l, CW = W - inset.l - inset.r, CH = H - inset.t - inset.b;
+    const top = inset.t + TOP_H;
+    const portrait = CH / CW > 1.15;
     let mode, scale, ox, oy, panel;
-    const availH = H - TOP_H;
+    const availH = CH - TOP_H;
     if (portrait) {
       mode = 'below';
-      scale = W / WORLD.w;
-      ox = 0; oy = TOP_H;
+      scale = CW / WORLD.w;
+      ox = L; oy = top;
       const py = oy + WORLD.h * scale + 8;
-      panel = { x: 10, y: py, w: W - 20, h: Math.max(0, H - py - 8) };
+      panel = { x: L + 10, y: py, w: CW - 20, h: Math.max(0, H - inset.b - py - 8) };
     } else {
-      let s = Math.min(W / WORLD.w, availH / WORLD.h);
-      if (s < 0.9 && W - 200 > 300) {
+      let s = Math.min(CW / WORLD.w, availH / WORLD.h);
+      if (s < 0.9 && CW - 200 > 300) {
         mode = 'side';
-        const side = Math.min(240, Math.max(190, W * 0.24));
-        scale = Math.min((W - side) / WORLD.w, availH / WORLD.h);
-        ox = (W - side - WORLD.w * scale) / 2;
-        oy = TOP_H + (availH - WORLD.h * scale) / 2;
-        panel = { x: W - side + 4, y: TOP_H + 4, w: side - 12, h: availH - 8 };
+        const side = Math.min(240, Math.max(190, CW * 0.24));
+        scale = Math.min((CW - side) / WORLD.w, availH / WORLD.h);
+        ox = L + (CW - side - WORLD.w * scale) / 2;
+        oy = top + (availH - WORLD.h * scale) / 2;
+        panel = { x: L + CW - side + 4, y: top + 4, w: side - 12, h: availH - 8 };
       } else {
         mode = 'overlay';
         scale = s;
-        ox = (W - WORLD.w * scale) / 2;
-        oy = TOP_H + (availH - WORLD.h * scale) / 2;
+        ox = L + (CW - WORLD.w * scale) / 2;
+        oy = top + (availH - WORLD.h * scale) / 2;
         panel = { x: ox + 746 * scale, y: oy + 22 * scale, w: 208 * scale, h: 172 * scale };
       }
     }
@@ -55,6 +59,10 @@ export function createRenderer(canvas) {
   function resize() {
     dpr = Math.min(window.devicePixelRatio || 1, 3);
     W = window.innerWidth; H = window.innerHeight;
+    // body padding is env(safe-area-inset-*) (see style.css)
+    const cs = getComputedStyle(document.body);
+    const px = (v) => parseFloat(v) || 0;
+    inset = { t: px(cs.paddingTop), r: px(cs.paddingRight), b: px(cs.paddingBottom), l: px(cs.paddingLeft) };
     canvas.width = Math.round(W * dpr); canvas.height = Math.round(H * dpr);
     canvas.style.width = W + 'px'; canvas.style.height = H + 'px';
     computeLayout();
@@ -145,6 +153,7 @@ export function createRenderer(canvas) {
   }
 
   function drawCeoDecor() {
+    if (layout.mode === 'overlay') return; // hidden under the to-do panel
     const o = OBSTACLES.find((x) => x.kind === 'ceo');
     emoji('🏢', o.x + o.w - 22, o.y + o.h - 22, 18);
     text('EXEC SUITE', o.x + 60, o.y + o.h - 14, 11, 'rgba(255,255,255,.35)');
@@ -279,21 +288,22 @@ export function createRenderer(canvas) {
 
   // ---- HUD (screen space) ----
   function drawTopBar(s) {
-    ctx.fillStyle = '#10131c'; ctx.fillRect(0, 0, W, TOP_H);
-    const small = W < 520;
+    const L = inset.l, CW = W - inset.l - inset.r, T = inset.t, mid = T + TOP_H / 2;
+    ctx.fillStyle = '#10131c'; ctx.fillRect(0, 0, W, T + TOP_H);
+    const small = CW < 520;
     const fs = small ? 15 : 18;
-    text(`🕘 ${clockString(s)}`, 12, TOP_H / 2, fs + 2, COL.text, 'left', '800');
+    text(`🕘 ${clockString(s)}`, L + 12, mid, fs + 2, COL.text, 'left', '800');
     const sc = `⭐ ${s.score}`;
-    text(sc, W - 58, TOP_H / 2, fs + 2, COL.warn, 'right', '800');
-    const bw = small ? W - 246 : Math.min(380, W - 280), bh = 18, bx = small ? 104 : (W - bw) / 2, by = TOP_H / 2 - bh / 2;
+    text(sc, L + CW - 58, mid, fs + 2, COL.warn, 'right', '800');
+    const bw = small ? CW - 246 : Math.min(380, CW - 280), bh = 18, bx = L + (small ? 104 : (CW - bw) / 2), by = mid - bh / 2;
     ctx.fillStyle = '#2a3042'; rrect(bx, by, bw, bh, 9); ctx.fill();
     const f = Math.max(0, Math.min(1, s.stress / C.stress.max));
     const col = f < 0.5 ? COL.good : f < 0.75 ? COL.warn : COL.bad;
     ctx.fillStyle = col; rrect(bx, by, Math.max(bh, bw * f), bh, 9); ctx.fill();
-    text(`STRESS ${Math.round(s.stress)}%`, bx + bw / 2, TOP_H / 2 + 1, 11, '#0c0f16', 'center', '900');
+    text(`${bw < 110 ? '' : 'STRESS '}${Math.round(s.stress)}%`, bx + bw / 2, mid + 1, 11, '#0c0f16', 'center', '900');
     if (f > 0.8 && Math.floor(performance.now() / 250) % 2) { ctx.strokeStyle = COL.bad; ctx.lineWidth = 2; rrect(bx - 1, by - 1, bw + 2, bh + 2, 10); ctx.stroke(); }
     // day progress line
-    ctx.fillStyle = '#5b6bff'; ctx.fillRect(0, TOP_H - 3, W * s.day, 3);
+    ctx.fillStyle = '#5b6bff'; ctx.fillRect(0, T + TOP_H - 3, W * s.day, 3);
   }
 
   function drawTasks(s, now) {
@@ -396,8 +406,11 @@ export function createRenderer(canvas) {
     drawTopBar(s);
     drawTasks(s, now);
     drawJoystick(input);
-    if (s.flags.debug) text(`${Math.round(fps)} fps  ${layout.mode} x${layout.scale.toFixed(2)}`, 8, H - 10, 12, '#0f0', 'left');
+    if (s.flags.debug) text(`${Math.round(fps)} fps  ${layout.mode} x${layout.scale.toFixed(2)}`, inset.l + 8, H - inset.b - 10, 12, '#0f0', 'left');
   }
 
-  return { resize, draw, handle, toWorld, get layout() { return layout; } };
+  // Clear transient effects (floating texts, shake) when a new day starts.
+  function reset() { fx = []; shake = 0; }
+
+  return { resize, draw, handle, toWorld, reset, get layout() { return layout; } };
 }

@@ -33,9 +33,9 @@ and solving them.
 | ID | Requirement | Status |
 |----|-------------|--------|
 | C1 | Desktop: arrow keys / WASD to move, P/Esc to pause. | ✅ |
-| C2 | Mobile: touch controls (see flag `controls`). Playable in portrait and landscape. | 🚧 Implemented (joystick, tap-to-move with BFS pathing, portrait/landscape/side layouts); not yet tried on a real device. |
-| C3 | Canvas scales to fit the viewport while preserving aspect ratio; no page scroll/zoom while playing. | ✅ |
-| C4 | Runs in any modern evergreen browser (Chrome, Firefox, Safari, Edge). Primary test target: Chrome desktop + Chrome mobile emulation. | 🚧 Verified only with desktop headless Chrome screenshots; real touch devices untested. |
+| C2 | Mobile: touch controls (see flag `controls`). Playable in portrait and landscape. | 🚧 Implemented and verified in Chrome mobile emulation (CDP touch events: joystick drag moves the worker, `controls=tap` taps map to the right world point incl. letterboxing and safe-area insets) at 390x844, 844x390, 320x568; not yet tried on a real device. In portrait the world is only ~0.4x scale (see D17). |
+| C3 | Canvas scales to fit the viewport while preserving aspect ratio; no page scroll/zoom while playing. HUD and world stay inside the safe area (notch / home indicator). | ✅ Verified at 390x844, 844x390 (with and without emulated iPhone safe-area insets), 320x568, 600x400, 1024x768, 1280x720. |
+| C4 | Runs in any modern evergreen browser (Chrome, Firefox, Safari, Edge). Primary test target: Chrome desktop + Chrome mobile emulation. | 🚧 Verified in headless Chrome 157 (desktop + mobile emulation via CDP, gameplay frames); Safari, Firefox and real touch devices untested. |
 
 ### 2.3 Feature flags
 Selectable via URL query string (e.g. `?controls=joystick&poo=choice`) and listed in `src/flags.js`. Defaults in **bold**.
@@ -45,7 +45,7 @@ Selectable via URL query string (e.g. `?controls=joystick&poo=choice`) and liste
 | `controls` | **`auto`**, `tap`, `joystick` | `tap`: tap/click a point and the worker walks there. `joystick`: virtual thumb stick. `auto`: joystick on touch devices, keyboard+click-to-move on desktop. |
 | `poo` | **`hit`**, `choice` | `hit`: being hit automatically assigns the poo task. `choice`: sandwiches that land stay on the floor briefly; walking over one picks it up (accept = more points), ignoring it is "avoiding" but adds a little stress. Being hit directly still assigns it. |
 | `daySeconds` | number, **`180`** | Real-time length of the work day. |
-| `debug` | **`0`**, `1` | Show zones, hitboxes, FPS. |
+| `debug` | **`0`**, `1` | Show zones, hitboxes, FPS. Also exposes `window.__game` (`state`, `start()`) for scripted testing. |
 
 All four flags are implemented (✅) in `src/flags.js`; invalid values fall back to defaults. `daySeconds` accepts 10-3600.
 
