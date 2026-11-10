@@ -1,0 +1,55 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no">
+  <meta name="theme-color" content="#10131c">
+  <title>Poo Sandwich</title>
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='.9em' font-size='90'%3E%F0%9F%A5%AA%3C/text%3E%3C/svg%3E">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <canvas id="game" aria-label="Poo Sandwich game"></canvas>
+  <button id="pauseBtn" class="icon-btn" aria-label="Pause" hidden>⏸</button>
+
+  <section id="title" class="screen">
+    <div class="card">
+      <h1>🥪💩 Poo Sandwich</h1>
+      <p class="tag">Survive the office day, 09:00 to 17:00.</p>
+      <ul class="howto">
+        <li>✅ Do your to-do list: stand at the station shown (☕ 🖨️ 📅 💻 🗄️ 🖥️) until the ring fills.</li>
+        <li>😠 The boss <b>winds up with a "!"</b> and throws poo sandwiches. Move out of the way!</li>
+        <li id="pooRule"></li>
+        <li>😰 Keep <b>stress</b> below 100%. Missed deadlines hurt most.</li>
+      </ul>
+      <p id="controlsHelp" class="controls"></p>
+      <p id="flagsLine" class="flags"></p>
+      <button id="startBtn" class="big">Start work day</button>
+      <p id="bestTitle" class="best"></p>
+    </div>
+  </section>
+
+  <section id="pause" class="screen" hidden>
+    <div class="card">
+      <h2>⏸ Paused</h2>
+      <p>The boss is also on a break. Probably.</p>
+      <button id="resumeBtn" class="big">Resume</button>
+      <button id="quitBtn" class="big secondary">Quit to title</button>
+    </div>
+  </section>
+
+  <section id="over" class="screen" hidden>
+    <div class="card">
+      <h2 id="overTitle"></h2>
+      <p id="overText"></p>
+      <p class="score">Score <b id="overScore">0</b></p>
+      <p id="overBest" class="best"></p>
+      <p id="overStats" class="flags"></p>
+      <button id="againBtn" class="big">Play again</button>
+      <button id="menuBtn" class="big secondary">Title</button>
+    </div>
+  </section>
+
+  <script type="module" src="src/main.js"></script>
+</body>
+</html>
