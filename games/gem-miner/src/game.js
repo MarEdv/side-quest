@@ -106,6 +106,7 @@ function finishMine(s, i, t) {
 function win(s) {
   s.phase = 'won';
   s.inv.dream = true;
+  s.stats.gems++;
   s.mine = null;
   emit(s, { type: 'win' });
 }
@@ -175,12 +176,15 @@ export function buyHatchet(s, tier) {
   return r;
 }
 
-// Direction and distance to town for the HUD (P-2).
-export function townDirection(s) {
-  const dx = s.world.town.x - s.player.x, dy = s.world.town.y - s.player.y;
+// Direction and distance from the miner to a tile, for the HUD compass (P-2). dist 0 = already there (within `near`).
+export function directionTo(s, tx, ty, near = 0) {
+  const dx = tx - s.player.x, dy = ty - s.player.y;
   const dist = Math.round(Math.hypot(dx, dy));
-  if (dist <= s.world.town.r) return { dist: 0, arrow: '' };
+  if (dist <= near) return { dist: 0, arrow: '' };
   const a = Math.atan2(dy, dx); // 0 = east
   const arrows = ['→', '↘', '↓', '↙', '←', '↖', '↑', '↗'];
   return { dist, arrow: arrows[((Math.round(a / (Math.PI / 4)) % 8) + 8) % 8] };
 }
+export const townDirection = (s) => directionTo(s, s.world.town.x, s.world.town.y, s.world.town.r);
+// Only once the Gem hatchet is owned (D13).
+export const dreamDirection = (s) => (s.inv.hatchets[3] ? directionTo(s, s.world.dream.x, s.world.dream.y) : null);

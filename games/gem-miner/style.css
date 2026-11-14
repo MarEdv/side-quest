@@ -1,0 +1,77 @@
+:root {
+  --bg: #14110f; --panel: #221d19; --panel2: #2e2721; --text: #f3ece3; --muted: #a89c8d; --accent: #ffc857; --accent-ink: #231a05;
+  --good: #5ed39a; --bad: #ff6b6b; --safe-t: env(safe-area-inset-top); --safe-r: env(safe-area-inset-right);
+  --safe-b: env(safe-area-inset-bottom); --safe-l: env(safe-area-inset-left);
+}
+* { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+html, body {
+  margin: 0; width: 100%; height: 100%; overflow: hidden; background: var(--bg); color: var(--text);
+  font-family: system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+  touch-action: none; overscroll-behavior: none; -webkit-user-select: none; user-select: none; -webkit-touch-callout: none;
+}
+body { position: fixed; inset: 0; }
+canvas#game { position: fixed; left: 0; top: 0; width: 100%; height: 100%; display: block; touch-action: none; image-rendering: pixelated; }
+[hidden] { display: none !important; }
+button { font: inherit; color: inherit; touch-action: manipulation; }
+
+/* HUD */
+#hud { position: fixed; inset: 0; pointer-events: none; z-index: 3; }
+#hudTop { position: absolute; left: calc(8px + var(--safe-l)); top: calc(6px + var(--safe-t)); right: calc(104px + var(--safe-r)); display: flex; flex-wrap: wrap; gap: 6px; }
+.chip { background: rgba(20, 16, 12, .78); border-radius: 999px; padding: 5px 11px; font-size: 14px; font-weight: 700; white-space: nowrap; }
+#hudNav:empty { display: none; }
+#hudGems { position: absolute; left: calc(8px + var(--safe-l)); top: calc(44px + var(--safe-t)); display: flex; flex-wrap: wrap; gap: 4px; max-width: calc(100% - 120px); }
+#hudGems .g { background: rgba(20, 16, 12, .72); border-radius: 8px; padding: 2px 7px; font-size: 13px; font-weight: 700; }
+#hudGems .dot { display: inline-block; width: 9px; height: 9px; transform: rotate(45deg); margin-right: 5px; border-radius: 2px; }
+#toast { position: absolute; left: 50%; top: 28%; transform: translateX(-50%); background: rgba(20, 16, 12, .85); padding: 8px 16px; border-radius: 12px; font-weight: 800; font-size: 16px; opacity: 0; transition: opacity .2s; text-align: center; max-width: 90%; }
+#toast.show { opacity: 1; }
+#debugLine { position: absolute; left: calc(8px + var(--safe-l)); bottom: calc(6px + var(--safe-b)); font: 12px ui-monospace, monospace; color: #9f9; background: rgba(0, 0, 0, .6); padding: 2px 6px; border-radius: 6px; }
+#debugLine:empty { display: none; }
+#hudBtns { position: fixed; right: calc(8px + var(--safe-r)); top: calc(6px + var(--safe-t)); display: flex; gap: 6px; z-index: 4; }
+.icon-btn { width: 46px; height: 46px; border: 0; border-radius: 12px; background: rgba(46, 39, 33, .9); font-size: 22px; cursor: pointer; }
+
+/* Touch controls */
+#touch { position: fixed; inset: 0; pointer-events: none; z-index: 4; }
+#dpad { position: absolute; left: calc(14px + var(--safe-l)); bottom: calc(14px + var(--safe-b)); width: 192px; height: 192px; display: grid; grid-template: repeat(3, 64px) / repeat(3, 64px); pointer-events: auto; }
+#dpad button { width: 64px; height: 64px; border: 0; border-radius: 16px; background: rgba(60, 50, 42, .72); color: var(--text); font-size: 24px; touch-action: none; }
+#dpad button.on { background: rgba(255, 200, 87, .85); color: var(--accent-ink); }
+#dpad [data-d=up] { grid-area: 1 / 2; } #dpad [data-d=left] { grid-area: 2 / 1; } #dpad [data-d=right] { grid-area: 2 / 3; } #dpad [data-d=down] { grid-area: 3 / 2; }
+#touch[data-scheme=joystick] #dpad, #touch[data-scheme=dpad] #stick { display: none; }
+#stick { position: absolute; left: calc(18px + var(--safe-l)); bottom: calc(18px + var(--safe-b)); width: 168px; height: 168px; border-radius: 50%; background: rgba(60, 50, 42, .45); border: 2px solid rgba(255, 255, 255, .25); pointer-events: auto; touch-action: none; }
+#stickKnob { position: absolute; left: 50%; top: 50%; width: 64px; height: 64px; margin: -32px 0 0 -32px; border-radius: 50%; background: rgba(255, 200, 87, .8); pointer-events: none; }
+#shopBtn { position: absolute; right: calc(16px + var(--safe-r)); bottom: calc(30px + var(--safe-b)); min-width: 110px; height: 64px; border: 0; border-radius: 16px; background: var(--accent); color: var(--accent-ink); font-weight: 800; font-size: 18px; pointer-events: auto; touch-action: manipulation; }
+@media (max-height: 460px) { #dpad { transform: scale(.82); transform-origin: left bottom; } #stick { transform: scale(.82); transform-origin: left bottom; } }
+
+/* Screens */
+.screen { position: fixed; inset: 0; display: flex; z-index: 10; background: rgba(10, 8, 6, .82); overflow-y: auto; touch-action: pan-y; padding: calc(12px + var(--safe-t)) calc(12px + var(--safe-r)) calc(12px + var(--safe-b)) calc(12px + var(--safe-l)); }
+#title { background: radial-gradient(ellipse at 50% 30%, #3b2e22 0%, #14110f 75%); }
+.card { background: var(--panel); border-radius: 18px; padding: 20px 22px; width: min(460px, 100%); box-shadow: 0 12px 40px rgba(0, 0, 0, .55); text-align: center; margin: auto; }
+.card.wide { width: min(560px, 100%); }
+h1 { margin: 0 0 6px; font-size: clamp(28px, 7vw, 40px); }
+h2 { margin: 0 0 8px; font-size: clamp(24px, 6vw, 32px); }
+h3 { margin: 14px 0 6px; font-size: 14px; text-transform: uppercase; letter-spacing: .08em; color: var(--muted); text-align: left; }
+p { margin: 8px 0; line-height: 1.4; }
+.tag { color: var(--muted); } .small { color: var(--muted); font-size: 13px; } .best { color: var(--accent); font-weight: 700; }
+.coins { font-size: 22px; font-weight: 800; color: var(--accent); margin: 4px 0; }
+.menu { display: flex; flex-direction: column; gap: 10px; margin-top: 14px; }
+button.big, a.big { display: block; width: 100%; min-height: 52px; padding: 0 14px; border: 0; border-radius: 14px; background: var(--accent); color: var(--accent-ink); font: 800 18px system-ui, sans-serif; cursor: pointer; text-decoration: none; line-height: 52px; text-align: center; }
+button.big.secondary, a.big.secondary { background: var(--panel2); color: var(--text); }
+button:disabled { opacity: .45; cursor: default; }
+button:focus-visible, a:focus-visible { outline: 3px solid #fff; outline-offset: 2px; }
+.row { display: flex; align-items: center; gap: 8px; background: var(--panel2); border-radius: 12px; padding: 6px 8px 6px 12px; margin: 6px 0; text-align: left; min-height: 52px; }
+.row .name { flex: 1; font-weight: 700; line-height: 1.25; } .row .name small { display: block; color: var(--muted); font-weight: 400; font-size: 12px; }
+.row button { min-width: 64px; min-height: 44px; border: 0; border-radius: 10px; background: var(--accent); color: var(--accent-ink); font-weight: 800; cursor: pointer; padding: 0 12px; }
+.row .dot { display: inline-block; width: 12px; height: 12px; transform: rotate(45deg); margin-right: 8px; border-radius: 2px; }
+.stats { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin: 12px 0; }
+.stats div { background: var(--panel2); border-radius: 12px; padding: 8px; } .stats b { display: block; font-size: 22px; color: var(--accent); }
+.times { list-style: none; padding: 0; margin: 8px 0; text-align: left; } .times li { padding: 6px 10px; background: var(--panel2); border-radius: 8px; margin: 4px 0; display: flex; justify-content: space-between; }
+.times li.me { outline: 2px solid var(--accent); }
+#mapCanvas { width: min(100%, 60vh, 512px); aspect-ratio: 1; image-rendering: pixelated; background: #000; border-radius: 8px; display: block; margin: 8px auto; }
+
+/* Shop: header and footer stay put, the middle scrolls (short landscape phones) */
+.card.fixed { display: flex; flex-direction: column; max-height: calc(100% - 0px); padding: 14px 16px; }
+.screen { align-items: safe center; }
+.card.fixed header h2 { margin: 0; font-size: clamp(22px, 5vw, 28px); } .card.fixed header .coins { margin: 2px 0 0; }
+.card.fixed .body { flex: 1 1 auto; overflow-y: auto; min-height: 0; margin: 4px -6px; padding: 0 6px; touch-action: pan-y; -webkit-overflow-scrolling: touch; }
+.card.fixed footer { display: flex; gap: 8px; padding-top: 8px; } .card.fixed footer .big { margin: 0; min-height: 48px; line-height: 48px; font-size: 16px; }
+@media (max-height: 460px) { .card.fixed { padding: 8px 12px; } .card.fixed .body h3 { margin: 8px 0 4px; } .row { min-height: 46px; margin: 4px 0; } }
+#dpad button { background: rgba(78, 64, 52, .82); }

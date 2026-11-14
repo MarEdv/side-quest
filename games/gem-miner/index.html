@@ -1,0 +1,111 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no">
+  <meta name="theme-color" content="#14110f">
+  <title>Gem Miner</title>
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='.9em' font-size='90'%3E%F0%9F%92%8E%3C/text%3E%3C/svg%3E">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <canvas id="game" aria-label="Gem Miner game view"></canvas>
+
+  <div id="hud" hidden>
+    <div id="hudTop">
+      <span class="chip" id="hudCoins" title="Coins">🪙 0</span>
+      <span class="chip" id="hudHatchet" title="Best hatchet">🪓 Wood</span>
+      <span class="chip" id="hudNav" title="Direction"></span>
+    </div>
+    <div id="hudGems" aria-label="Backpack"></div>
+    <div id="toast" role="status" aria-live="polite"></div>
+    <div id="debugLine"></div>
+  </div>
+  <div id="hudBtns" hidden>
+    <button class="icon-btn" id="mapBtn" aria-label="Minimap (M)">🗺</button>
+    <button class="icon-btn" id="pauseBtn" aria-label="Pause (P)">⏸</button>
+  </div>
+
+  <div id="touch" hidden>
+    <div id="dpad" aria-hidden="true">
+      <button data-d="up" tabindex="-1" aria-label="Up">▲</button>
+      <button data-d="left" tabindex="-1" aria-label="Left">◀</button>
+      <button data-d="right" tabindex="-1" aria-label="Right">▶</button>
+      <button data-d="down" tabindex="-1" aria-label="Down">▼</button>
+    </div>
+    <div id="stick" aria-hidden="true"><div id="stickKnob"></div></div>
+    <button id="shopBtn" hidden>🏪 Shop</button>
+  </div>
+
+  <section id="title" class="screen">
+    <div class="card">
+      <h1>💎 Gem Miner</h1>
+      <p class="tag">Dig for gems, sell them, buy better hatchets and find the <b>Diamond of Your Dreams</b>.</p>
+      <div class="menu">
+        <button class="big" id="continueBtn" hidden>Continue</button>
+        <button class="big" id="newBtn">New game</button>
+        <button class="big secondary" id="scoresBtn">Best times</button>
+        <a class="big secondary linkbtn" id="backLink" href="../../">Back to games</a>
+      </div>
+      <div id="bestTimes" hidden></div>
+      <p id="controlsHelp" class="small"></p>
+      <p id="flagsLine" class="small"></p>
+    </div>
+  </section>
+
+  <section id="shop" class="screen" hidden role="dialog" aria-modal="true" aria-labelledby="shopTitle">
+    <div class="card wide fixed">
+      <header><h2 id="shopTitle">🏪 Shop</h2><p id="shopCoins" class="coins"></p></header>
+      <div class="body">
+        <h3>Sell gems</h3>
+        <div id="shopGems"></div>
+        <h3>Hatchets</h3>
+        <div id="shopHatchets"></div>
+        <p id="shopMsg" class="small" role="status" aria-live="polite"></p>
+      </div>
+      <footer>
+        <button class="big" id="sellAllBtn">Sell all</button>
+        <button class="big secondary" id="shopClose">Back to the mine</button>
+      </footer>
+    </div>
+  </section>
+
+  <section id="pause" class="screen" hidden role="dialog" aria-modal="true" aria-labelledby="pauseTitle">
+    <div class="card">
+      <h2 id="pauseTitle">⏸ Paused</h2>
+      <p id="pauseStats" class="small"></p>
+      <div class="menu">
+        <button class="big" id="resumeBtn">Resume</button>
+        <button class="big secondary" id="pauseMapBtn">Minimap</button>
+        <button class="big secondary" id="soundBtn">Sound: on</button>
+        <button class="big secondary" id="quitBtn">Save and quit to title</button>
+      </div>
+    </div>
+  </section>
+
+  <section id="map" class="screen" hidden role="dialog" aria-modal="true" aria-labelledby="mapTitle">
+    <div class="card wide">
+      <h2 id="mapTitle">🗺 Minimap</h2>
+      <canvas id="mapCanvas" width="256" height="256" aria-label="Explored map"></canvas>
+      <p class="small">⬤ you · ■ town · ◆ dream diamond (once you hold the Gem hatchet)</p>
+      <button class="big secondary" id="mapClose">Close</button>
+    </div>
+  </section>
+
+  <section id="win" class="screen" hidden role="dialog" aria-modal="true" aria-labelledby="winTitle">
+    <div class="card">
+      <h2 id="winTitle">💎 You found it!</h2>
+      <p class="tag">The Diamond of Your Dreams is yours.</p>
+      <div id="winStats" class="stats"></div>
+      <p id="winRank" class="best"></p>
+      <div id="winBest"></div>
+      <div class="menu">
+        <button class="big" id="againBtn">New game</button>
+        <button class="big secondary" id="winTitleBtn">Title</button>
+      </div>
+    </div>
+  </section>
+
+  <script type="module" src="src/main.js"></script>
+</body>
+</html>
