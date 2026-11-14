@@ -46,3 +46,50 @@
 - **Assumption:** The sibling games support touch and the launcher is an installable app, so Gem Miner supports touch too
   (D-pad default, joystick by flag). No game-specific service worker or install prompt: the launcher app already covers
   install, and it keeps this game simple. Listed in the launcher via `game.json` + `npm run registry`.
+
+## D9 — 2026-11-14 — Module layout and data model
+- **Decision:** Pure logic: `flags, rng, noise, tiles, world, mining, economy, game, save, scores, storage, camera,
+  touchmath` (a test fails if any of them touches a browser global). Browser glue: `main, render, input, audio, ui`.
+  The world is two `Uint8Array`s (tile id per cell, difficulty ring per cell) plus a chest index map; changes to the
+  world are only ever "this cell became open", which keeps the save a small diff (D-NF-4). A gem tile is as hard as the
+  ring it sits in; chests and the dream diamond are "bump to take" tiles.
+- **Alternatives:** one object per tile (too heavy at 512 x 512), storing the whole tile array in the save (260 KB).
+
+## D10 — 2026-11-14 — World generation numbers
+- **Decision:** Ring edges at 18 % / 42 % / 68 % of the distance from town to the bedrock edge, each edge pushed around by
+  +-0.07 of fractal value noise so the rings are ragged. Town is a disc of radius 4.5 with the shop on its centre tile and
+  the start two tiles south. Gems appear per rock cell with probability 2.0-2.4 % (by ring) times a vein multiplier from
+  low-frequency noise (0.35 outside veins, up to ~3x inside), so rich and poor areas exist. Gem mix per ring: dirt
+  quartz/amethyst/topaz; stone adds emerald; granite topaz..ruby; obsidian sapphire, ruby and the only diamonds.
+- **Dream chamber:** at 80 % of the way to the edge in a seeded random direction: a 3x3 floor with the diamond, a 1-thick
+  crystal wall (hardness 5) and a 9x9 obsidian block around it. Only the Gem hatchet cuts crystal.
+- **Chests:** `size^2 / 1500` scattered (65 % coins, 35 % 2-4 gems, richer further out) plus two guaranteed: a Stone
+  hatchet in the dirt ring (3+ tiles outside town) and a Steel hatchet in the granite ring (reachable with the Stone
+  hatchet, not with wood). Opened chests become floor.
+- **Reachability guarantee:** `floodReach` (tested for 6 seeds x 128/256) proves the stone chest is reachable with wood,
+  the steel chest with stone, every chest and the dream diamond with the Gem hatchet, and that the gems each tier can reach
+  are worth well over the next hatchet's price.
+
+## D11 — 2026-11-14 — Hatchets, mining time, movement
+- **Decision:** Hardness 1 dirt, 2 stone, 3 granite, 4 obsidian, 5 crystal. Wood cuts up to 2, Stone 3, Steel 4, Gem 5.
+  Base seconds per block (speed 1): 0.30 / 0.55 / 0.95 / 1.5 / 2.5. Hatchet speed multipliers 1.0 / 1.7 / 2.8 / 4.5.
+  Walking is 0.11 s per tile. Durability flag: Stone 400, Steel 800, Gem 1500 blocks; wood is infinite. A broken hatchet is
+  gone (rebuy in the shop; a chest hatchet you already own pays half its price instead).
+- **Alternatives:** durability that can be repaired for coins (more UI for a default-off flag).
+
+## D12 — 2026-11-14 — Economy and balance (tools/sim.mjs)
+- **Decision:** Gem values 3 / 8 / 20 / 50 / 115 / 260 / 650 (quartz..diamond). Hatchet prices for the 256 world: Stone
+  140, Steel 2800, Gem 32000; they scale linearly with world size (128: 70 / 1400 / 16000, 512: 280 / 5600 / 64000),
+  because gem density per tile is the same in every size and the income rate does not grow with the world, so a fixed
+  price would make 128 and 512 take about the same time.
+- **Method:** `node tools/sim.mjs` plays the real `update()` at 60 Hz with a bot that only sees fog-revealed tiles,
+  sweeps a ring in the richest area its hatchet can cut, digs to gems worth the detour (>= 1.5 coins/s), returns to town
+  when it can afford the next hatchet and, with the Gem hatchet, follows the dream compass. The bot is more efficient
+  than a person (no hesitation, perfect paths), so the human target of 20-40 minutes on 256 corresponds to a bot time of
+  about 15-20 minutes. Results are in D-20 (final numbers).
+
+## D13 — 2026-11-14 — Dream compass
+- **Decision:** Once the player owns the Gem hatchet the HUD shows direction and distance to the Diamond of Your Dreams
+  ("the gem blade hums"). Without it, finding one chamber in 65 000 or 262 000 tiles would be luck; the owner asked for a
+  20-40 minute game. Before that the HUD shows the way back to town (P-2).
+- **Alternatives:** always-visible compass (removes the exploring), a rumour in the shop (more UI).
