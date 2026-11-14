@@ -188,7 +188,7 @@ export function createUI(h) {
 
   return {
     // First tap on New game while a save exists: ask for a second one (main.js decides when).
-    armNewGame() { const b = $('newBtn'); b.textContent = 'New game: tap again to replace your save'; b.focus({ preventScroll: true }); },
+    armNewGame() { const b = $('newBtn'); b.textContent = 'New game: press again to replace your save'; b.focus({ preventScroll: true }); },
     show, hide, renderTitle, renderShop, renderPause, renderMap, renderWin, setHud, hudVisible, touchVisible,
     get current() { return current; },
     resetHud() { hudKey = ''; $('toast').classList.remove('show'); },

@@ -75,7 +75,7 @@ function showTitle(note = '') {
   // Continue always resumes the saved world as it was started; world flags in the URL apply to New game (D25).
   const differs = d && ((flags.seed !== null && flags.seed !== d.seed) || flags.worldSize !== d.size);
   const fl = [flagsText(), differs ? `Continue resumes your saved ${d.size} × ${d.size} world; the URL settings apply to New game.` : '']
-    .filter(Boolean).join(' ');
+    .filter(Boolean).join(' · ');
   ui.renderTitle({
     hasSave: !!d, saveInfo: d ? `${formatTime(d.t)}, ${d.size} × ${d.size}` : '',
     scores: scoresFor(storage.get('scores'), flags.worldSize), size: flags.worldSize,

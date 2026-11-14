@@ -51,7 +51,7 @@ Sonnet implements, Haiku looks up docs; never ask the owner questions.
 ### 3.3 Town, shop and economy
 | ID | Requirement | Status |
 |----|-------------|--------|
-| E-1 | In town, **E** / Enter or the touch **Shop** button opens the shop; stepping onto the shop tile shows a prompt ("press E" / "tap Shop") instead of opening it, so walking through town never pops it up (D21). The shop sells gems (one or all) for coins, sells hatchets (Stone, Steel, Gem) and shows their prices and what they can cut. A hatchet below your best is not sold, and one found in a chest pays half its price instead, unless `durability=1` makes it a useful spare (D23). | 🚧 logic unit-tested (D21, D23); browser check pending |
+| E-1 | In town, **E** / Enter or the touch **Shop** button opens the shop; stepping onto the shop tile shows a prompt ("press E" / "tap Shop") instead of opening it, so walking through town never pops it up (D21). The shop sells gems (one or all) for coins, sells hatchets (Stone, Steel, Gem) and shows their prices and what they can cut. A hatchet below your best is not sold, and one found in a chest pays half its price instead, unless `durability=1` makes it a useful spare (D23). | ✅ verified in headless Chrome (D28): prompt on keyboard and touch, E opens, "Not needed" row |
 | E-2 | Prices are tuned so a player who mines steadily can buy the next hatchet roughly every few minutes, and finding a hatchet in a chest is a real shortcut. | 🚧 tuned with tools/sim.mjs (D12, D20); not yet played by a human |
 | E-3 | The Diamond of Your Dreams cannot be sold. | ✅ verified in headless Chrome (D19) |
 
@@ -60,7 +60,7 @@ Sonnet implements, Haiku looks up docs; never ask the owner questions.
 |----|-------------|--------|
 | G-1 | **Win:** pick up the Diamond of Your Dreams. A win screen shows play time, gems found, coins earned and blocks mined. | ✅ verified in headless Chrome (D19) |
 | G-2 | No fail state (a relaxing game); the timer measures how fast you found the dream diamond. | ✅ verified in headless Chrome (D19) |
-| G-3 | Progress is saved on the device automatically (localStorage, keys prefixed `gem-miner.`); **Continue** resumes and **New game** starts a fresh world. Storage failures never break the game. Continue resumes the saved world with the seed, size, fog and durability it was started with; `worldSize` / `seed` in the URL apply to New game, and New game asks for a second tap when it would replace a save (D25). | 🚧 unit-tested (D24, D25); browser check pending |
+| G-3 | Progress is saved on the device automatically (localStorage, keys prefixed `gem-miner.`); **Continue** resumes and **New game** starts a fresh world. Storage failures never break the game. Continue resumes the saved world with the seed, size, fog and durability it was started with; `worldSize` / `seed` in the URL apply to New game, and New game asks for a second tap when it would replace a save (D25). | ✅ verified in headless Chrome (D28): saved-game title, second-press New game, URL-mismatch note, reload + Continue |
 | G-4 | The best completion times (top 5) are kept on the device and shown on the title and win screens. | ✅ verified (win on a crafted save, title list); top 5 per world size |
 | G-5 | A "Back to games" link leads to the launcher (`../../`). | ✅ verified in headless Chrome (D19) |
 | G-6 | Autosave every ~5 s, on page hide, on pause and on quit; the first save asks the browser for persistent storage (D15). Winning clears the save. | ✅ verified (reload + Continue, D19) |
@@ -100,7 +100,7 @@ URL query parameters, e.g. `?worldSize=128&camera=center`. Defined in `src/flags
 |----|-------------|--------|
 | NF-1 | No build step, no dependencies; vanilla ES modules + Canvas 2D; relative URLs only so the game works at `games/gem-miner/` and on its own. | ✅ verified in headless Chrome (D19) |
 | NF-2 | Pure game logic (world generation, mining, economy, saving) has no DOM access and is unit-tested with `node --test`. | ✅ verified in headless Chrome (D19) |
-| NF-3 | 60 fps on a mid-range phone at 512 × 512: tile storage is typed arrays, drawing is culled to the viewport. | 🚧 typed arrays, chunk cache, culling; 60 fps in desktop headless Chrome at 512; phone not measured |
+| NF-3 | 60 fps on a mid-range phone at 512 × 512: tile storage is typed arrays, drawing is culled to the viewport. | 🚧 typed arrays, chunk cache (64 MB budget, D26), culling; at 512 in headless Chrome draw() p95 ≤ 2.5 ms, max 5.4 ms, also with 4x CPU throttling (D28); no real phone measured |
 | NF-4 | The save file is small (fog and mined tiles stored compactly, e.g. as a diff from the seed) and versioned. | ✅ verified in headless Chrome (D19) |
 
 ## 5. Out of scope (for now)

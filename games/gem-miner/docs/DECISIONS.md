@@ -204,7 +204,7 @@
 - **Decision:** A save keeps the world settings it was started with: seed, size, fog and durability (new optional `wear`
   field; v1 saves without it still load and take the URL value). Display options (camera, touch, sound, debug) come from
   the URL. When the URL asks for a different size or seed, the title says "Continue resumes your saved N × N world; the URL
-  settings apply to New game." With a save present, New game needs a second tap ("tap again to replace your save").
+  settings apply to New game." With a save present, New game needs a second press ("press again to replace your save").
   `debug=1` never deletes or writes the save and keeps the whole map revealed on Continue. No version bump: the field is
   optional. A future v2 needs a migration in `restore()`; anything it cannot read is discarded with a message (D15).
 - **Alternatives:** the URL wins and Continue is hidden on mismatch (loses access to the save); several save slots (more UI).
@@ -223,3 +223,26 @@
 - **Decision:** Dark glass buttons (`rgba(16,12,9,.66)`) with a 2 px light rim, a bright glyph with a text shadow and a drop
   shadow; the pressed button turns solid gold with a white rim. The joystick ring and knob get the same rim. Readable on
   dirt, stone, granite, obsidian and the town.
+
+## D28 — 2026-11-14 — Verification pass (review of D1-D20, browser checks, seed sweep, balance)
+- **Seed sweep** (scratch script, not committed): 200 seeds x 128 / 256 / 512 (600 worlds, small and large seeds).
+  All deterministic, bedrock on all four edges, exactly one dream diamond in a complete crystal ring, the dream unreachable
+  without the Gem hatchet and reachable with it, Steel reaches the crystal wall, both guaranteed hatchet chests exist and
+  are reachable with the right tier (the Steel one not with wood), every chest reachable. Only the unit test's arbitrary
+  "wood reaches 3x the Stone price" margin dipped (2.4x on 2 of 200 seeds at 128): not a dead end, left as is.
+- **Browser (headless Chrome 157 over CDP, repo root and the game folder on its own):** launcher card opens the game,
+  Back to games resolves to the launcher; walking across the shop tile shows the prompt and no shop (D21), E opens it; a
+  Stone hatchet chest opened by walking there with real key presses (`debug=1` coordinates); Steel bought, Stone shows "Not
+  needed" (D23); pause, minimap, saved-game title, second-press New game, URL-mismatch note, reload + Continue (pagehide
+  save); D-pad and joystick on a 390 x 844 DPR 3 touch emulation, `touchcancel` stops the miner, Shop prompt says "tap";
+  DPR 1.5 shows no seams; a resize + DPR change mid-game redraws correctly; `debug=1` New game left the real save alone.
+  60 s of scripted walking / mining / map / pause: 15 save writes (5 s cadence plus pause saves, never per frame), 11 KB
+  save on 256, no console errors in any run.
+- **Frame times at 512** (1280 x 800 DPR 2 and 390 x 844 DPR 3, walking and mining for 5 s): rAF steady at 16.7 ms;
+  `draw()` p50 0.3 ms, p95 2.5 ms, max 5.4 ms; with `Emulation.setCPUThrottlingRate` 4 p95 1.9 ms, max 5.4 ms; main thread
+  busy 2-7 %. Rebuilding a whole view of chunks (resize) costs 2.7 ms, 10.5 ms throttled. Headless throttling slowed a busy
+  loop only 1.75x, so this is not a phone measurement (NF-3 stays 🚧).
+- **Balance:** after D22 the bot needs 7m50s (128), 16m43s (256), 30m18s (512, 3 seeds), 21m26s (256 durability, 3 seeds).
+  The bot sees only fog-revealed tiles but plays perfectly (A* paths, knows chest contents, saves up for the Gem hatchet
+  with just 2-3 shop trips). A person who sells more often, wanders and misses gems plausibly needs 1.5-2.5x, so 25-40
+  minutes on 256: inside the 20-40 minute target. No retune.
