@@ -66,14 +66,24 @@ export function createUI(h) {
   on('pauseBtn', () => h.pause());
 
   // ---- title ----
-  function timesList(list, mineIndex = -1) {
-    if (!list.length) return '<p class="small">No times yet. Find the Diamond of Your Dreams to set one.</p>';
-    return '<ol class="times">' + list.map((e, i) => `<li${i === mineIndex ? ' class="me"' : ''}><span>${i + 1}.</span><b>${formatTime(e.time)}</b><span class="small">${e.date || ''}</span></li>`).join('') + '</ol>';
+  // Built with textContent: the entries come from localStorage, which every game on this origin can write (D24).
+  const node = (tag, text, cls) => { const n = document.createElement(tag); if (text !== undefined) n.textContent = text; if (cls) n.className = cls; return n; };
+  function fillTimes(box, size, list, mineIndex = -1) {
+    box.replaceChildren(node('h3', `Best times, ${size} × ${size} world`));
+    if (!list.length) { box.append(node('p', 'No times yet. Find the Diamond of Your Dreams to set one.', 'small')); return; }
+    const ol = node('ol', undefined, 'times');
+    list.forEach((e, i) => {
+      const li = node('li', undefined, i === mineIndex ? 'me' : '');
+      li.append(node('span', `${i + 1}.`), node('b', formatTime(e.time)), node('span', e.date || '', 'small'));
+      ol.append(li);
+    });
+    box.append(ol);
   }
   function renderTitle({ hasSave, scores, size, controls, flags, saveInfo }) {
     $('continueBtn').hidden = !hasSave;
+    $('newBtn').textContent = 'New game';
     $('continueBtn').textContent = hasSave && saveInfo ? `Continue (${saveInfo})` : 'Continue';
-    $('bestTimes').innerHTML = `<h3>Best times, ${size} × ${size} world</h3>` + timesList(scores);
+    fillTimes($('bestTimes'), size, scores);
     $('bestTimes').hidden = !scores.length;
     $('controlsHelp').textContent = controls;
     $('flagsLine').textContent = flags;
@@ -84,6 +94,7 @@ export function createUI(h) {
   function renderShop(s, msg = '', keepFocus = null) {
     const inv = s.inv;
     $('shopCoins').textContent = `🪙 ${inv.coins.toLocaleString('en')} coins`;
+    // innerHTML here only interpolates constants and numbers (restore() validates every stored count as a number).
     const gems = GEMS.filter((g) => inv.gems[g.id] > 0);
     $('shopGems').innerHTML = gems.length ? gems.map((g) => `
       <div class="row"><span class="dot" style="background:${g.color}"></span>
@@ -144,10 +155,11 @@ export function createUI(h) {
   }
   function renderWin(s, scores, rank, debug) {
     const st = s.stats;
-    $('winStats').innerHTML = `<div><b>${formatTime(st.time)}</b>play time</div><div><b>${st.gems}</b>gems found</div>` +
-      `<div><b>${st.coinsEarned.toLocaleString('en')}</b>coins earned</div><div><b>${st.blocks.toLocaleString('en')}</b>blocks mined</div>`;
+    $('winStats').replaceChildren(...[[formatTime(st.time), 'play time'], [st.gems.toLocaleString('en'), 'gems found'],
+      [st.coinsEarned.toLocaleString('en'), 'coins earned'], [st.blocks.toLocaleString('en'), 'blocks mined']]
+      .map(([v, label]) => { const d = node('div'); d.append(node('b', v), label); return d; }));
     $('winRank').textContent = debug ? 'Debug run: not saved to the best times.' : rank ? `New best time! You are #${rank} on the ${s.size} × ${s.size} list.` : '';
-    $('winBest').innerHTML = `<h3>Best times, ${s.size} × ${s.size} world</h3>` + timesList(scores, rank ? rank - 1 : -1);
+    fillTimes($('winBest'), s.size, scores, rank ? rank - 1 : -1);
     show('win', { focus: 'againBtn' });
   }
 
@@ -163,7 +175,10 @@ export function createUI(h) {
     $('hudCoins').textContent = `🪙 ${s.inv.coins.toLocaleString('en')}`;
     $('hudHatchet').textContent = `🪓 ${hd.name}${s.flags.durability && best > 0 ? ` (${s.inv.dur[best]})` : ''}`;
     $('hudNav').textContent = [town.dist ? `Town ${town.arrow} ${town.dist}` : 'In town', dream ? `💎 ${dream.arrow || '·'} ${dream.dist}` : ''].filter(Boolean).join('  ');
-    $('hudGems').innerHTML = GEMS.filter((g) => s.inv.gems[g.id] > 0).map((g) => `<span class="g"><span class="dot" style="background:${g.color}"></span>${s.inv.gems[g.id]}</span>`).join('');
+    $('hudGems').replaceChildren(...GEMS.filter((g) => s.inv.gems[g.id] > 0).map((g) => {
+      const sp = node('span', undefined, 'g'), dot = node('span', undefined, 'dot');
+      dot.style.background = g.color; sp.append(dot, String(s.inv.gems[g.id])); return sp;
+    }));
     const t = $('toast');
     if (s.hint) { t.textContent = s.hint; t.classList.add('show'); } else t.classList.remove('show');
     $('debugLine').textContent = extra.debug || '';
@@ -172,6 +187,8 @@ export function createUI(h) {
   const touchVisible = (v) => { $('touch').hidden = !v; };
 
   return {
+    // First tap on New game while a save exists: ask for a second one (main.js decides when).
+    armNewGame() { const b = $('newBtn'); b.textContent = 'New game: tap again to replace your save'; b.focus({ preventScroll: true }); },
     show, hide, renderTitle, renderShop, renderPause, renderMap, renderWin, setHud, hudVisible, touchVisible,
     get current() { return current; },
     resetHud() { hudKey = ''; $('toast').classList.remove('show'); },

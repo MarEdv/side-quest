@@ -187,3 +187,39 @@
 - **Decision:** Without `durability`, buying a tier below your best is refused (reason `worse`; the shop shows "Not
   needed") and a chest hatchet below your best pays half its price, like one you already own. With `durability=1` a lower
   tier is a backup for when the best one breaks, so both work as before. Non-integer tiers are rejected.
+
+## D24 — 2026-11-14 — Stored data never reaches innerHTML; storage retries failed writes
+- **Context:** Review: the best-times list was built with `innerHTML` from localStorage entries whose `date` was any
+  string (the origin is shared with the other games, so any of them, or a tampered value, could inject markup). Separately,
+  one failed `setItem` (quota) switched storage to memory for the rest of the session, leaving an ever older save on disk.
+- **Decision:** Best times, win stats and HUD gem counts are built with DOM nodes and `textContent`; `normalizeScores`
+  keeps only `YYYY-MM-DD` dates and integer seeds. The shop still uses `innerHTML`, but only with constants and numbers
+  that `restore()` validates. Storage keeps a write-through in-memory copy (reads see the newest value) and tries the
+  backend again on every write, so a save lands once space frees up.
+
+## D25 — 2026-11-14 — Saved game vs URL flags; New game confirmation
+- **Context:** Review: with a save for a 256 world, opening `?worldSize=512` or `?seed=…` left it unclear what Continue
+  does; durability came from the URL, so reloading without `durability=1` silently stopped wear; a single click on New game
+  deleted a long save; `debug=1` + New game deleted the real save.
+- **Decision:** A save keeps the world settings it was started with: seed, size, fog and durability (new optional `wear`
+  field; v1 saves without it still load and take the URL value). Display options (camera, touch, sound, debug) come from
+  the URL. When the URL asks for a different size or seed, the title says "Continue resumes your saved N × N world; the URL
+  settings apply to New game." With a save present, New game needs a second tap ("tap again to replace your save").
+  `debug=1` never deletes or writes the save and keeps the whole map revealed on Continue. No version bump: the field is
+  optional. A future v2 needs a migration in `restore()`; anything it cannot read is discarded with a message (D15).
+- **Alternatives:** the URL wins and Continue is hidden on mismatch (loses access to the save); several save slots (more UI).
+
+## D26 — 2026-11-14 — Renderer memory, resize and DPR; input on hidden pages
+- **Context:** Review: the chunk cache budget was 70 M px (280 MB of RGBA). On a DPR 2 phone that is about 100 chunks,
+  well over what iOS Safari allows for canvases (blank canvas when exceeded). Every resize (the mobile URL bar showing or
+  hiding) dropped all chunks; a DPR change without a resize (window moved to another screen) was not noticed; held keys
+  were cleared on `blur` but not on `visibilitychange`.
+- **Decision:** Budget 16 M px (64 MB), but never fewer chunks than are visible plus 6. Resize keeps the cache when the
+  device tile size is unchanged. A `matchMedia('(resolution: …dppx)')` listener re-runs resize when the DPR changes. Input
+  drops held keys and touches when the page becomes hidden.
+
+## D27 — 2026-11-14 — D-pad and joystick contrast
+- **Context:** Review: the D-pad (translucent brown on brown rock, no outline) was hard to see in the mine.
+- **Decision:** Dark glass buttons (`rgba(16,12,9,.66)`) with a 2 px light rim, a bright glyph with a text shadow and a drop
+  shadow; the pressed button turns solid gold with a white rim. The joystick ring and knob get the same rim. Readable on
+  dirt, stone, granite, obsidian and the town.

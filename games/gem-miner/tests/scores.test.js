@@ -31,3 +31,8 @@ test('normalize drops junk; formatTime', () => {
   assert.equal(formatTime(3725), '1:02:05');
   assert.equal(formatTime(-3), '0:00');
 });
+
+test('stored dates must be YYYY-MM-DD; markup is dropped (D24)', () => {
+  const n = normalizeScores({ 256: [{ time: 9, date: '<img src=x onerror=alert(1)>', seed: '<b>' }, { time: 10, date: '2026-11-14', seed: 3 }] });
+  assert.deepEqual(n[256], [{ time: 9, seed: 0, date: '' }, { time: 10, seed: 3, date: '2026-11-14' }]);
+});

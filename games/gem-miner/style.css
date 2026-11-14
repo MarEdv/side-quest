@@ -32,12 +32,13 @@ button { font: inherit; color: inherit; touch-action: manipulation; }
 /* Touch controls */
 #touch { position: fixed; inset: 0; pointer-events: none; z-index: 4; }
 #dpad { position: absolute; left: calc(14px + var(--safe-l)); bottom: calc(14px + var(--safe-b)); width: 192px; height: 192px; display: grid; grid-template: repeat(3, 64px) / repeat(3, 64px); pointer-events: auto; }
-#dpad button { width: 64px; height: 64px; border: 0; border-radius: 16px; background: rgba(60, 50, 42, .72); color: var(--text); font-size: 24px; touch-action: none; }
-#dpad button.on { background: rgba(255, 200, 87, .85); color: var(--accent-ink); }
+/* High contrast on any rock colour (D27): dark glass, a light rim, bright glyph with a shadow */
+#dpad button { width: 64px; height: 64px; border: 2px solid rgba(255, 236, 205, .8); border-radius: 16px; background: rgba(16, 12, 9, .66); color: #fff4dc; font-size: 26px; text-shadow: 0 1px 2px #000; box-shadow: 0 2px 8px rgba(0, 0, 0, .55); touch-action: none; }
+#dpad button.on { background: rgba(255, 200, 87, .95); border-color: #fff; color: var(--accent-ink); text-shadow: none; }
 #dpad [data-d=up] { grid-area: 1 / 2; } #dpad [data-d=left] { grid-area: 2 / 1; } #dpad [data-d=right] { grid-area: 2 / 3; } #dpad [data-d=down] { grid-area: 3 / 2; }
 #touch[data-scheme=joystick] #dpad, #touch[data-scheme=dpad] #stick { display: none; }
-#stick { position: absolute; left: calc(18px + var(--safe-l)); bottom: calc(18px + var(--safe-b)); width: 168px; height: 168px; border-radius: 50%; background: rgba(60, 50, 42, .45); border: 2px solid rgba(255, 255, 255, .25); pointer-events: auto; touch-action: none; }
-#stickKnob { position: absolute; left: 50%; top: 50%; width: 64px; height: 64px; margin: -32px 0 0 -32px; border-radius: 50%; background: rgba(255, 200, 87, .8); pointer-events: none; }
+#stick { position: absolute; left: calc(18px + var(--safe-l)); bottom: calc(18px + var(--safe-b)); width: 168px; height: 168px; border-radius: 50%; background: rgba(16, 12, 9, .5); border: 2px solid rgba(255, 236, 205, .75); box-shadow: 0 2px 8px rgba(0, 0, 0, .5); pointer-events: auto; touch-action: none; }
+#stickKnob { position: absolute; left: 50%; top: 50%; width: 64px; height: 64px; margin: -32px 0 0 -32px; border-radius: 50%; background: rgba(255, 200, 87, .92); border: 2px solid #fff4dc; pointer-events: none; }
 #shopBtn { position: absolute; right: calc(16px + var(--safe-r)); bottom: calc(30px + var(--safe-b)); min-width: 110px; height: 64px; border: 0; border-radius: 16px; background: var(--accent); color: var(--accent-ink); font-weight: 800; font-size: 18px; pointer-events: auto; touch-action: manipulation; }
 @media (max-height: 460px) { #dpad { transform: scale(.82); transform-origin: left bottom; } #stick { transform: scale(.82); transform-origin: left bottom; } }
 
@@ -74,4 +75,3 @@ button:focus-visible, a:focus-visible { outline: 3px solid #fff; outline-offset:
 .card.fixed .body { flex: 1 1 auto; overflow-y: auto; min-height: 0; margin: 4px -6px; padding: 0 6px; touch-action: pan-y; -webkit-overflow-scrolling: touch; }
 .card.fixed footer { display: flex; gap: 8px; padding-top: 8px; } .card.fixed footer .big { margin: 0; min-height: 48px; line-height: 48px; font-size: 16px; }
 @media (max-height: 460px) { .card.fixed { padding: 8px 12px; } .card.fixed .body h3 { margin: 8px 0 4px; } .row { min-height: 46px; margin: 4px 0; } }
-#dpad button { background: rgba(78, 64, 52, .82); }

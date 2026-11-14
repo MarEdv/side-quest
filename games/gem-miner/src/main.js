@@ -20,7 +20,7 @@ const canvas = document.getElementById('game');
 const renderer = createRenderer(canvas);
 const audio = createAudio({ enabled: flags.sound });
 const cam = createCamera();
-let state = null, mapFrom = 'play', persistAsked = false, lastSave = 0, soundOn = flags.sound;
+let state = null, newArmed = false, mapFrom = 'play', persistAsked = false, lastSave = 0, soundOn = flags.sound;
 
 const input = createInput({ touchMode: flags.touch, scheme: flags.touchControls, isBlocked: () => ui.current !== null || !state });
 
@@ -70,11 +70,16 @@ function peekSave() {
 }
 function showTitle(note = '') {
   ui.hudVisible(false); ui.touchVisible(false); input.showShop(false);
+  newArmed = false;
   const d = peekSave();
+  // Continue always resumes the saved world as it was started; world flags in the URL apply to New game (D25).
+  const differs = d && ((flags.seed !== null && flags.seed !== d.seed) || flags.worldSize !== d.size);
+  const fl = [flagsText(), differs ? `Continue resumes your saved ${d.size} × ${d.size} world; the URL settings apply to New game.` : '']
+    .filter(Boolean).join(' ');
   ui.renderTitle({
     hasSave: !!d, saveInfo: d ? `${formatTime(d.t)}, ${d.size} × ${d.size}` : '',
     scores: scoresFor(storage.get('scores'), flags.worldSize), size: flags.worldSize,
-    controls: note || controlsText(), flags: flagsText(),
+    controls: note || controlsText(), flags: fl,
   });
   setInert(false);
 }
@@ -93,9 +98,12 @@ function enterPlay() {
   audio.unlock();
 }
 function newGame() {
+  // Starting over replaces the saved game, so the title asks for a second tap first (D25). Debug runs never touch it.
+  if (ui.current === 'title' && !flags.debug && peekSave() && !newArmed) { newArmed = true; ui.armNewGame(); return; }
+  newArmed = false;
   const seed = flags.seed !== null ? flags.seed : randomSeed();
   state = createGame({ seed, size: flags.worldSize, flags });
-  storage.remove('save');
+  if (!flags.debug) storage.remove('save');
   save();
   enterPlay();
 }
@@ -187,6 +195,13 @@ function frame(t) {
 
 window.addEventListener('resize', onResize);
 window.addEventListener('orientationchange', onResize);
+// A DPR change without a resize (window dragged to another screen) would leave the canvas blurry: watch it too.
+(function watchDpr() {
+  try {
+    const mq = matchMedia(`(resolution: ${window.devicePixelRatio || 1}dppx)`);
+    mq.addEventListener('change', () => { onResize(); watchDpr(); }, { once: true });
+  } catch { /* old browsers: resize still covers zoom */ }
+})();
 function onResize() {
   const v = renderer.resize();
   if (state) follow(cam, state.player.x + 0.5, state.player.y + 0.5, v, state.size, flags.camera);

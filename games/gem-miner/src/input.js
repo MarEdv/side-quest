@@ -31,7 +31,10 @@ export function createInput({ touchMode = 'auto', scheme = 'dpad', isBlocked = (
     else if (code === 'KeyP' || code === 'Escape') { e.preventDefault(); if (!e.repeat) pulse.pause = true; }
   });
   window.addEventListener('keyup', (e) => { const k = held.indexOf(e.code); if (k >= 0) held.splice(k, 1); });
+  // Keys released while the page was in the background never send keyup: drop everything held (mobile app switch fires
+  // visibilitychange without blur).
   window.addEventListener('blur', () => { held.length = 0; clearTouch(); });
+  document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'hidden') { held.length = 0; clearTouch(); } });
 
   // --- touch: d-pad (direction from the finger's position relative to the pad centre, so sliding works) ---
   const dpadBtns = [...dpad.querySelectorAll('button')];

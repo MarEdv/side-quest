@@ -90,3 +90,31 @@ test('storage wrapper: keys are prefixed, bad JSON and a throwing backend never 
   const st3 = createStorage(null);
   assert.equal(st3.get('x', 7), 7);
 });
+
+test('storage: a quota error is retried on the next write, and reads see the newest value (D24)', () => {
+  const store = new Map(); let full = true;
+  const be = { getItem: (k) => store.get(k) ?? null, setItem: (k, v) => { if (full) throw new Error('QuotaExceededError'); store.set(k, v); }, removeItem: (k) => store.delete(k) };
+  store.set('gem-miner.save', JSON.stringify({ old: true }));
+  const st = createStorage(be);
+  assert.equal(st.set('save', { n: 1 }), false);
+  assert.equal(st.persistent, false);
+  assert.deepEqual(st.get('save'), { n: 1 }, 'the newest value, not the stale one on disk');
+  full = false;
+  assert.equal(st.set('save', { n: 2 }), true, 'retried once space is free');
+  assert.equal(st.persistent, true);
+  assert.deepEqual(JSON.parse(store.get('gem-miner.save')), { n: 2 });
+});
+
+test('a save keeps its own world settings; URL flags only add display/debug options (D25)', () => {
+  const s = createGame({ seed: 9, size: 128, flags: { fog: true, durability: true } });
+  const data = JSON.parse(JSON.stringify(serialize(s)));
+  const r = restore(data, { durability: false, worldSize: 512, seed: 1, fog: false, camera: 'center' });
+  assert.deepEqual([r.seed, r.size, r.fogOn, r.flags.durability, r.flags.camera], [9, 128, true, true, 'center']);
+  const old = { ...data }; delete old.wear;            // a save written before `wear` existed
+  assert.equal(restore(old, { durability: true }).flags.durability, true);
+  assert.equal(restore(old, {}).flags.durability, false);
+  assert.equal(restore({ ...data, wear: 'yes' }), null);
+  // debug=1 keeps the map revealed on Continue
+  const d = restore(data, { debug: true });
+  assert.ok(d.fog.every((v) => v === 1));
+});

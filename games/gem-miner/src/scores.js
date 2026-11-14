@@ -1,5 +1,6 @@
 // Top-5 best completion times per world size (pure). Shape: { "256": [{ time, seed, date }], ... }
 export const MAX_SCORES = 5;
+const DATE_RE = /^\d{4}-\d{2}-\d{2}$/; // anything else in stored data is dropped (D24)
 
 export function normalizeScores(raw) {
   const out = {};
@@ -8,7 +9,7 @@ export function normalizeScores(raw) {
     if (!Array.isArray(list)) continue;
     const clean = list
       .filter((e) => e && Number.isFinite(e.time) && e.time > 0)
-      .map((e) => ({ time: e.time, seed: Number.isFinite(e.seed) ? e.seed : 0, date: typeof e.date === 'string' ? e.date : '' }))
+      .map((e) => ({ time: e.time, seed: Number.isInteger(e.seed) ? e.seed : 0, date: DATE_RE.test(e.date) ? e.date : '' }))
       .sort((a, b) => a.time - b.time).slice(0, MAX_SCORES);
     if (clean.length) out[k] = clean;
   }

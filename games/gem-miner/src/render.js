@@ -6,7 +6,9 @@ import { hash2 } from './rng.js';
 import { GEMS } from './economy.js';
 
 const CH = 16;                 // chunk size in tiles
-const PIXEL_BUDGET = 70e6;     // cached chunk pixels (about 280 MB of RGBA worst case is never reached: see maxChunks)
+// Cached chunk pixels: 16 M px is 64 MB of RGBA. The old 70 M px (280 MB) budget could exceed iOS Safari's canvas
+// memory limit on a phone; we still always keep the visible chunks plus a margin (D26).
+const PIXEL_BUDGET = 16e6;
 const BASE = {
   [T.DIRT]: [122, 82, 51], [T.STONE]: [112, 115, 120], [T.GRANITE]: [140, 104, 100], [T.OBSIDIAN]: [44, 36, 62],
   [T.CRYSTAL]: [110, 224, 240], [T.BEDROCK]: [26, 26, 32], [T.AIR]: [58, 44, 34], [T.TOWN]: [168, 140, 95],
@@ -17,19 +19,22 @@ const rgb = (c, d = 0) => `rgb(${Math.max(0, Math.min(255, c[0] + d))},${Math.ma
 
 export function createRenderer(canvas) {
   const ctx = canvas.getContext('2d', { alpha: false });
-  let dpr = 1, W = 0, H = 0, ts = 32, tsD = 32, chunks = new Map(), frame = 0, maxChunks = 30;
+  let dpr = 1, W = 0, H = 0, ts = 32, tsD = 0, chunks = new Map(), frame = 0, maxChunks = 30;
   const view = { w: 10, h: 10 };
 
   function resize() {
     dpr = Math.min(window.devicePixelRatio || 1, 2);
     const vw = window.innerWidth, vh = window.innerHeight;
     ts = Math.max(26, Math.min(40, Math.round(Math.min(vw, vh) / 20)));
-    tsD = Math.max(8, Math.round(ts * dpr));
+    const tsNew = Math.max(8, Math.round(ts * dpr));
+    // Keep the chunk cache when only the viewport changed (mobile URL bar, rotation with the same tile size).
+    if (tsNew !== tsD) chunks.clear();
+    tsD = tsNew;
     W = Math.max(1, Math.round(vw * dpr)); H = Math.max(1, Math.round(vh * dpr));
     canvas.width = W; canvas.height = H;
     canvas.style.width = vw + 'px'; canvas.style.height = vh + 'px';
-    chunks.clear();
-    maxChunks = Math.max(12, Math.floor(PIXEL_BUDGET / ((CH * tsD) ** 2)));
+    const side = CH * tsD, visible = (Math.ceil(W / side) + 1) * (Math.ceil(H / side) + 1);
+    maxChunks = Math.max(visible + 6, Math.floor(PIXEL_BUDGET / (side * side)));
     view.w = W / tsD; view.h = H / tsD;
     return view;
   }

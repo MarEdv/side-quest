@@ -53,7 +53,7 @@ export function decodeDeltas(str, limit) {
 export function serialize(s) {
   const fogAll = !s.fogOn;
   return {
-    v: SAVE_VERSION, seed: s.seed, size: s.size, fogOn: s.fogOn,
+    v: SAVE_VERSION, seed: s.seed, size: s.size, fogOn: s.fogOn, wear: !!s.flags.durability,
     t: Math.round(s.stats.time * 100) / 100,
     p: [s.player.x, s.player.y],
     mined: encodeDeltas(s.changes),
@@ -67,6 +67,8 @@ const isInt = (n) => Number.isInteger(n);
 const isNum = (n) => typeof n === 'number' && Number.isFinite(n) && n >= 0;
 
 // Returns a restored game state, or null if the data is not a valid save (corrupt, wrong version, tampered).
+// A saved game keeps the world settings it was started with (seed, size, fog and, when saved, durability); the URL
+// flags only supply display and debug options here (D25). `wear` is optional so saves from before it still load.
 export function restore(data, flags = {}) {
   try {
     if (!data || typeof data !== 'object' || data.v !== SAVE_VERSION) return null;
@@ -97,8 +99,10 @@ export function restore(data, flags = {}) {
       if (packed.length !== (N + 7) >> 3) return null;
       fogBytes = unpackBits(packed, N);
     }
+    if (data.wear !== undefined && typeof data.wear !== 'boolean') return null;
+    const durability = typeof data.wear === 'boolean' ? data.wear : !!flags.durability;
     const world = createWorld(data.seed, size);
-    const s = createGame({ seed: data.seed, size, flags: { ...flags, fog: fogOn }, world });
+    const s = createGame({ seed: data.seed, size, flags: { ...flags, fog: fogOn, durability }, world });
     for (const i of changes) world.tiles[i] = 0;
     s.changes = [...changes];
     s.inv = inv;
@@ -108,7 +112,7 @@ export function restore(data, flags = {}) {
       s.player.x = s.player.px = x; s.player.y = s.player.py = y;
     }
     s.inTown = Math.hypot(s.player.x - world.town.x, s.player.y - world.town.y) <= world.town.r + 0.5;
-    if (fogBytes) { s.fog = fogBytes; reveal(s); }
+    if (fogBytes && !flags.debug) { s.fog = fogBytes; reveal(s); } // debug keeps the whole map revealed
     return s;
   } catch {
     return null;
