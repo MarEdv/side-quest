@@ -51,7 +51,7 @@ Sonnet implements, Haiku looks up docs; never ask the owner questions.
 ### 3.3 Town, shop and economy
 | ID | Requirement | Status |
 |----|-------------|--------|
-| E-1 | Standing on the shop tile in town opens the shop: sell gems (one or all) for coins, buy hatchets (Stone, Steel, Gem) and see their prices and what they can cut. | ✅ verified in headless Chrome (D19) |
+| E-1 | In town, **E** / Enter or the touch **Shop** button opens the shop; stepping onto the shop tile shows a prompt ("press E" / "tap Shop") instead of opening it, so walking through town never pops it up (D21). The shop sells gems (one or all) for coins, sells hatchets (Stone, Steel, Gem) and shows their prices and what they can cut. A hatchet below your best is not sold, and one found in a chest pays half its price instead, unless `durability=1` makes it a useful spare (D23). | 🚧 logic unit-tested (D21, D23); browser check pending |
 | E-2 | Prices are tuned so a player who mines steadily can buy the next hatchet roughly every few minutes, and finding a hatchet in a chest is a real shortcut. | 🚧 tuned with tools/sim.mjs (D12, D20); not yet played by a human |
 | E-3 | The Diamond of Your Dreams cannot be sold. | ✅ verified in headless Chrome (D19) |
 

@@ -111,3 +111,28 @@ test('durability flag: off = hatchets never wear; on = they wear and break, wood
   for (let k = 0; k < 40; k++) { w.world.tiles[w.player.y * w.size + w.player.x + 1] = T.DIRT; mineEast(w, T.DIRT, 0); }
   assert.equal(w.inv.hatchets[0], true);
 });
+
+test('game: walking and mining speed do not depend on the frame rate (D22)', () => {
+  const run = (dt) => {
+    const s = game();
+    const { x, y } = s.player;
+    for (let k = 1; k <= 30; k++) { const i = y * s.size + x + k; s.world.tiles[i] = k % 3 === 0 ? T.STONE : T.AIR; s.world.ring[i] = 1; }
+    let t = 0;
+    while (s.player.x < x + 30 && t < 30) { update(s, { dx: 1, dy: 0 }, dt); t += dt; }
+    return t;
+  };
+  const ideal = 29 * STEP_TIME + 10 * mineTime(2, 0); // the 30th step lands at this moment
+  for (const fps of [30, 60, 144]) {
+    const t = run(1 / fps);
+    assert.ok(Math.abs(t - ideal) <= 2 / fps + 1e-9, `${fps} fps: ${t.toFixed(3)} s, ideal ${ideal.toFixed(3)} s`);
+  }
+});
+
+test('game: idle time is not banked into a burst of steps', () => {
+  const s = game();
+  const { x, y } = s.player;
+  for (let k = 1; k <= 3; k++) s.world.tiles[y * s.size + x + k] = T.AIR;
+  for (let k = 0; k < 120; k++) update(s, { dx: 0, dy: 0 }, 1 / 60);
+  for (let k = 0; k < 2; k++) update(s, { dx: 1, dy: 0 }, 1 / 60);
+  assert.equal(s.player.x, x + 1, 'one step, not several');
+});

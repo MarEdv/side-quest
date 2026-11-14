@@ -89,3 +89,22 @@ test('chests: coins, gems and hatchets', () => {
   place({ kind: 'hatchet', tier: 2 });
   assert.equal(s.inv.hatchets[2], true);
 });
+
+test('buying or finding a hatchet below your best (D23)', () => {
+  const inv = newInventory({ coins: 99999 });
+  inv.hatchets[2] = true;
+  const r = buyHatchet(inv, 1);
+  assert.deepEqual([r.ok, r.reason, inv.coins, inv.hatchets[1]], [false, 'worse', 99999, false]);
+  assert.equal(buyHatchet(inv, 2).reason, 'owned');
+  assert.equal(buyHatchet(inv, 1.5).reason, 'unknown');
+  assert.equal(buyHatchet(inv, '3').reason, 'unknown');
+  // with durability a lower tier is a useful spare
+  assert.equal(buyHatchet(inv, 1, PRICES, { spares: true }).ok, true);
+  // a chest hatchet below the best one pays half its price instead (no durability)
+  const inv2 = newInventory(); inv2.hatchets[2] = true;
+  assert.deepEqual(grantHatchet(inv2, 1), { owned: true, coins: PRICES[1] / 2 });
+  assert.equal(inv2.hatchets[1], false);
+  const inv3 = newInventory(); inv3.hatchets[2] = true;
+  assert.equal(grantHatchet(inv3, 1, PRICES, { spares: true }).owned, false);
+  assert.equal(inv3.hatchets[1], true);
+});

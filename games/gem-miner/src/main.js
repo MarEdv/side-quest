@@ -1,7 +1,7 @@
 // Browser glue: wires the pure game logic to the canvas, input, audio and the DOM overlays.
 import { parseFlags } from './flags.js';
 import { randomSeed } from './rng.js';
-import { createGame, update, sellAll, sellGem, buyHatchet, STEP_TIME } from './game.js';
+import { createGame, update, sellAll, sellGem, buyHatchet, say, STEP_TIME } from './game.js';
 import { serialize, restore, SAVE_VERSION } from './save.js';
 import { createStorage } from './storage.js';
 import { addScore, scoresFor, formatTime } from './scores.js';
@@ -127,7 +127,7 @@ function doBuy(tier, key) {
   const r = buyHatchet(state, tier);
   flushEvents();
   const name = HATCHETS[tier].name;
-  const msg = r.ok ? `You bought the ${name} hatchet!` : r.reason === 'poor' ? `Not enough coins: ${r.need.toLocaleString('en')} more for the ${name} hatchet.` : r.reason === 'owned' ? 'You already have it.' : 'Cannot buy that.';
+  const msg = r.ok ? `You bought the ${name} hatchet!` : r.reason === 'poor' ? `Not enough coins: ${r.need.toLocaleString('en')} more for the ${name} hatchet.` : r.reason === 'owned' ? 'You already have it.' : r.reason === 'worse' ? 'You already have a better hatchet.' : 'Cannot buy that.';
   ui.renderShop(state, msg, r.ok ? 'shopClose' : key);
 }
 
@@ -139,6 +139,7 @@ function flushEvents() {
   for (const e of evs) {
     if (e.type === 'tile') renderer.invalidate(e.i, state.size);
     else if (e.type === 'shop') shop = true;
+    else if (e.type === 'atShop') say(state, isTouch() ? 'The shop: tap 🏪 Shop to trade' : 'The shop: press E to trade', 'atShop');
     else if (SOUND[e.type]) audio.play(SOUND[e.type]);
     if (e.type === 'win') onWin();
   }

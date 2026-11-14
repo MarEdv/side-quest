@@ -160,3 +160,30 @@
   minutes on 256 is the expected human time; 128 takes about half of that. The bot's `--rate` (minimum coins per second a
   detour must pay, default 1.5) is the main knob of its efficiency.
 - Prices and gem tables were tuned so the three tiers arrive roughly every 4-12 minutes for the bot (E-2).
+
+## D21 — 2026-11-14 — The shop tile prompts instead of opening the shop (supersedes the side effect in D16)
+- **Context:** Review: the shop opened every time the miner stepped onto the shop tile, and that tile is the centre of
+  town, so walking through town kept popping the shop up (accepted as a side effect in D16).
+- **Decision:** Stepping onto the shop tile shows a toast, "The shop: press E to trade" (keyboard) or "The shop: tap 🏪
+  Shop to trade" (touch). The shop opens only with E / Enter or the touch Shop button, anywhere in town as before. The
+  game emits a new `atShop` event; the toast text is chosen by `main.js` because only it knows the input mode.
+- **Alternatives:** open the shop once per town visit (still a surprise pop-up on the first pass, and needs "visit"
+  bookkeeping); a shop counter you bump into (blocks the town centre).
+
+## D22 — 2026-11-14 — Frame-rate independent walking and mining
+- **Context:** Review: `update()` reset the step cooldown to a full step and started each mining action from zero, so
+  every action was rounded up to whole frames. At 30 fps the same route took about 10 % longer than at 60 fps (a 30-tile
+  corridor with 10 stone blocks: 9.57 s vs 8.69 s ideal); 144 fps was faster than 60.
+- **Decision:** The time left over in the frame when the miner becomes ready is carried into the next step or mining
+  action (at most one step's worth), and the overflow of a finished block carries into the step into it. When no
+  direction is held the carry is dropped, so standing still never banks a burst of steps. Regression tests cover 30, 60
+  and 144 fps and the no-burst rule. The balance bot (60 Hz) became about 3 % faster (256: 16m43s mean over seeds 1-6,
+  was 17m18s in D20).
+
+## D23 — 2026-11-14 — No selling a hatchet below your best
+- **Context:** Review: the shop let a player who owns the Steel hatchet buy the Stone one, and a Stone chest found after
+  buying Steel handed over the tool. Without durability the best owned hatchet is always used (M-4), so both were coins
+  for nothing.
+- **Decision:** Without `durability`, buying a tier below your best is refused (reason `worse`; the shop shows "Not
+  needed") and a chest hatchet below your best pays half its price, like one you already own. With `durability=1` a lower
+  tier is a backup for when the best one breaks, so both work as before. Non-integer tiers are rejected.

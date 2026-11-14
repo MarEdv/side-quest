@@ -1,6 +1,6 @@
 // DOM overlays and HUD (browser only): title, shop, pause, minimap, win. Keyboard and touch accessible; while an overlay
 // is open its keydown handler runs first (capture) and stops the event, so no input reaches the game.
-import { GEMS, DREAM, backpackValue } from './economy.js';
+import { GEMS, DREAM, backpackValue, isObsolete } from './economy.js';
 import { HATCHETS, bestTier } from './mining.js';
 import { mapPixels } from './render.js';
 import { formatTime } from './scores.js';
@@ -101,9 +101,10 @@ export function createUI(h) {
       const owned = inv.hatchets[t];
       const price = s.prices[t];
       const need = price - inv.coins;
-      const status = t === 0 ? 'Always yours' : owned ? (t === best ? 'Owned, in use' : 'Owned') : null;
+      const worse = !owned && t > 0 && isObsolete(inv, t, !!s.flags.durability);
+      const status = t === 0 ? 'Always yours' : owned ? (t === best ? 'Owned, in use' : 'Owned') : worse ? 'Not needed: you have a better one' : null;
       const dur = s.flags.durability && owned && t > 0 ? `, ${inv.dur[t]} blocks left` : '';
-      const btn = t === 0 ? '' : owned ? '<button disabled>Owned</button>'
+      const btn = t === 0 ? '' : owned ? '<button disabled>Owned</button>' : worse ? '<button disabled>Not needed</button>'
         : `<button data-buy="${t}" data-k="buy-${t}" aria-label="Buy ${hd.name} hatchet for ${price} coins"${need > 0 ? ' class="poor"' : ''}>${price.toLocaleString('en')} 🪙</button>`;
       return `<div class="row"><span class="name">🪓 ${hd.name} hatchet<small>Cuts ${cuts}${dur}${status ? ' · ' + status : need > 0 ? ` · need ${need.toLocaleString('en')} more` : ''}</small></span>${btn}</div>`;
     }).join('');

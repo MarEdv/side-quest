@@ -50,7 +50,7 @@ export function reveal(s) {
 
 export const currentTier = (s) => bestTier(s.inv.hatchets);
 
-function say(s, text, key = text) {
+export function say(s, text, key = text) {
   s.hint = text; s.hintT = HINT_TIME; s.hintKey = key;
 }
 const emit = (s, e) => { s.events.push(e); };
@@ -68,7 +68,7 @@ function openChest(s, i) {
   if (!c) return;
   let text;
   if (c.kind === 'hatchet') {
-    const r = grantHatchet(s.inv, c.tier, s.prices);
+    const r = grantHatchet(s.inv, c.tier, s.prices, { spares: !!s.flags.durability });
     text = r.owned ? `A spare ${HATCHETS[c.tier].name} hatchet: sold for ${r.coins} coins` : `Found a ${HATCHETS[c.tier].name} hatchet!`;
     s.stats.coinsEarned += r.coins;
   } else if (c.kind === 'coins') {
@@ -119,8 +119,9 @@ function stepTo(s, x, y) {
   const w = s.world;
   const near = Math.hypot(x - w.town.x, y - w.town.y) <= w.town.r + 0.5;
   s.inTown = near;
+  // The shop tile only prompts (D21): walking across the middle of town must not pop the shop up every time.
   const onShop = x === w.shop.x && y === w.shop.y;
-  if (onShop && !s.onShop) emit(s, { type: 'shop' });
+  if (onShop && !s.onShop) emit(s, { type: 'atShop' });
   s.onShop = onShop;
   emit(s, { type: 'step' });
 }
@@ -130,18 +131,22 @@ export function update(s, input, dt) {
   if (s.phase !== 'playing') return;
   s.stats.time += dt;
   if (s.hintT > 0) { s.hintT -= dt; if (s.hintT <= 0) { s.hint = ''; s.hintKey = ''; } }
-  s.cd = Math.max(s.cd - dt, -dt);
+  s.cd -= dt;
   if (input.shop && s.inTown) emit(s, { type: 'shop' });
   const dx = input.dx | 0, dy = input.dy | 0;
-  if (!dx && !dy) { s.mine = null; return; }
+  if (!dx && !dy) { s.mine = null; if (s.cd < 0) s.cd = 0; return; }
   const p = s.player;
   p.fx = dx; p.fy = dy;
   if (s.cd > 0) return;
+  // Time already spent in this frame since the miner was ready. Carrying it into the next action keeps walking and
+  // mining speed the same at 30, 60 or 144 fps (D22); it is at most a step long, so nothing is banked while idle.
+  const carry = Math.min(-s.cd, STEP_TIME);
+  s.cd = 0;
   const w = s.world, x = p.x + dx, y = p.y + dy;
   if (x < 0 || y < 0 || x >= w.size || y >= w.size) return;
   const i = y * w.size + x, t = w.tiles[i];
-  if (isPassable(t)) { s.mine = null; stepTo(s, x, y); return; }
-  if (t === T.CHEST) { openChest(s, i); s.cd = 0.12; return; }
+  if (isPassable(t)) { s.mine = null; stepTo(s, x, y); s.cd -= carry; return; }
+  if (t === T.CHEST) { openChest(s, i); s.cd = 0.12 - carry; return; }
   if (t === T.DREAM) { setTile(s, i, T.FLOOR); win(s); return; }
   const h = hardnessAt(w, x, y), tier = currentTier(s);
   if (!canCut(tier, h)) {
@@ -152,10 +157,10 @@ export function update(s, input, dt) {
     }
     return;
   }
-  if (!s.mine || s.mine.i !== i) s.mine = { i, t: 0, need: mineTime(h, tier) };
-  s.mine.t += dt;
+  if (!s.mine || s.mine.i !== i) s.mine = { i, t: carry, need: mineTime(h, tier) };
+  else s.mine.t += dt;
   s.mine.need = mineTime(h, tier);
-  if (s.mine.t >= s.mine.need) finishMine(s, i, t);
+  if (s.mine.t >= s.mine.need) { const over = s.mine.t - s.mine.need; finishMine(s, i, t); s.cd = -over; }
   else if (!s.mine.ticked || s.mine.t - s.mine.ticked > 0.22) { s.mine.ticked = s.mine.t; emit(s, { type: 'hit' }); }
 }
 
@@ -171,7 +176,7 @@ export function sellGem(s, id, n = 1) {
   return r;
 }
 export function buyHatchet(s, tier) {
-  const r = ecoBuy(s.inv, tier, s.prices);
+  const r = ecoBuy(s.inv, tier, s.prices, { spares: !!s.flags.durability });
   if (r.ok) emit(s, { type: 'buy', tier });
   return r;
 }

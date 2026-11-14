@@ -1,5 +1,5 @@
 // Gems, prices, selling and buying (pure).
-import { HATCHETS } from './mining.js';
+import { HATCHETS, bestTier } from './mining.js';
 
 export const GEMS = Object.freeze([
   { id: 'quartz',   name: 'Quartz',   value: 3,   color: '#e8e4dc' },
@@ -53,9 +53,14 @@ export function sellAll(inv) {
   return { ok: count > 0, coins, count, reason: count ? undefined : 'none' };
 }
 
-export function buyHatchet(inv, tier, table = PRICES) {
-  if (!(tier >= 1 && tier < HATCHETS.length)) return { ok: false, reason: 'unknown' };
+// A hatchet below your best is useless unless hatchets wear out (`spares`: then it is a backup), so it is refused
+// rather than taking the player's coins for nothing (D23).
+export const isObsolete = (inv, tier, spares = false) => !spares && tier < bestTier(inv.hatchets);
+
+export function buyHatchet(inv, tier, table = PRICES, { spares = false } = {}) {
+  if (!(Number.isInteger(tier) && tier >= 1 && tier < HATCHETS.length)) return { ok: false, reason: 'unknown' };
   if (inv.hatchets[tier]) return { ok: false, reason: 'owned' };
+  if (isObsolete(inv, tier, spares)) return { ok: false, reason: 'worse' };
   if (inv.coins < table[tier]) return { ok: false, reason: 'poor', need: table[tier] - inv.coins };
   inv.coins -= table[tier];
   inv.hatchets[tier] = true;
@@ -63,9 +68,10 @@ export function buyHatchet(inv, tier, table = PRICES) {
   return { ok: true, price: table[tier] };
 }
 
-// A hatchet found in a chest: gives the tool, or its half price in coins when you already own it.
-export function grantHatchet(inv, tier, table = PRICES) {
-  if (inv.hatchets[tier]) { const c = Math.floor(table[tier] / 2); inv.coins += c; return { owned: true, coins: c }; }
+// A hatchet found in a chest: gives the tool, or its half price in coins when you already own it (or a better one,
+// unless hatchets wear out: then a lower one is a useful spare).
+export function grantHatchet(inv, tier, table = PRICES, { spares = false } = {}) {
+  if (inv.hatchets[tier] || isObsolete(inv, tier, spares)) { const c = Math.floor(table[tier] / 2); inv.coins += c; return { owned: true, coins: c }; }
   inv.hatchets[tier] = true; inv.dur[tier] = HATCHETS[tier].uses;
   return { owned: false, coins: 0 };
 }

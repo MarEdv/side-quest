@@ -63,7 +63,7 @@ function astar(s, tx, ty, maxExp = 300000) {
 }
 
 function nextPrice(s) {
-  for (let t = 1; t <= 3; t++) if (!s.inv.hatchets[t]) return { tier: t, price: s.prices[t] };
+  for (let t = currentTier(s) + 1; t <= 3; t++) if (!s.inv.hatchets[t]) return { tier: t, price: s.prices[t] };
   return null;
 }
 
@@ -80,7 +80,7 @@ function bestCandidate(s, radius = 14) {
       else if (t === T.CHEST) {
         const c = w.chests.get(i);
         value = c.kind === 'coins' ? c.coins : c.kind === 'gems' ? c.count * GEMS[c.gem].value
-          : (s.inv.hatchets[c.tier] ? s.prices[c.tier] / 2 : s.prices[c.tier]);
+          : (s.inv.hatchets[c.tier] || c.tier < tier ? s.prices[c.tier] / 2 : s.prices[c.tier]);
       } else continue;
       const est = (Math.abs(x - p.x) + Math.abs(y - p.y)) * (STEP_TIME + 0.4);
       const rate = value / (est + 0.5);

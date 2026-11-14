@@ -36,3 +36,16 @@ test('town direction hint', () => {
   s.player.x = s.world.town.x + 30; s.player.y = s.world.town.y;
   assert.deepEqual(townDirection(s), { dist: 30, arrow: '←' });
 });
+
+test('the shop tile only prompts; E in town opens the shop (D21)', () => {
+  const s = createGame({ seed: 5, size: 128, flags: {} });
+  const sh = s.world.shop;
+  assert.equal(s.player.x, sh.x); assert.equal(s.player.y, sh.y + 2);
+  const seen = [];
+  for (let k = 0; k < 60; k++) { update(s, { dx: 0, dy: -1 }, 1 / 60); seen.push(...s.events.map((e) => e.type)); }
+  assert.ok(s.player.y < sh.y, 'walked across the shop tile');
+  assert.ok(seen.includes('atShop'));
+  assert.ok(!seen.includes('shop'), 'stepping on the shop tile does not open the shop');
+  update(s, { dx: 0, dy: 0, shop: true }, 1 / 60);
+  assert.ok(s.events.some((e) => e.type === 'shop'), 'E in town opens it');
+});
