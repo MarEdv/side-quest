@@ -23,5 +23,17 @@
       "touch"
     ],
     "order": 2
+  },
+  {
+    "slug": "gem-miner",
+    "path": "games/gem-miner/",
+    "title": "Gem Miner",
+    "description": "Dig through dirt, stone, granite and obsidian for gems, buy better hatchets and find the Diamond of Your Dreams.",
+    "icon": "💎",
+    "tags": [
+      "keyboard",
+      "touch"
+    ],
+    "order": 3
   }
 ]

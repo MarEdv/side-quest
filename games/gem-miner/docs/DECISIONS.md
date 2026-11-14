@@ -93,3 +93,70 @@
   ("the gem blade hums"). Without it, finding one chamber in 65 000 or 262 000 tiles would be luck; the owner asked for a
   20-40 minute game. Before that the HUD shows the way back to town (P-2).
 - **Alternatives:** always-visible compass (removes the exploring), a rumour in the shop (more UI).
+
+## D14 — 2026-11-14 — Rendering
+- **Decision:** The world is pre-rendered in 16 x 16-tile chunks into plain offscreen `<canvas>` elements (not
+  `OffscreenCanvas`, which needs Safari 16.4+), created lazily for the visible chunks and dropped (LRU, pixel budget about
+  70 M px) when far away; a changed tile drops its chunk. Everything is drawn at integer device pixels (no seams or blur),
+  the main canvas uses `getContext('2d', { alpha: false })`, fog is a per-frame layer of merged row rects plus a soft lamp
+  gradient, gems sparkle in a cheap dynamic pass. Tile size adapts: `round(min(width, height) / 20)` CSS px clamped to
+  26-40 (about 32 px on a laptop, 26 px on a phone). Resolution scaling is capped at DPR 2 (a DPR 3 phone would need
+  2.25x the pixels per chunk for little gain on a blocky art style).
+- **Alternatives:** redrawing every visible tile every frame (about 900 fillRects plus gems per frame, fine on desktop but
+  not on phones), `OffscreenCanvas` (iOS), WebGL (a dependency-free tile renderer is more code than this needs).
+
+## D15 — 2026-11-14 — Autosave and Safari storage eviction
+- **Decision:** Autosave every 5 s, on `visibilitychange` (hidden), on `pagehide`, when pausing and on quitting to the
+  title. The first save calls `navigator.storage.persist()` once inside try/catch. Safari (ITP) deletes script-written
+  storage of sites with no user interaction for 7 days (not for home-screen apps), and `persist()` is the standard way to
+  ask for exemption; it is a request and may be ignored, so a long break can still lose a save on Safari. All storage
+  access is wrapped (`storage.js`): when the backend is missing or throws, saves stay in memory for the session and play
+  continues. Winning deletes the save. `debug=1` runs never save (they reveal the map and hand out coins).
+- **Save format:** `{ v: 1, seed, size, fogOn, t, p: [x, y], mined: "<sorted base-36 index deltas>", fog: "<base64
+  bitset>", inv, stats }`. A 512 x 512 fog bitset is 32 KB (44 KB as base64); a 20 000-block diff is about 60 KB. Opened
+  chests are the chest tiles that became open, so they are stored in `mined`. Anything that fails validation (version,
+  types, ranges, bitset length) is discarded and the player is told, never thrown.
+
+## D16 — 2026-11-14 — Shop opening, town and UI rules
+- **Decision:** The shop opens when you step onto the shop tile (E-1) and with E / Enter / the touch Shop button anywhere in
+  town (a disc of radius 4.5 plus a half tile). The sim only advances while no overlay is open; opening an overlay clears
+  held keys, the overlay handles its keys in the capture phase and stops them, and the HUD buttons and touch controls
+  become `inert`, so nothing leaks into the game. Overlays are DOM (`ui.js`): title, shop, pause, minimap, win. The shop
+  has a fixed header and footer with a scrolling middle so Back stays reachable on short landscape phones. Arrow keys move
+  focus between buttons, Esc closes; targets are 44 px or larger.
+- **Side effect accepted:** walking across the shop tile (the centre of town) opens the shop each time.
+
+## D17 — 2026-11-14 — Touch controls
+- **Decision:** The D-pad takes the direction from where the finger is relative to the pad centre (sliding between
+  directions works; one axis at a time like the keyboard); the joystick (flag) is a fixed stick with a dominant-axis dead
+  zone. Shown when `touch=on`, or `auto` and the device has a coarse pointer / touch points (or a touch is seen). Page
+  scroll, pinch and rubber-banding are blocked with `touch-action: none`, `overscroll-behavior: none` and iOS gesture
+  event blocking; screens that need scrolling opt back in. Safe-area insets are applied to the HUD and controls.
+- **Alternatives:** tap-to-walk to a tile (conflicts with mining by bump), a floating joystick (needs a free area; the
+  fixed one is easier to explain).
+
+## D18 — 2026-11-14 — Hatchets in the world and the thumbnail
+- **Decision:** No thumbnail PNG: the launcher card uses the 💎 emoji icon (`game.json` `icon`). The Gem hatchet is not in
+  any chest (D5); it is the endgame purchase.
+
+## D19 — 2026-11-14 — Browser verification (headless Chrome over CDP)
+- Verified on 2026-11-14: launcher shows three cards and the Gem Miner card opens the game; title; new game; fog; walk and
+  mine with the keyboard; the camera scrolled right, left, down and up (deadzone) and stayed centred with `camera=center`;
+  stepping on the shop tile and E opened the shop; selling one / all, buying, not enough coins, Esc; no movement while the
+  shop was open; M minimap and P pause (timer frozen); reload, Continue restored position, mined tiles and counters
+  (3 KB save); a corrupt save is discarded with a message; best times on the title and win screens (win on a crafted save);
+  `?debug=1` minimap of the whole world; 512 world, `durability=1` (the Stone hatchet broke), `fog=0`; 390 x 844 and
+  844 x 390 touch emulation with the D-pad and joystick mining, the Shop button, the minimap button; no console errors.
+- Not verified: a real phone, Safari / iOS, audible sound, safe-area insets on a notched device, 60 fps on a mid-range phone
+  (headless desktop Chrome reported 60 fps at 512 x 512).
+
+## D20 — 2026-11-14 — Balance results (tools/sim.mjs, final numbers)
+- Bot completion times (game time, 6 seeds per size, perfect-play bot, default flags):
+  **128:** 8m06s mean (7m49s-8m30s); **256:** 17m18s mean (15m45s-19m21s; seeds 11-14: 13m10s-18m02s);
+  **512:** 32m17s mean (26m43s-35m35s). With `durability=1` on 256 the bot needs 22m12s mean (3 seeds): it has to
+  rebuy broken hatchets (about 4-5 shop trips) and still always finishes.
+- Typical bot timeline on 256: Steel hatchet at about 4 min (or found in its chest), Gem hatchet at about 16 min, then a
+  1-minute walk and dig to the chamber. A person is slower than the bot (reading, wandering, missed gems), so 20-40
+  minutes on 256 is the expected human time; 128 takes about half of that. The bot's `--rate` (minimum coins per second a
+  detour must pay, default 1.5) is the main knob of its efficiency.
+- Prices and gem tables were tuned so the three tiers arrive roughly every 4-12 minutes for the bot (E-2).
