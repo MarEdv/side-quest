@@ -4,6 +4,7 @@ import { createWorld, hardnessAt } from './world.js';
 import { T, GEM_IDS, isGem, gemIndex, isPassable } from './tiles.js';
 import { HATCHETS, canCut, mineTime, bestTier, wear } from './mining.js';
 import { GEMS, newInventory, sellAll as ecoSellAll, sellGem as ecoSellGem, buyHatchet as ecoBuy, grantHatchet, prices } from './economy.js';
+import { t as tr, num, gemName, hatchetName } from './i18n.js'; // `t` is a tile in this file
 
 export const STEP_TIME = 0.11;   // seconds per tile walked
 export const LAMP_RADIUS = 6;    // tiles revealed around the miner
@@ -34,6 +35,7 @@ export function createGame({ seed, size, flags = {}, world = null }) {
     changes: [],                 // tile indices that differ from the generated world (all became AIR)
     events: [], hint: '', hintT: 0, hintKey: '',
     inTown: true, onShop: false,
+    lang: 'en',                  // language of hints (P-5); set by main.js, never saved
   };
   if (!s.fogOn || flags.debug) fog.fill(1); else reveal(s);
   return s;
@@ -67,17 +69,19 @@ function openChest(s, i) {
   s.mine = null;
   if (!c) return;
   let text;
+  const L = s.lang;
   if (c.kind === 'hatchet') {
     const r = grantHatchet(s.inv, c.tier, s.prices, { spares: !!s.flags.durability });
-    text = r.owned ? `A spare ${HATCHETS[c.tier].name} hatchet: sold for ${r.coins} coins` : `Found a ${HATCHETS[c.tier].name} hatchet!`;
+    const hatchet = hatchetName(L, HATCHETS[c.tier].id);
+    text = r.owned ? tr(L, 'spareHatchet', { hatchet, n: num(L, r.coins) }) : tr(L, 'foundHatchet', { hatchet });
     s.stats.coinsEarned += r.coins;
   } else if (c.kind === 'coins') {
     s.inv.coins += c.coins; s.stats.coinsEarned += c.coins;
-    text = `Chest: ${c.coins} coins`;
+    text = tr(L, 'chestCoins', { n: num(L, c.coins) });
   } else {
     const id = GEM_IDS[c.gem];
     s.inv.gems[id] += c.count; s.stats.gems += c.count;
-    text = `Chest: ${c.count} ${GEMS[c.gem].name}`;
+    text = tr(L, 'chestGems', { n: c.count, gem: gemName(L, GEMS[c.gem].id) });
   }
   say(s, text);
   emit(s, { type: 'chest', kind: c.kind, text });
@@ -90,14 +94,13 @@ function finishMine(s, i, t) {
   if (isGem(t)) {
     const g = GEMS[gemIndex(t)];
     s.inv.gems[g.id]++; s.stats.gems++;
-    say(s, `+1 ${g.name}`);
+    say(s, tr(s.lang, 'plusGem', { gem: gemName(s.lang, g.id) }));
     emit(s, { type: 'gem', gem: g.id });
   } else emit(s, { type: 'mined' });
   if (s.flags.durability) {
     const tier = currentTier(s);
     if (wear(s.inv, tier)) {
-      const n = HATCHETS[tier].name;
-      say(s, `Your ${n} hatchet broke!`, 'broke');
+      say(s, tr(s.lang, 'broke', { hatchet: hatchetName(s.lang, HATCHETS[tier].id) }), 'broke');
       emit(s, { type: 'broke', tier });
     }
   }
@@ -152,7 +155,7 @@ export function update(s, input, dt) {
   if (!canCut(tier, h)) {
     s.mine = null;
     if (s.hintKey !== 'hard' || s.hintT < HINT_TIME - 0.9) {
-      say(s, h >= 99 ? 'Solid bedrock: the edge of the world' : h === 5 ? 'The crystal wall needs a Gem hatchet' : `Too hard for your ${HATCHETS[tier].name} hatchet`, 'hard');
+      say(s, h >= 99 ? tr(s.lang, 'bedrock') : h === 5 ? tr(s.lang, 'crystalWall') : tr(s.lang, 'tooHard', { hatchet: hatchetName(s.lang, HATCHETS[tier].id) }), 'hard');
       emit(s, { type: 'toohard' });
     }
     return;

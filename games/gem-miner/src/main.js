@@ -11,6 +11,7 @@ import { createInput } from './input.js';
 import { createAudio } from './audio.js';
 import { createUI } from './ui.js';
 import { HATCHETS } from './mining.js';
+import { t as tr, num, hatchetName, pickLang, normalizeLang } from './i18n.js';
 
 const flags = parseFlags(location.search);
 let backend = null;
@@ -34,19 +35,33 @@ const ui = createUI({
   toTitle: () => { state = null; showTitle(); },
 });
 
+// Language (P-5): ?lang= from the launcher, else the saved choice, else the browser's; a ?lang= is remembered.
+const queryLang = normalizeLang(new URLSearchParams(location.search).get('lang'));
+let lang = pickLang({ query: queryLang, saved: storage.get('lang'), browser: navigator.languages?.length ? navigator.languages : [navigator.language] });
+if (queryLang) storage.set('lang', queryLang);
+const T = (key, vars) => tr(lang, key, vars);
+ui.setLang(lang);
+document.getElementById('langSwitch').addEventListener('click', (e) => {
+  const next = normalizeLang(e.target.closest('[data-lang]')?.dataset.lang);
+  if (!next || next === lang) return;
+  lang = next;
+  storage.set('lang', lang);
+  ui.setLang(lang);
+  if (state) state.lang = lang;
+  showTitle(titleNote, `lang-${lang}`);
+});
+
 const isTouch = () => input.touchActive();
-const controlsText = () => (isTouch()
-  ? 'Touch: hold the D-pad (or stick) to walk and dig. Tap Shop when you are in town. 🗺 for the minimap.'
-  : 'WASD / arrows: walk and dig · E / Enter: shop (in town) · M: minimap · P / Esc: pause');
+const controlsText = () => T(isTouch() ? 'controlsTouch' : 'controlsKeys');
 const flagsText = () => {
   const bits = [];
-  if (flags.seed !== null) bits.push(`seed ${flags.seed}`);
-  if (flags.worldSize !== 256) bits.push(`world ${flags.worldSize}`);
-  if (flags.camera !== 'deadzone') bits.push('camera: centre');
-  if (!flags.fog) bits.push('fog off');
-  if (flags.durability) bits.push('hatchets wear out');
-  if (flags.debug) bits.push('DEBUG (not saved to best times)');
-  return bits.length ? 'Flags: ' + bits.join(' · ') : '';
+  if (flags.seed !== null) bits.push(T('flagSeed', { n: flags.seed }));
+  if (flags.worldSize !== 256) bits.push(T('flagWorld', { n: flags.worldSize }));
+  if (flags.camera !== 'deadzone') bits.push(T('flagCamera'));
+  if (!flags.fog) bits.push(T('flagFog'));
+  if (flags.durability) bits.push(T('flagWear'));
+  if (flags.debug) bits.push(T('flagDebug'));
+  return bits.length ? T('flags', { list: bits.join(' · ') }) : '';
 };
 
 // ---------- saving ----------
@@ -68,18 +83,21 @@ function peekSave() {
   const d = storage.get('save');
   return d && d.v === SAVE_VERSION && Number.isFinite(d.t) ? d : null;
 }
-function showTitle(note = '') {
+// `note` replaces the controls help (a message key); `focus` keeps focus on that element instead of the default button.
+let titleNote = '';
+function showTitle(note = '', focus = null) {
+  titleNote = note;
   ui.hudVisible(false); ui.touchVisible(false); input.showShop(false);
   newArmed = false;
   const d = peekSave();
   // Continue always resumes the saved world as it was started; world flags in the URL apply to New game (D25).
   const differs = d && ((flags.seed !== null && flags.seed !== d.seed) || flags.worldSize !== d.size);
-  const fl = [flagsText(), differs ? `Continue resumes your saved ${d.size} × ${d.size} world; the URL settings apply to New game.` : '']
+  const fl = [flagsText(), differs ? T('saveDiffers', { size: d.size }) : '']
     .filter(Boolean).join(' · ');
   ui.renderTitle({
     hasSave: !!d, saveInfo: d ? `${formatTime(d.t)}, ${d.size} × ${d.size}` : '',
     scores: scoresFor(storage.get('scores'), flags.worldSize), size: flags.worldSize,
-    controls: note || controlsText(), flags: fl,
+    controls: titleNote ? T(titleNote) : controlsText(), flags: fl, focus,
   });
   setInert(false);
 }
@@ -103,14 +121,16 @@ function newGame() {
   newArmed = false;
   const seed = flags.seed !== null ? flags.seed : randomSeed();
   state = createGame({ seed, size: flags.worldSize, flags });
+  state.lang = lang;
   if (!flags.debug) storage.remove('save');
   save();
   enterPlay();
 }
 function continueGame() {
   const s = restore(storage.get('save'), flags);
-  if (!s) { storage.remove('save'); showTitle('That saved game could not be read, so it was discarded. Start a new game.'); return; }
+  if (!s) { storage.remove('save'); showTitle('badSave'); return; }
   state = s;
+  state.lang = lang;
   enterPlay();
 }
 function openOverlay() { input.reset(); setInert(true); }
@@ -124,18 +144,18 @@ function toggleSound() { soundOn = !soundOn; audio.enabled = soundOn; ui.renderP
 function doSell(id, n, key) {
   const r = n === Infinity ? sellGem(state, id, state.inv.gems[id]) : sellGem(state, id, n);
   flushEvents();
-  ui.renderShop(state, r.ok ? `Sold for ${r.coins.toLocaleString('en')} coins.` : 'Nothing to sell.', key);
+  ui.renderShop(state, r.ok ? T('soldFor', { n: num(lang, r.coins) }) : T('nothingToSell'), key);
 }
 function doSellAll() {
   const r = sellAll(state);
   flushEvents();
-  ui.renderShop(state, r.ok ? `Sold ${r.count} gems for ${r.coins.toLocaleString('en')} coins.` : 'Your backpack is empty.', 'sellAllBtn');
+  ui.renderShop(state, r.ok ? T('soldGems', { count: num(lang, r.count), n: num(lang, r.coins) }) : T('backpackEmpty'), 'sellAllBtn');
 }
 function doBuy(tier, key) {
   const r = buyHatchet(state, tier);
   flushEvents();
-  const name = HATCHETS[tier].name;
-  const msg = r.ok ? `You bought the ${name} hatchet!` : r.reason === 'poor' ? `Not enough coins: ${r.need.toLocaleString('en')} more for the ${name} hatchet.` : r.reason === 'owned' ? 'You already have it.' : r.reason === 'worse' ? 'You already have a better hatchet.' : 'Cannot buy that.';
+  const hatchet = hatchetName(lang, HATCHETS[tier].id);
+  const msg = r.ok ? T('bought', { hatchet }) : r.reason === 'poor' ? T('poor', { n: num(lang, r.need), hatchet }) : r.reason === 'owned' ? T('alreadyOwned') : r.reason === 'worse' ? T('alreadyBetter') : T('cannotBuy');
   ui.renderShop(state, msg, r.ok ? 'shopClose' : key);
 }
 
@@ -147,7 +167,7 @@ function flushEvents() {
   for (const e of evs) {
     if (e.type === 'tile') renderer.invalidate(e.i, state.size);
     else if (e.type === 'shop') shop = true;
-    else if (e.type === 'atShop') say(state, isTouch() ? 'The shop: tap 🏪 Shop to trade' : 'The shop: press E to trade', 'atShop');
+    else if (e.type === 'atShop') say(state, T(isTouch() ? 'atShopTouch' : 'atShopKeys'), 'atShop');
     else if (SOUND[e.type]) audio.play(SOUND[e.type]);
     if (e.type === 'win') onWin();
   }

@@ -5,15 +5,31 @@ import { HATCHETS, bestTier } from './mining.js';
 import { mapPixels } from './render.js';
 import { formatTime } from './scores.js';
 import { townDirection, dreamDirection } from './game.js';
+import { t as tr, num, gemName, hatchetShort, hatchetName, hatchetTitle, rockNames, DEFAULT_LANG } from './i18n.js';
 
 const $ = (id) => document.getElementById(id);
-const ROCKS = ['dirt', 'stone', 'granite', 'obsidian', 'the crystal wall'];
 
 export function createUI(h) {
   const names = ['title', 'shop', 'pause', 'map', 'win'];
   const el = Object.fromEntries(names.map((n) => [n, $(n)]));
   let current = null;
   let last = {};
+  let lang = DEFAULT_LANG;
+  const T = (key, vars) => tr(lang, key, vars);
+  const n = (v) => num(lang, v);
+
+  // Static texts carry data-i18n (text), data-i18n-html (markup from i18n.js only), data-i18n-aria (aria-label) or
+  // data-i18n-title (title). main.js calls this at start and when the title screen's language switch is used (P-5).
+  function setLang(l) {
+    lang = l;
+    document.documentElement.lang = l;
+    for (const e of document.querySelectorAll('[data-i18n]')) e.textContent = T(e.dataset.i18n);
+    for (const e of document.querySelectorAll('[data-i18n-html]')) e.innerHTML = T(e.dataset.i18nHtml);
+    for (const e of document.querySelectorAll('[data-i18n-aria]')) e.setAttribute('aria-label', T(e.dataset.i18nAria));
+    for (const e of document.querySelectorAll('[data-i18n-title]')) e.title = T(e.dataset.i18nTitle);
+    for (const b of document.querySelectorAll('#langSwitch [data-lang]')) b.setAttribute('aria-pressed', String(b.dataset.lang === l));
+    hudKey = '';
+  }
 
   const focusables = (root) => [...root.querySelectorAll('button:not(:disabled), a[href]')].filter((b) => !b.closest('[hidden]'));
 
@@ -69,8 +85,8 @@ export function createUI(h) {
   // Built with textContent: the entries come from localStorage, which every game on this origin can write (D24).
   const node = (tag, text, cls) => { const n = document.createElement(tag); if (text !== undefined) n.textContent = text; if (cls) n.className = cls; return n; };
   function fillTimes(box, size, list, mineIndex = -1) {
-    box.replaceChildren(node('h3', `Best times, ${size} × ${size} world`));
-    if (!list.length) { box.append(node('p', 'No times yet. Find the Diamond of Your Dreams to set one.', 'small')); return; }
+    box.replaceChildren(node('h3', T('timesTitle', { size })));
+    if (!list.length) { box.append(node('p', T('noTimes'), 'small')); return; }
     const ol = node('ol', undefined, 'times');
     list.forEach((e, i) => {
       const li = node('li', undefined, i === mineIndex ? 'me' : '');
@@ -79,45 +95,48 @@ export function createUI(h) {
     });
     box.append(ol);
   }
-  function renderTitle({ hasSave, scores, size, controls, flags, saveInfo }) {
+  function renderTitle({ hasSave, scores, size, controls, flags, saveInfo, focus = null }) {
     $('continueBtn').hidden = !hasSave;
-    $('newBtn').textContent = 'New game';
-    $('continueBtn').textContent = hasSave && saveInfo ? `Continue (${saveInfo})` : 'Continue';
+    $('newBtn').textContent = T('newGame');
+    $('continueBtn').textContent = hasSave && saveInfo ? T('continueInfo', { info: saveInfo }) : T('continue');
     fillTimes($('bestTimes'), size, scores);
     $('bestTimes').hidden = !scores.length;
     $('controlsHelp').textContent = controls;
     $('flagsLine').textContent = flags;
-    show('title', { focus: hasSave ? 'continueBtn' : 'newBtn' });
+    show('title', { focus: focus || (hasSave ? 'continueBtn' : 'newBtn') });
   }
 
   // ---- shop ----
   function renderShop(s, msg = '', keepFocus = null) {
     const inv = s.inv;
-    $('shopCoins').textContent = `🪙 ${inv.coins.toLocaleString('en')} coins`;
-    // innerHTML here only interpolates constants and numbers (restore() validates every stored count as a number).
+    $('shopCoins').textContent = T('shopCoins', { n: n(inv.coins) });
+    // innerHTML here only interpolates constants (i18n.js) and numbers (restore() validates every stored count as a number).
     const gems = GEMS.filter((g) => inv.gems[g.id] > 0);
-    $('shopGems').innerHTML = gems.length ? gems.map((g) => `
+    $('shopGems').innerHTML = gems.length ? gems.map((g) => {
+      const gem = gemName(lang, g.id);
+      return `
       <div class="row"><span class="dot" style="background:${g.color}"></span>
-        <span class="name">${g.name} × ${inv.gems[g.id]}<small>${g.value} coins each</small></span>
-        <button data-sell="${g.id}" data-k="sell1-${g.id}" aria-label="Sell one ${g.name}">Sell 1</button>
-        <button data-sellall="${g.id}" data-k="sellall-${g.id}" aria-label="Sell all ${g.name}">All</button></div>`).join('')
-      : '<p class="small">Your backpack is empty. Dig for gems!</p>';
-    if (inv.dream) $('shopGems').insertAdjacentHTML('beforeend', `<div class="row"><span class="name">${DREAM.name}<small>Not for sale</small></span></div>`);
+        <span class="name">${gem} × ${inv.gems[g.id]}<small>${T('each', { n: n(g.value) })}</small></span>
+        <button data-sell="${g.id}" data-k="sell1-${g.id}" aria-label="${T('sell1Aria', { gem })}">${T('sell1')}</button>
+        <button data-sellall="${g.id}" data-k="sellall-${g.id}" aria-label="${T('sellAllGemAria', { gem })}">${T('sellAllGem')}</button></div>`;
+    }).join('')
+      : `<p class="small">${T('emptyBackpack')}</p>`;
+    if (inv.dream) $('shopGems').insertAdjacentHTML('beforeend', `<div class="row"><span class="name">${gemName(lang, DREAM.id)}<small>${T('notForSale')}</small></span></div>`);
     const sellAll = $('sellAllBtn');
     sellAll.disabled = !gems.length;
-    sellAll.textContent = gems.length ? `Sell all (${backpackValue(inv).toLocaleString('en')} coins)` : 'Sell all';
+    sellAll.textContent = gems.length ? T('sellAllValue', { n: n(backpackValue(inv)) }) : T('sellAll');
     const best = bestTier(inv.hatchets);
     $('shopHatchets').innerHTML = HATCHETS.map((hd, t) => {
-      const cuts = ROCKS.slice(0, hd.power).join(', ');
+      const cuts = rockNames(lang, hd.power);
       const owned = inv.hatchets[t];
       const price = s.prices[t];
       const need = price - inv.coins;
       const worse = !owned && t > 0 && isObsolete(inv, t, !!s.flags.durability);
-      const status = t === 0 ? 'Always yours' : owned ? (t === best ? 'Owned, in use' : 'Owned') : worse ? 'Not needed: you have a better one' : null;
-      const dur = s.flags.durability && owned && t > 0 ? `, ${inv.dur[t]} blocks left` : '';
-      const btn = t === 0 ? '' : owned ? '<button disabled>Owned</button>' : worse ? '<button disabled>Not needed</button>'
-        : `<button data-buy="${t}" data-k="buy-${t}" aria-label="Buy ${hd.name} hatchet for ${price} coins"${need > 0 ? ' class="poor"' : ''}>${price.toLocaleString('en')} 🪙</button>`;
-      return `<div class="row"><span class="name">🪓 ${hd.name} hatchet<small>Cuts ${cuts}${dur}${status ? ' · ' + status : need > 0 ? ` · need ${need.toLocaleString('en')} more` : ''}</small></span>${btn}</div>`;
+      const status = t === 0 ? T('alwaysYours') : owned ? (t === best ? T('ownedInUse') : T('owned')) : worse ? T('notNeededLong') : null;
+      const dur = s.flags.durability && owned && t > 0 ? T('blocksLeft', { n: n(inv.dur[t]) }) : '';
+      const btn = t === 0 ? '' : owned ? `<button disabled>${T('owned')}</button>` : worse ? `<button disabled>${T('notNeeded')}</button>`
+        : `<button data-buy="${t}" data-k="buy-${t}" aria-label="${T('buyAria', { hatchet: hatchetName(lang, hd.id), n: n(price) })}"${need > 0 ? ' class="poor"' : ''}>${n(price)} 🪙</button>`;
+      return `<div class="row"><span class="name">🪓 ${hatchetTitle(lang, hd.id)}<small>${T('cuts', { rocks: cuts })}${dur}${status ? ' · ' + status : need > 0 ? ` · ${T('needMore', { n: n(need) })}` : ''}</small></span>${btn}</div>`;
     }).join('');
     $('shopMsg').textContent = msg;
     if (current !== 'shop') show('shop', { focus: 'shopClose' });
@@ -133,8 +152,8 @@ export function createUI(h) {
 
   // ---- pause / map / win ----
   function renderPause(s, soundOn) {
-    $('pauseStats').textContent = `Time ${formatTime(s.stats.time)} · ${s.stats.blocks} blocks · ${s.stats.gems} gems found`;
-    $('soundBtn').textContent = `Sound: ${soundOn ? 'on' : 'off'}`;
+    $('pauseStats').textContent = T('pauseStats', { time: formatTime(s.stats.time), blocks: n(s.stats.blocks), gems: n(s.stats.gems) });
+    $('soundBtn').textContent = T(soundOn ? 'soundOn' : 'soundOff');
     show('pause', { focus: 'resumeBtn' });
   }
   function renderMap(s) {
@@ -155,10 +174,10 @@ export function createUI(h) {
   }
   function renderWin(s, scores, rank, debug) {
     const st = s.stats;
-    $('winStats').replaceChildren(...[[formatTime(st.time), 'play time'], [st.gems.toLocaleString('en'), 'gems found'],
-      [st.coinsEarned.toLocaleString('en'), 'coins earned'], [st.blocks.toLocaleString('en'), 'blocks mined']]
+    $('winStats').replaceChildren(...[[formatTime(st.time), T('statTime')], [n(st.gems), T('statGems')],
+      [n(st.coinsEarned), T('statCoins')], [n(st.blocks), T('statBlocks')]]
       .map(([v, label]) => { const d = node('div'); d.append(node('b', v), label); return d; }));
-    $('winRank').textContent = debug ? 'Debug run: not saved to the best times.' : rank ? `New best time! You are #${rank} on the ${s.size} × ${s.size} list.` : '';
+    $('winRank').textContent = debug ? T('debugRun') : rank ? T('newBest', { rank, size: s.size }) : '';
     fillTimes($('winBest'), s.size, scores, rank ? rank - 1 : -1);
     show('win', { focus: 'againBtn' });
   }
@@ -172,9 +191,9 @@ export function createUI(h) {
     const key = [s.inv.coins, best, s.flags.durability ? s.inv.dur[best] : '', gems, town.dist, town.arrow, dream && dream.dist, dream && dream.arrow, s.hint, extra.debug || ''].join('|');
     if (key === hudKey) return;
     hudKey = key;
-    $('hudCoins').textContent = `🪙 ${s.inv.coins.toLocaleString('en')}`;
-    $('hudHatchet').textContent = `🪓 ${hd.name}${s.flags.durability && best > 0 ? ` (${s.inv.dur[best]})` : ''}`;
-    $('hudNav').textContent = [town.dist ? `Town ${town.arrow} ${town.dist}` : 'In town', dream ? `💎 ${dream.arrow || '·'} ${dream.dist}` : ''].filter(Boolean).join('  ');
+    $('hudCoins').textContent = `🪙 ${n(s.inv.coins)}`;
+    $('hudHatchet').textContent = `🪓 ${hatchetShort(lang, hd.id)}${s.flags.durability && best > 0 ? ` (${s.inv.dur[best]})` : ''}`;
+    $('hudNav').textContent = [town.dist ? T('town', { arrow: town.arrow, dist: town.dist }) : T('inTown'), dream ? `💎 ${dream.arrow || '·'} ${dream.dist}` : ''].filter(Boolean).join('  ');
     $('hudGems').replaceChildren(...GEMS.filter((g) => s.inv.gems[g.id] > 0).map((g) => {
       const sp = node('span', undefined, 'g'), dot = node('span', undefined, 'dot');
       dot.style.background = g.color; sp.append(dot, String(s.inv.gems[g.id])); return sp;
@@ -188,7 +207,8 @@ export function createUI(h) {
 
   return {
     // First tap on New game while a save exists: ask for a second one (main.js decides when).
-    armNewGame() { const b = $('newBtn'); b.textContent = 'New game: press again to replace your save'; b.focus({ preventScroll: true }); },
+    armNewGame() { const b = $('newBtn'); b.textContent = T('newGameArmed'); b.focus({ preventScroll: true }); },
+    setLang, get lang() { return lang; },
     show, hide, renderTitle, renderShop, renderPause, renderMap, renderWin, setHud, hudVisible, touchVisible,
     get current() { return current; },
     resetHud() { hudKey = ''; $('toast').classList.remove('show'); },

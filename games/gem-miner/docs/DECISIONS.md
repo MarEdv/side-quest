@@ -246,3 +246,23 @@
   The bot sees only fog-revealed tiles but plays perfectly (A* paths, knows chest contents, saves up for the Gem hatchet
   with just 2-3 shop trips). A person who sells more often, wanders and misses gems plausibly needs 1.5-2.5x, so 25-40
   minutes on 256: inside the 20-40 minute target. No retune.
+
+## D29 — 2026-11-15 — English and Swedish (P-5)
+- **Chosen:** `src/i18n.js` (pure) holds the strings, the names of gems, hatchets and rocks by id, the language rules and
+  per-language number formatting. `ui.js` applies static texts through `data-i18n` / `data-i18n-html` / `data-i18n-aria` /
+  `data-i18n-title`; `main.js` and `ui.js` build dynamic texts with `t()`. The economy and mining tables keep their English
+  `name` fields (a test checks they still match the English names) so nothing else changes.
+- **Hints from the pure logic:** `game.js` builds its hints with the state's `lang` field (default `'en'`, set by `main.js`
+  after New game / Continue and when the language changes). It is display-only and not part of `serialize()`, so saves are
+  unchanged and the existing tests still read English hints. In `game.js` and `ui.js` the translator is imported as `tr`
+  because `t` already means a tile / a tier there.
+- **Language order:** `?lang=` (from the launcher card, root D-7), saved choice (`gem-miner.lang`), `navigator.languages`,
+  English; a `?lang=` is saved. The switch is on the title screen only; it sits above the heading because the 460 px card
+  has no room for a corner badge next to "💎 Gem Miner".
+- **Wording:** hatchet → "yxa" (Stone hatchet → "stenyxa", lower case inside sentences, capitalised at the start of a shop
+  row), Diamond of Your Dreams → "Drömdiamanten", town → "stan", shop → "butik". The second-tap New game text is shortened
+  in Swedish ("Tryck igen: nytt spel ersätter det sparade") so it is no longer than the English one.
+- **Known, not changed:** on a 390 px phone the armed New game button wraps to two 52 px lines in both languages (it did
+  in English before this change).
+- **Alternatives:** translating inside `economy.js` / `mining.js` (would put language into the rules); passing a translate
+  function into `update()` (changes every caller and test for no gain over a plain state field).

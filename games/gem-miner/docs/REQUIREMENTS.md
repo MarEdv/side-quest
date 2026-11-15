@@ -79,6 +79,7 @@ Sonnet implements, Haiku looks up docs; never ask the owner questions.
 | P-2 | HUD: coins, current hatchet, backpack gem counts, distance/direction hint toward town. | ✅ verified in headless Chrome (D19) |
 | P-3 | Short WebAudio sounds for mining, gems, buying and winning (flag `sound`). | 🚧 WebAudio effects implemented; no console errors, but not audibly verified |
 | P-4 | Once the player owns the Gem hatchet, the HUD and minimap point to the Diamond of Your Dreams (D13). | ✅ verified (D19) |
+| P-5 | English and Swedish: every player-facing text (title, shop, pause, minimap, win, HUD, hints, aria labels and tooltips) in both languages, numbers grouped per language. Language from `?lang=en|sv` (the launcher passes it), else the saved choice (`gem-miner.lang`), else the browser language, else English; an **EN / SV** switch on the title screen changes and remembers it. The game name stays "Gem Miner". | ✅ D29; `tests/i18n.test.js`; Swedish title (with save and second-tap New game), HUD, shop buy/sell messages and pause checked in headless Chrome at 1000x760 and 390x844; the switch back to English keeps focus and is remembered. |
 
 ### 3.7 Feature flags
 URL query parameters, e.g. `?worldSize=128&camera=center`. Defined in `src/flags.js`; unknown or invalid values fall back to the default.
