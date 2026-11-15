@@ -32,6 +32,15 @@ test('validateMeta rejects bad slugs and missing fields', () => {
   assert.equal(validateMeta('ok', []).length, 1);
 });
 
+test('validateMeta accepts i18n title/description strings per language, and toEntry keeps them', () => {
+  const meta = { title: 'T', description: 'D', i18n: { sv: { description: 'Svensk' } } };
+  assert.deepEqual(validateMeta('ok', meta), []);
+  assert.deepEqual(toEntry('ok', meta).i18n, { sv: { description: 'Svensk' } });
+  assert.equal(validateMeta('ok', { title: 'T', description: 'D', i18n: { sv: 'Svensk' } }).length, 1);
+  assert.equal(validateMeta('ok', { title: 'T', description: 'D', i18n: { sv: { title: 3 } } }).length, 1);
+  assert.equal(validateMeta('ok', { title: 'T', description: 'D', i18n: [] }).length, 1);
+});
+
 test('toEntry makes paths relative to the site root', () => {
   const e = toEntry('demo', { title: 'Demo', description: 'D', thumbnail: './icons/a.png' });
   assert.equal(e.path, 'games/demo/');

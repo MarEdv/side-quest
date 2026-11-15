@@ -13,12 +13,18 @@ A game is a folder `games/<slug>/` (lower-case kebab-case, it becomes the URL) c
     "thumbnail": "icons/icon-512.png",
     "icon": "🎲",
     "tags": ["keyboard", "touch"],
-    "order": 3
+    "order": 3,
+    "i18n": { "sv": { "description": "En eller två meningar på kortet." } }
   }
   ```
 
   `title` and `description` are required. `thumbnail` is a path inside the game folder; without it the card shows `icon`
-  (an emoji, default 🎮). Games with `order` come first, ascending; the rest follow by title.
+  (an emoji, default 🎮). Games with `order` come first, ascending; the rest follow by title. `i18n` gives the card's
+  `title` and/or `description` per language (the launcher offers `en` and `sv`; a missing field falls back to English).
+
+- **Language:** the launcher links to `games/<slug>/?lang=en` or `?lang=sv`. A game with translations should read `?lang=`
+  first (and remember it under its own key), then its saved choice, then `navigator.languages`. Keep the translations in
+  the game folder; don't import the launcher's `src/i18n.js`.
 
 Optional but recommended: a `package.json` with an `npm test` script (the root `npm test` and CI run it inside the folder),
 plus the game's own `README.md`, `CLAUDE.md` and `docs/`.

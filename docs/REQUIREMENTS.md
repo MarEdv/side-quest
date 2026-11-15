@@ -33,12 +33,13 @@ without changing the launcher.
 | L-6 | If `games.json` can't be loaded, shows an error message instead of an empty page. | ✅ |
 | L-7 | The launcher can be installed as an app ("Side Quests" on the home screen): web app manifest (scope = whole site, so games open inside the app), real PNG icons (`any` + `maskable`, `apple-touch-icon`), Apple meta tags. An **Install app** button uses the browser's prompt where one exists (Chromium), shows Share > Add to Home Screen steps on iOS / iPadOS, and is hidden elsewhere and when already running as an app. | ✅ Chrome 157 reports no installability errors; native path (prompt, accept → hidden), iOS steps at 390 px and the hidden-when-standalone case checked in headless Chrome (D-6). 🚧 not installed on a real phone. |
 | L-8 | Installing needs no service worker; the launcher doesn't work offline (games with their own worker, such as Garden Day, still do once visited). | ✅ D-6 |
+| L-9 | The launcher is available in English and Swedish: an **EN / SV** switch in the header (remembered), first visit follows `?lang=`, then the browser language, else English. All texts are translated (lede, install button and iOS steps, card descriptions from `game.json` `i18n`, tags, "Play", status messages, footer); names stay as they are (A-3). Card links pass the language on as `?lang=<code>`. | ✅ D-7; `tests/i18n.test.js`; Swedish and English rendering and the `?lang=sv` links checked in headless Chrome. 🚧 clicking the switch not automated (same code path as the first render). |
 
 ## 4. Registry
 
 | ID | Requirement | Status |
 |----|-------------|--------|
-| R-1 | Each game is `games/<slug>/` with `index.html` and `game.json` (`title`, `description` required; `thumbnail`, `icon`, `tags`, `order` optional). | ✅ `src/registry.js` |
+| R-1 | Each game is `games/<slug>/` with `index.html` and `game.json` (`title`, `description` required; `thumbnail`, `icon`, `tags`, `order`, `i18n` optional; `i18n` maps a language code to a translated `title` / `description`, D-7). | ✅ `src/registry.js` |
 | R-2 | `npm run registry` writes `games.json` from the folders; the file is committed so no build step is needed. | ✅ D-3 |
 | R-3 | `npm test` fails when `games.json` is stale or a game folder is invalid. | ✅ `tests/registry.test.js` |
 | R-4 | A renamed game leaves a redirect stub at its old folder: `game.json` is `{ "movedTo": "<new-slug>" }` (not listed; the target must exist), plus an `index.html` redirect and, if the game had a service worker, a retire `sw.js`. | ✅ `games/side-quest/` → `garden-day` (D-5) |

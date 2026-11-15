@@ -21,26 +21,32 @@
     <header>
       <div>
         <h1>Side Quest Project</h1>
-        <p class="lede">Small browser games about getting distracted. Pick one and play.</p>
+        <p class="lede" data-i18n="lede">Small browser games about getting distracted. Pick one and play.</p>
       </div>
-      <button id="install" class="install" type="button" hidden>Install app</button>
+      <div class="actions">
+        <div id="lang" class="lang" role="group" aria-label="Language" data-i18n-aria="language">
+          <button type="button" data-lang="en" lang="en" aria-pressed="true">EN</button>
+          <button type="button" data-lang="sv" lang="sv" aria-pressed="false">SV</button>
+        </div>
+        <button id="install" class="install" type="button" hidden data-i18n="install">Install app</button>
+      </div>
     </header>
     <section id="ios-install" class="notice" hidden aria-labelledby="ios-install-title">
-      <h2 id="ios-install-title">Add to your Home Screen</h2>
+      <h2 id="ios-install-title" data-i18n="ios.title">Add to your Home Screen</h2>
       <ol>
-        <li>Tap the <strong>Share</strong> button
-          <svg class="share" viewBox="0 0 24 24" aria-label="Share icon" role="img"><path d="M12 3v12M7.5 7.5 12 3l4.5 4.5M5 11v9h14v-9" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
-          in the toolbar.</li>
-        <li>Choose <strong>Add to Home Screen</strong>.</li>
-        <li>Tap <strong>Add</strong>. Side Quests now opens full-screen from your home screen.</li>
+        <li><span data-i18n-html="ios.step1a">Tap the <strong>Share</strong> button</span>
+          <svg class="share" viewBox="0 0 24 24" aria-label="Share icon" data-i18n-aria="ios.shareIcon" role="img"><path d="M12 3v12M7.5 7.5 12 3l4.5 4.5M5 11v9h14v-9" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          <span data-i18n="ios.step1b">in the toolbar.</span></li>
+        <li data-i18n-html="ios.step2">Choose <strong>Add to Home Screen</strong>.</li>
+        <li data-i18n-html="ios.step3">Tap <strong>Add</strong>. Side Quests now opens full-screen from your home screen.</li>
       </ol>
-      <button id="ios-install-close" class="link" type="button">Close</button>
+      <button id="ios-install-close" class="link" type="button" data-i18n="close">Close</button>
     </section>
     <ul id="games" class="grid" aria-live="polite"></ul>
-    <p id="status" class="status">Loading games…</p>
+    <p id="status" class="status" data-i18n="loading">Loading games…</p>
   </main>
   <footer>
-    <a href="https://github.com/MarEdv/side-quest">Source on GitHub</a>
+    <a href="https://github.com/MarEdv/side-quest" data-i18n="source">Source on GitHub</a>
   </footer>
   <script type="module" src="src/launcher.js"></script>
 </body>

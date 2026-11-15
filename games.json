@@ -10,7 +10,12 @@
       "touch",
       "installable"
     ],
-    "order": 1
+    "order": 1,
+    "i18n": {
+      "sv": {
+        "description": "Gör klart trädgårdssysslorna före solnedgången medan din fru delar ut sidouppdrag. Håll dig undan! (Hette tidigare Side Quest.)"
+      }
+    }
   },
   {
     "slug": "poo-sandwich",
@@ -22,7 +27,12 @@
       "keyboard",
       "touch"
     ],
-    "order": 2
+    "order": 2,
+    "i18n": {
+      "sv": {
+        "description": "Överlev arbetsdagen på kontoret medan chefen kastar bajsmackor på dig."
+      }
+    }
   },
   {
     "slug": "gem-miner",
@@ -34,6 +44,11 @@
       "keyboard",
       "touch"
     ],
-    "order": 3
+    "order": 3,
+    "i18n": {
+      "sv": {
+        "description": "Gräv dig genom jord, sten, granit och obsidian efter ädelstenar, köp bättre yxor och hitta Drömdiamanten."
+      }
+    }
   }
 ]

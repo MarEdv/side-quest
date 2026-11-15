@@ -78,3 +78,24 @@
   storage keys (would wipe players' progress).
 - **Trade-off:** an install from the old `games/side-quest/` address keeps opening the redirect; players who want a
   home-screen icon reinstall from `games/garden-day/`. The game was only at that path for a few hours.
+
+### D-7 — Launcher in English and Swedish; the language is handed to the games as ?lang= (2026-11-15)
+- **Chosen:** Owner asked for English and Swedish in the launcher and in each game, done separately per component.
+  `src/i18n.js` (pure) holds the launcher strings and the language rules; `src/launcher.js` applies them through
+  `data-i18n` / `data-i18n-html` / `data-i18n-aria` attributes and an **EN | SV** switch in the header, saved under
+  `launcher.lang`. First visit: `?lang=` → saved choice → first supported `navigator.languages` entry → English.
+- **Game texts:** `game.json` may carry `"i18n": { "sv": { "title"?, "description"? } }`; the registry validates it and
+  copies it into `games.json`. Tags are translated in the launcher's dictionary (unknown tags show as written).
+- **Hand-off to games:** card links are `games/<slug>/?lang=<lang>`, so a game opens in the language picked here. No shared
+  storage key and no shared module: games keep their own translations and their own saved choice (rule 4), and a game
+  opened directly or as its own installed app still follows that game's own setting or the browser language.
+- **Names stay as they are:** "Side Quest Project", "Side Quests" and the game titles are proper names and are not
+  translated (A-3).
+- **Alternatives:** one shared i18n module for all games (breaks "games stay self-contained"); a shared `localStorage` key
+  read by every game (hidden coupling between folders, and the launcher's choice would silently override a game's own
+  setting even when the game is opened directly); translating the web app manifest (manifests have no per-language
+  variant without separate manifest files, and the name is a proper noun anyway).
+
+| ID | Date | Assumption |
+|----|------|------------|
+| A-3 | 2026-11-15 | Game and launcher names are proper nouns and stay untranslated in Swedish; descriptions, tags and UI text are translated. |

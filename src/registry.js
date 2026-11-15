@@ -15,6 +15,12 @@ export function validateMeta(slug, meta) {
   if (meta.icon !== undefined && typeof meta.icon !== 'string') fail('"icon" must be a string (an emoji)');
   if (meta.tags !== undefined && !(Array.isArray(meta.tags) && meta.tags.every((t) => typeof t === 'string'))) fail('"tags" must be a list of strings');
   if (meta.order !== undefined && !Number.isFinite(meta.order)) fail('"order" must be a number');
+  if (meta.i18n !== undefined) {
+    const ok = meta.i18n && typeof meta.i18n === 'object' && !Array.isArray(meta.i18n) && Object.values(meta.i18n).every((tr) =>
+      tr && typeof tr === 'object' && !Array.isArray(tr)
+      && ['title', 'description'].every((k) => tr[k] === undefined || typeof tr[k] === 'string'));
+    if (!ok) fail('"i18n" must map language codes to { "title"?, "description"? } strings');
+  }
   return errors;
 }
 
@@ -26,6 +32,7 @@ export function toEntry(slug, meta) {
   if (meta.icon) entry.icon = meta.icon;
   entry.tags = meta.tags ?? [];
   if (meta.order !== undefined) entry.order = meta.order;
+  if (meta.i18n) entry.i18n = meta.i18n;
   return entry;
 }
 

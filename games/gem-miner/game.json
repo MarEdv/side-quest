@@ -3,5 +3,8 @@
   "description": "Dig through dirt, stone, granite and obsidian for gems, buy better hatchets and find the Diamond of Your Dreams.",
   "icon": "💎",
   "tags": ["keyboard", "touch"],
-  "order": 3
+  "order": 3,
+  "i18n": {
+    "sv": { "description": "Gräv dig genom jord, sten, granit och obsidian efter ädelstenar, köp bättre yxor och hitta Drömdiamanten." }
+  }
 }
