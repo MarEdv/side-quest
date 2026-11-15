@@ -233,14 +233,29 @@ export function checkGame(root, slug) {
   ];
 }
 
-// The launcher's only browser module is launcher.js. Files in kit/ are not checked yet.
+// A kit module says in its first line whether it is pure or needs a browser (kit/README.md), and its code agrees.
+export function checkKitModules(kitDir, label = 'kit') {
+  const problems = [];
+  for (const f of listFiles(kitDir, ['.js'])) {
+    const text = read(join(kitDir, f));
+    const kind = /^\/\/ (Pure|Browser)\b/.exec(text)?.[1];
+    const used = browserGlobalsIn(text);
+    if (!kind) problems.push(`${label}/${f}: the first line must start with "// Pure" or "// Browser"`);
+    else if (kind === 'Pure' && used.length) problems.push(`${label}/${f} says Pure but touches the browser (${used.join(', ')})`);
+    else if (kind === 'Browser' && !used.length) problems.push(`${label}/${f} says Browser but uses no browser global`);
+  }
+  return problems;
+}
+
+// The launcher's only browser module is launcher.js.
+
 export const LAUNCHER_BROWSER_MODULES = ['launcher.js'];
 export function checkLauncher(root = ROOT) {
   return checkPurity(join(root, 'src'), LAUNCHER_BROWSER_MODULES, 'launcher');
 }
 
 export function checkConventions(root = ROOT) {
-  return [...gameSlugs(root).flatMap((slug) => checkGame(root, slug)), ...checkLauncher(root)];
+  return [...gameSlugs(root).flatMap((slug) => checkGame(root, slug)), ...checkLauncher(root), ...checkKitModules(join(root, 'kit'))];
 }
 
 if (process.argv[1] === fileURLToPath(import.meta.url)) {

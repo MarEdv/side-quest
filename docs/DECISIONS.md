@@ -159,3 +159,50 @@
   dependency).
 - **Who did what:** Fable wrote the briefs, reviewed both diffs and fixed the object-key false positive; Sonnet
   subagents implemented S-2 and S-14.
+
+### D-11 — kit/storage.js: one storage wrapper, retrying per key (2026-11-15)
+- **Chosen:** S-6 of `docs/STREAMLINING.md`. `createStorage(backend, prefix)` with `get`, `set`, `remove`, `text` and
+  `persistent`. It merges the two wrappers that Garden Day and Gem Miner had grown from the same start:
+  - From Gem Miner (its D24): a refused write is not final. Every write tries the backend again, because a quota error is
+    often temporary and giving up for the session leaves an ever older value on disk.
+  - From Garden Day (its D-22): this session's value wins for a key whose write was refused, a refused removal never brings
+    the old value back, and keys this session has not failed on are still read from the backend.
+- **New, beyond both:** failure is tracked per key instead of per session (Garden Day) or not at all (Gem Miner).
+  - A key that is safely on the backend is always read from the backend, so a change made in another tab is seen. Gem
+    Miner's wrapper answered from memory for any key it had written.
+  - A write that succeeds also delivers the keys refused earlier, newest value each. Without that, a refused save would
+    stay off the disk until the game happened to write that same key again.
+  - `persistent` means "everything written this session is on the backend". Gem Miner's meant "the last write worked",
+    which could be true while an earlier save was still only in memory.
+- **`prefix` is a required argument** (it was a constant inside each copy); a missing one throws, as a programming error.
+- **`text(key)`** returns the raw stored string. Poo Sandwich and the launcher saved the language as a bare `sv`, which is
+  not JSON; with the prefixes `poo-sandwich-` and `launcher.` their existing keys keep their names, and `text()` reads the
+  old values. So S-7 needs no key migration, only this read.
+- **Alternatives:** Gem Miner's wrapper as it was (loses the multi-tab read and overstates `persistent`); Garden Day's as
+  it was (one quota error ends saving for the session); returning the raw string from `get()` when it is not JSON (every
+  caller that expects an object would have to guard against a string); a `migrate()` helper (nothing needs renaming).
+- **Trade-off:** memory holds a copy of every value written this session (Gem Miner's wrapper already did).
+- **Not yet used by any part:** adoption is S-7. Garden Day's 9 storage tests were ported and pass unchanged in meaning.
+
+### D-12 — kit/lang.js and kit/langdom.js: one current language per part, t(key, vars) (2026-11-15)
+- **Chosen:** S-3. `createI18n(STRINGS)` returns `{ LANGS, DEFAULT_LANG, normalizeLang, pickLang, getLang, setLang, t }`.
+  The languages are the table's keys and the first is the default. `t(key, vars, lang = current)` is Garden Day's
+  signature: with one current language, pure modules build text without a language being passed to them, which removes
+  the three ways the other parts thread it today (`state.lang`, `renderer.setLang`, a `T` wrapper).
+- **A factory, not a module-level table:** the kit module holds no texts. Each part keeps `src/i18n.js` with its own
+  `STRINGS` and name lookups, and re-exports what `createI18n` returns, so its other modules keep importing `./i18n.js`.
+- **`setupLang(i18n, { storage, key, onChange })`** is the browser half: it applies the language rule of D-7 and
+  `ADDING-A-GAME.md`, remembers a `?lang=` (the launcher did not; it will from S-4), and returns `apply(root)`,
+  `set(lang)` and `bindSwitch(element)`. The page, URL and browser languages can be passed in, which is how the tests run
+  it in Node.
+- **`data-i18n-title`** is supported alongside the three attributes the launcher and Poo Sandwich use (Gem Miner had it).
+- **`stringProblems()` and `missingHtmlKeys()`** live in `kit/lang.js` so the four parts can run the same checks in their
+  own i18n tests (S-15) instead of four hand-written versions.
+- **Kept out:** number and date formatting (`num`, `dateLocale`), text for data tables (`tx`, `NAMES`) and the Swedish
+  wording stay in each part; they depend on the game's data.
+- **Alternatives:** `t(lang, key, vars)` everywhere (keeps language threading in three parts and changes Garden Day, the
+  largest); a module-level `setStrings()` (hidden coupling, and two tables in one page would collide); translating
+  inside the DOM walker only (canvas games draw most text themselves).
+- **Verified:** for every key in both languages, the kit's `t()` returns the same text as each part's current `t()`
+  (540 lookups, no difference); the four tables and pages pass the kit's checks; switch, `?lang=`, saving and all four
+  attributes were exercised in headless Chrome.

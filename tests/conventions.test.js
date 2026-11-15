@@ -5,7 +5,7 @@ import { tmpdir } from 'node:os';
 import { join, dirname } from 'node:path';
 import {
   stripCode, findAbsoluteUrls, findImports, checkRelativeUrls, checkImports, checkPackage,
-  browserGlobalsIn, checkPurity, gameSlugs, checkGame, checkLauncher, checkConventions,
+  browserGlobalsIn, checkPurity, gameSlugs, checkGame, checkLauncher, checkKitModules, checkConventions,
 } from '../tools/check-conventions.mjs';
 import { ROOT } from '../tools/build-registry.mjs';
 
@@ -205,4 +205,24 @@ test('checkGame runs every check on a game folder', (t) => {
   assert.match(all, /import 'lodash'/);
   assert.match(all, /scripts\.start/);
   assert.match(all, /src\/a\.js touches the browser/);
+});
+
+test('the kit modules in this repo say Pure or Browser, and mean it', () => {
+  assert.deepEqual(checkKitModules(join(ROOT, 'kit')), []);
+});
+
+test('checkKitModules flags a missing label and a label the code contradicts', (t) => {
+  const kit = fixture(t, {
+    'ok.js': '// Pure: no DOM.\nexport const a = 1;',
+    'dom.js': '// Browser: reads the page.\nexport const title = () => document.title;',
+    'nolabel.js': '// Helpers.\nexport const a = 1;',
+    'liar.js': '// Pure: honest.\nexport const w = () => window.innerWidth;',
+    'shy.js': '// Browser: or so it says.\nexport const a = 1;',
+    'README.md': 'not a module',
+  });
+  const problems = checkKitModules(kit);
+  assert.equal(problems.length, 3);
+  assert.match(problems.join('\n'), /kit\/nolabel\.js: the first line must start with/);
+  assert.match(problems.join('\n'), /kit\/liar\.js says Pure but touches the browser \(window\)/);
+  assert.match(problems.join('\n'), /kit\/shy\.js says Browser but uses no browser global/);
 });

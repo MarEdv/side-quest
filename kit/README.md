@@ -3,6 +3,14 @@
 One canonical copy of the code that every part needs and that knows nothing about any one game (K-1, D-9).
 `docs/STREAMLINING.md` lists the modules planned for this folder.
 
+## Modules
+
+| Module | Kind | What it gives a part |
+|--------|------|----------------------|
+| `storage.js` | pure | `createStorage(backend, prefix)`: JSON in `localStorage` under the part's prefix; never throws; retries refused writes (D-11). |
+| `lang.js` | pure | `createI18n(STRINGS)`: languages, `t(key, vars)`, `pickLang`; `stringProblems`, `missingHtmlKeys` for tests (D-12). |
+| `langdom.js` | browser | `setupLang(i18n, { storage })`: `?lang=`, the saved choice, `data-i18n*` attributes, the `[data-lang]` switch (D-12). Needs `lang.js` only through the object passed in. |
+
 ## How it reaches each part
 
 - **The launcher** imports from here directly: `import { … } from '../kit/<name>.js'` in `src/`.
@@ -23,7 +31,8 @@ One canonical copy of the code that every part needs and that knows nothing abou
   are passed in by the part that uses it.
 - Modules are flat files named in lower case (`storage.js`). A module may import another one as `./<name>.js`; a game
   that lists the first must list the second too (the sync script says so).
-- A module says in its first comment line whether it is pure (no DOM, runs in Node) or needs a browser.
+- A module's first line starts with `// Pure` (no DOM, runs in Node) or `// Browser`; `npm test` checks the code agrees.
+  A game that lists a browser module adds `kit/<name>.js` to its `browserModules`.
 - Tests live in the root `tests/` folder as `kit-<name>.test.js` and run with the root `npm test`.
 - Changing a module changes every part that uses it: run the root `npm test`, and check each of those parts in a browser
   when the module touches the DOM. A game with a service worker precache list (Garden Day) must list its kit copies there.

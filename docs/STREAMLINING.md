@@ -213,6 +213,13 @@ Changes to the plan made on the way: S-14's common heading format for new decisi
 S-2 already moved Garden Day to the standard test script, which S-15 no longer needs to do; Poo Sandwich's
 `flags.js` reads `location` itself and is therefore listed as a browser module until S-10 makes it pure.
 
+Wave 2 is done: **S-6** (`kit/storage.js`, D-11, K-5) and **S-3** (`kit/lang.js`, `kit/langdom.js`, D-12, K-6); the kit
+modules also carry a checked Pure/Browser label (K-4). No part uses them yet. What this changes for later tasks:
+S-7 needs no key migration (prefixes `poo-sandwich-` and `launcher.` keep the existing key names; `text()` reads the
+old bare-word values); a game that lists `langdom.js` must add `kit/langdom.js` to its `browserModules`; Garden
+Day must add its kit copies to the service worker precache list; and S-15's "same i18n test set" is
+`stringProblems()` plus `missingHtmlKeys()` from `kit/lang.js`.
+
 Priority reflects value against risk: P1 is the foundation and the two largest sources of drift; P2 is the remaining
 duplicated code and visible inconsistencies; P3 changes behaviour or needs an owner decision.
 
