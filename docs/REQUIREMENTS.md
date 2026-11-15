@@ -44,7 +44,16 @@ without changing the launcher.
 | R-3 | `npm test` fails when `games.json` is stale or a game folder is invalid. | ✅ `tests/registry.test.js` |
 | R-4 | A renamed game leaves a redirect stub at its old folder: `game.json` is `{ "movedTo": "<new-slug>" }` (not listed; the target must exist), plus an `index.html` redirect and, if the game had a service worker, a retire `sw.js`. | ✅ `games/side-quest/` → `garden-day` (D-5) |
 
-## 5. Tech, tests and deploy
+## 5. Shared kit
+
+| ID | Requirement | Status |
+|----|-------------|--------|
+| K-1 | Code that every part needs and that knows nothing about one game lives once, in `kit/` at the repo root (`kit/README.md`). The launcher imports it from there. | ✅ D-9. The folder holds no modules yet; `docs/STREAMLINING.md` (S-3..S-13) lists the ones planned. |
+| K-2 | A game lists the kit modules it uses in its `package.json` (`"kit": ["<name>.js"]`); `npm run kit` writes them to `games/<slug>/src/kit/` under a "generated" header and removes copies no longer listed. The copies are committed, so no build step is needed and a game still works served on its own. | ✅ `tools/sync-kit.mjs` |
+| K-3 | `npm test` fails when a copy is missing, edited or left over, when a `"kit"` list names an unknown module, or when it leaves out a module that a listed one imports. | ✅ `tests/kit.test.js` |
+| K-4 | Kit modules are tested at the root (`tests/kit-<name>.test.js`). | 📋 with the first module (S-3). |
+
+## 6. Tech, tests and deploy
 
 | ID | Requirement | Status |
 |----|-------------|--------|

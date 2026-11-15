@@ -2,7 +2,7 @@
 
 Analysis of how the four parts (launcher, Garden Day, Gem Miner, Poo Sandwich) solve the same technical problems, where
 they differ, and a prioritised plan to align them. Written 2026-11-15 against commit `e62de2a`. Nothing in this document
-has been implemented yet; see D-8 in `DECISIONS.md`.
+had been implemented when it was written (D-8 in `DECISIONS.md`); section 4 tracks progress.
 
 ## 1. Summary
 
@@ -207,6 +207,8 @@ Existing IDs are referenced from code comments and must not be renumbered. The l
 format of new entries can be aligned.
 
 ## 4. Prioritised tasks
+
+Progress: **S-1 done** 2026-11-15 (D-9, requirements K-1..K-4).
 
 Priority reflects value against risk: P1 is the foundation and the two largest sources of drift; P2 is the remaining
 duplicated code and visible inconsistencies; P3 changes behaviour or needs an owner decision.

@@ -29,11 +29,24 @@ A game is a folder `games/<slug>/` (lower-case kebab-case, it becomes the URL) c
 Optional but recommended: a `package.json` with an `npm test` script (the root `npm test` and CI run it inside the folder),
 plus the game's own `README.md`, `CLAUDE.md` and `docs/`.
 
+## Shared code (the kit)
+
+Before writing a storage wrapper, a seeded random generator or language-picking code, look in `kit/` (`kit/README.md`).
+To use a module, list it in the game's `package.json` and run `npm run kit` at the repo root:
+
+```json
+"kit": ["storage.js"]
+```
+
+That writes `games/<slug>/src/kit/storage.js`; import it as `./kit/storage.js` from `src/`. Commit the copy. Don't edit it
+(`npm test` fails if it differs from `kit/`), and don't import `../../kit/` directly: the game must also work when its
+folder is served on its own.
+
 ## Steps
 
 1. Create or copy the folder into `games/<slug>/`.
 2. Add `game.json`.
-3. Run `npm run registry` (rewrites `games.json`) and `npm test`.
+3. Run `npm run registry` (rewrites `games.json`), `npm run kit` if the game lists kit modules, and `npm test`.
 4. Commit the folder and `games.json` together, then push `main`. CI tests and deploys.
 
 ## Bringing a game's git history from another repo

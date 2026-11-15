@@ -114,3 +114,21 @@
 | ID | Date | Assumption |
 |----|------|------------|
 | A-4 | 2026-11-15 | "Analyse and write up" means a document and a plan only; the tasks in `docs/STREAMLINING.md` are carried out when the owner asks. |
+
+### D-9 — Shared code: a root kit/ folder, copied into each game by a script and checked by a test (2026-11-15)
+- **Chosen:** The proposal in D-8, carried out as S-1 of `docs/STREAMLINING.md`. Canonical modules live in `kit/`. The
+  launcher imports them directly. A game lists the modules it uses in its `package.json` (`"kit": [...]`), and
+  `npm run kit` (`tools/sync-kit.mjs`) writes each one to `games/<slug>/src/kit/<name>.js` under a "generated, do not edit"
+  header and removes copies that are no longer listed. The copies are committed. `tests/kit.test.js` fails when a copy is
+  missing, edited or left over.
+- **Why:** the same code had been copied by hand between the parts and the copies had drifted in behaviour (storage after a
+  failed write, audio resume, zero seeds: `docs/STREAMLINING.md` section 3). Rule 4 forbids a game importing from outside
+  its folder, so the copy has to stay; this makes it generated and verified, as `games.json` already is (D-3).
+- **Details:** the list is per game, so a game only carries what it uses. A kit module may import another (`./x.js`); the
+  script refuses a list that names one without the other. Module tests are root tests named `kit-<name>.test.js`, so the
+  root test script is unchanged. The kit starts empty: each module arrives with the task that moves the code (S-3..S-13).
+- **Alternatives:** games import `../../kit/` (a game no longer works served on its own: reverses rule 4); keep hand-made
+  copies and compare them in a test (nothing says which copy is right); the list in `game.json` (that file is launcher
+  metadata and is copied into `games.json`); every game gets every module (dead code in each game, and Garden Day's
+  service worker would precache files it never loads).
+- **Trade-off:** a kit change touches several folders in one commit, and the generated files show up in diffs.
