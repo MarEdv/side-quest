@@ -208,7 +208,10 @@ format of new entries can be aligned.
 
 ## 4. Prioritised tasks
 
-Progress: **S-1 done** 2026-11-15 (D-9, requirements K-1..K-4).
+Progress (2026-11-15): wave 1 is done. **S-1** (D-9, requirements K-1..K-4), **S-2** (D-10, T-3) and **S-14** (D-10).
+Changes to the plan made on the way: S-14's common heading format for new decisions was dropped (D-10 says why);
+S-2 already moved Garden Day to the standard test script, which S-15 no longer needs to do; Poo Sandwich's
+`flags.js` reads `location` itself and is therefore listed as a browser module until S-10 makes it pure.
 
 Priority reflects value against risk: P1 is the foundation and the two largest sources of drift; P2 is the remaining
 duplicated code and visible inconsistencies; P3 changes behaviour or needs an owner decision.

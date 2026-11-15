@@ -624,3 +624,16 @@ Cache-Control, so heuristic freshness hid some effects and showed others that Gi
 - **Service worker:** `src/i18n.js` added to the precache list (network-first, so no cache name bump).
 - **Alternatives:** threading a language parameter through every helper (touches most signatures and tests for no
   behavioural gain); translating the data tables in place (would change stored summaries and the ids tests rely on).
+
+### D-32 — Repo conventions: `browserModules`, the standard test script, one docs shape (2026-11-15)
+- **Chosen:** part of the repo-wide alignment (root D-10, `docs/STREAMLINING.md` S-2 and S-14 at the repo root).
+  `package.json` lists the modules that may touch the browser (`"browserModules"`: `audio.js`, `input.js`, `install.js`,
+  `installui.js`, `main.js`, `settingsui.js`, `touch.js`, `ui.js`); the root `tests/conventions.test.js` fails when any
+  other module in `src/` uses a browser global, when a listed one uses none, when a URL is site-absolute or when an import
+  leaves this folder. NF-2 points at it.
+- **Test script:** `node --test` became `node --test tests/*.test.js`, the same as the other games. Still 175 tests.
+- **Docs:** the three game `CLAUDE.md` files now follow one skeleton (Non-negotiable 1..8 / Layout / Commands / Deploy), the
+  requirements use the root status legend and the README gives the same run and test instructions as the other games.
+  `CLAUDE.md` no longer names the browser modules in prose (that list had lost `ui.js`, `touch.js` and the install
+  modules, and its sentence had been cut in two by the i18n rule); it now also states the `sidequest.v1.` key prefix.
+- **Alternatives:** keep the list in `CLAUDE.md` only (nothing checked it, and it was wrong).

@@ -1,24 +1,31 @@
 # Gem Miner — rules for agents working in this game
 
-## Always
-- **Keep `docs/REQUIREMENTS.md` up to date** in the same commit as any change to behaviour, scope, controls, feature flags or
-  tech. Change status markers (✅/🚧/📋/❌) honestly; when editing a status, keep the requirement text intact.
-- **Log decisions and assumptions** in `docs/DECISIONS.md` (append a new `D<n>`; supersede, never rewrite).
-- When several solutions are reasonable, pick one or put them behind a flag in `src/flags.js` and document the flag in
-  REQUIREMENTS §3.7.
-- Don't ask the owner questions — make reasonable assumptions and document them.
-- Iterate fast; small focused commits. Run `npm test` here (and at the repo root) before committing.
+## Non-negotiable
+1. **Keep `docs/REQUIREMENTS.md` up to date** in the same commit as any change to behaviour, scope, controls, feature
+   flags or tech. Change status markers (✅/🚧/📋/❌) honestly; when editing a status, keep the requirement text intact.
+2. **Log decisions and assumptions** in `docs/DECISIONS.md` (append-only; supersede, never rewrite). Append a new
+   `D<n>`.
+3. **Feature flags**: when several reasonable solutions exist, pick one or put them behind a flag in `src/flags.js`;
+   document the flag in REQUIREMENTS §3.7.
+4. **Zero dependencies** (runtime and dev). Vanilla JS ES modules, Canvas 2D, WebAudio. No build step.
+5. **Self-contained**: relative URLs only. Never import from the launcher, another game or the root `kit/` folder.
+   Files in `src/kit/` are generated copies of root `kit/` modules: never edit them; change `kit/<name>.js` at the repo
+   root and run `npm run kit` there (root `CLAUDE.md` rule 5).
+6. **localStorage is shared by every game on the origin.** Every key starts with `gem-miner.` (`src/storage.js`).
+7. **Commit often**, small focused commits. Run `npm test` in this folder and at the repo root before committing.
+8. Don't ask the owner questions — make a reasonable assumption and log it.
 
-## Tech constraints
-- Vanilla JS ES modules + Canvas 2D + WebAudio. Zero dependencies, no build step. Relative URLs only.
-- Pure logic modules (no DOM, testable with `node --test`): world generation, mining, economy, save/load, scores, flags.
-  Only `main.js`, `render.js`, `input.js`, `audio.js`, `ui.js` may touch the browser.
-- localStorage keys start with `gem-miner.` (the origin is shared with the other games).
+## Layout
+- `index.html` – entry; `style.css` – styles; `tools/` – scripts; `src/` – game code; `tests/` – `node --test` unit
+  tests; `docs/` – requirements and decisions.
+- Modules that may touch the browser are listed in `package.json` (`"browserModules"`); every other module in `src/`
+  stays DOM-free so it can be tested in Node (the root `tests/conventions.test.js` checks this).
 - Desktop (keyboard) and mobile (touch). Test in Chrome, including device emulation.
 
 ## Commands
-- `npm start` at the repo root, then open http://localhost:8000/games/gem-miner/
-- `npm test` (in this folder) runs `node --test tests/*.test.js`
+- Run with `npm start` at the repo root and open `http://localhost:8000/games/gem-miner/` (also works with `npm start`
+  inside this folder, then `http://localhost:8000/`).
+- `npm test` in this folder runs `node --test tests/*.test.js`.
 
 ## Deploy
 Part of the Side Quest Project monorepo (see the root `CLAUDE.md`): push `main` → GitHub Actions → GitHub Pages at

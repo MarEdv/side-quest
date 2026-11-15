@@ -1,7 +1,7 @@
 # Poo Sandwich — Requirements
 
 > Living document. **Must be updated in the same commit as any change to behaviour, scope, controls, flags or tech.**
-> Status legend: ✅ done · 🚧 in progress · ⏳ planned
+> Status legend: ✅ implemented and verified · 🚧 implemented but not (fully) verified, or in progress · 📋 planned · ❌ retired
 
 ## 1. Vision
 

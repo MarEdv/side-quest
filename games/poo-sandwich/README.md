@@ -10,6 +10,6 @@ A tiny single-player browser game: survive the office work day while your boss t
 
 ## Develop
 ```sh
-npm start   # serves on http://localhost:8000
-npm test    # node --test, no dependencies
+npm start   # at the repo root: http://localhost:8000/games/poo-sandwich/ (or here, then http://localhost:8000/)
+npm test    # in this folder: node --test tests/*.test.js, no dependencies
 ```

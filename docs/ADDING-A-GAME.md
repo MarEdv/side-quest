@@ -26,8 +26,23 @@ A game is a folder `games/<slug>/` (lower-case kebab-case, it becomes the URL) c
   first (and remember it under its own key), then its saved choice, then `navigator.languages`. Keep the translations in
   the game folder; don't import the launcher's `src/i18n.js`.
 
-Optional but recommended: a `package.json` with an `npm test` script (the root `npm test` and CI run it inside the folder),
-plus the game's own `README.md`, `CLAUDE.md` and `docs/`.
+- `package.json` – the root `npm test` and CI run the game's own `npm test` inside the folder, and check this shape:
+
+  ```json
+  {
+    "name": "my-game",
+    "private": true,
+    "type": "module",
+    "scripts": { "start": "python3 -m http.server 8000", "test": "node --test tests/*.test.js" },
+    "browserModules": ["main.js", "render.js", "input.js"]
+  }
+  ```
+
+  `browserModules` lists the files under `src/` that touch the browser (DOM, `window`, storage, audio). Every other
+  module in `src/` must be DOM-free so it can be tested in Node; `tests/conventions.test.js` at the root checks both
+  directions, along with the relative-URL and import rules above.
+
+Recommended: the game's own `README.md`, `CLAUDE.md` (copy the skeleton of an existing game's) and `docs/`.
 
 ## Shared code (the kit)
 

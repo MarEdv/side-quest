@@ -20,8 +20,8 @@ Append to the URL, e.g. `?worldSize=128&seed=42&durability=1`. Full table in REQ
 
 ## Develop
 ```sh
-npm start        # at the repo root: http://localhost:8000/games/gem-miner/
-npm test         # node --test, no dependencies
+npm start        # at the repo root: http://localhost:8000/games/gem-miner/ (or here, then http://localhost:8000/)
+npm test         # in this folder: node --test tests/*.test.js, no dependencies
 node tools/sim.mjs --size 128,256,512 --seeds 1,2,3   # balance bot: how long a perfect player takes
 ```
 The progress autosaves in `localStorage` under `gem-miner.save`; best times under `gem-miner.scores`.

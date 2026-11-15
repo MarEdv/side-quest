@@ -266,3 +266,15 @@
   in English before this change).
 - **Alternatives:** translating inside `economy.js` / `mining.js` (would put language into the rules); passing a translate
   function into `update()` (changes every caller and test for no gain over a plain state field).
+
+## D30 — 2026-11-15 — Repo conventions: `browserModules` and one docs shape
+- **Chosen:** part of the repo-wide alignment (root D-10, `docs/STREAMLINING.md` S-2 and S-14 at the repo root).
+  `package.json` lists the modules that may touch the browser (`"browserModules"`: `audio.js`, `input.js`, `main.js`,
+  `render.js`, `ui.js`, the same five as before); the root `tests/conventions.test.js` fails when any other module in
+  `src/` uses a browser global, when a listed one uses none, when a URL is site-absolute or when an import leaves this
+  folder. NF-2 points at it.
+- **`tests/purity.test.js` stays:** it checks the same rule from inside the game, so the rule is still tested when this
+  folder is served or copied on its own.
+- **Docs:** the three game `CLAUDE.md` files now follow one skeleton (Non-negotiable 1..8 / Layout / Commands / Deploy), the
+  requirements use the root status legend and the README gives the same run and test instructions as the other games.
+  The status legend's wording changed; no requirement or status did.

@@ -6,6 +6,16 @@
   "type": "module",
   "scripts": {
     "start": "python3 -m http.server 8000",
-    "test": "node --test"
-  }
+    "test": "node --test tests/*.test.js"
+  },
+  "browserModules": [
+    "audio.js",
+    "input.js",
+    "install.js",
+    "installui.js",
+    "main.js",
+    "settingsui.js",
+    "touch.js",
+    "ui.js"
+  ]
 }

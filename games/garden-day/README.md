@@ -11,11 +11,8 @@ Zero dependencies: vanilla JS ES modules, Canvas 2D, WebAudio. No build step.
 
 ## Run
 
-```
-npm start
-```
-
-then open http://localhost:8000 in Chrome (ES modules need HTTP, not `file://`).
+Run `npm start` at the repo root and open http://localhost:8000/games/garden-day/ in Chrome (ES modules need HTTP, not
+`file://`). Standalone also works: run `npm start` inside this folder and open http://localhost:8000/.
 
 ## Controls
 
@@ -59,8 +56,8 @@ The game is an installable web app (manifest + real PNG icons + a service worker
   `registerServiceWorker()` call in `src/main.js` in the same commit, and deploy. Leave it deployed for a few weeks. Each
   player's browser picks it up on the next visit: it deletes the game's caches and unregisters itself. Never just delete
   `sw.js`: an update that 404s keeps the installed worker running.
-- **Local dev:** `npm start` serves at `localhost:8000/`, so the worker's scope there is the whole port. It is network-first,
-  so edits show on a normal reload. To remove it, use DevTools > Application > Service workers > Unregister.
+- **Local dev:** served from the repo root (`npm start` there) the worker's scope is `/games/garden-day/`; served from this
+  folder (`npm start` here, `localhost:8000/`) the scope is the whole port. It is network-first, so edits show on a normal reload. To remove it, use DevTools > Application > Service workers > Unregister.
 
 ## Flags
 
@@ -74,7 +71,7 @@ All flags are documented in [docs/FLAGS.md](docs/FLAGS.md).
 npm test
 ```
 
-Runs Node's built-in test runner (`node --test`) over `tests/*.test.js`. Game logic is DOM-free.
+Run in this folder; it runs Node's built-in test runner (`node --test tests/*.test.js`). Game logic is DOM-free.
 
 ## Layout
 

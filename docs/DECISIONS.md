@@ -132,3 +132,30 @@
   metadata and is copied into `games.json`); every game gets every module (dead code in each game, and Garden Day's
   service worker would precache files it never loads).
 - **Trade-off:** a kit change touches several folders in one commit, and the generated files show up in diffs.
+
+### D-10 — The written conventions are tested; game docs share one shape (2026-11-15)
+- **Chosen:** S-2 and S-14 of `docs/STREAMLINING.md`. `tools/check-conventions.mjs` (pure helpers) and
+  `tests/conventions.test.js` check, for every listed game: relative URLs only; no import that leaves the game folder, no
+  packages, `node:` builtins only in `tests/` and `tools/`; a standard `package.json`; and DOM-free logic modules. The
+  launcher's `src/` gets the purity check too. T-3.
+- **`"browserModules"` in each game's `package.json`** names the files under `src/` that may touch the browser. Everything
+  else in `src/`, including generated `src/kit/` copies, must use no browser global. A listed file that uses none is an
+  error, so the list cannot rot. It replaces the module lists the three `CLAUDE.md` files kept in prose (Garden Day's
+  was out of date).
+- **A game now needs a `package.json`** with `"test": "node --test tests/*.test.js"` (it was optional). Garden Day's script
+  was `node --test`; same 175 tests either way.
+- **How the purity check reads code:** comments, string contents and regex literals are blanked first; property accesses
+  (`x.location`) and object keys (`{ fetch: 'hämta' }`: Garden Day has that translation key) do not count. Names that also
+  exist in Node (`URLSearchParams`, `setTimeout`) are not on the list. A `typeof location` guard still counts as browser
+  use, which is why Poo Sandwich's `flags.js` is listed; S-10 can make it pure.
+- **Docs (S-14):** the three game `CLAUDE.md` files follow one skeleton (Non-negotiable 1..8 / Layout / Commands / Deploy)
+  and now state the kit rule and the game's localStorage keys; the three `REQUIREMENTS.md` files use the root status
+  legend; READMEs give the same run and test instructions. No rule was removed.
+- **Not done:** a common heading format for new decisions in Gem Miner and Poo Sandwich. Their logs are append-only, so
+  each file would end up with two formats, which is worse than two files that differ. IDs keep each game's style.
+- **Alternatives:** a purity test inside each game, like Gem Miner's (three copies of the checker, the kind of duplication
+  this work removes; that test stays for when the game is served on its own); deriving the browser modules from file
+  names (no naming rule exists, and renaming files across three games is a larger change than a list); a linter (a
+  dependency).
+- **Who did what:** Fable wrote the briefs, reviewed both diffs and fixed the object-key false positive; Sonnet
+  subagents implemented S-2 and S-14.

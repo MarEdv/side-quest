@@ -152,7 +152,7 @@ ensure gradually increased difficulty; keep the current play mode as an 'arcade 
 | ID | Requirement | Status |
 |----|-------------|--------|
 | NF-1 | No build step. Serve the folder statically (`python3 -m http.server`) and open in Chrome. | ✅ |
-| NF-2 | Game logic is DOM-free and unit-tested with Node's built-in test runner (`node --test`). | ✅ |
+| NF-2 | Game logic is DOM-free and unit-tested with Node's built-in test runner (`node --test tests/*.test.js`). The modules that may touch the browser are listed in `package.json` (`"browserModules"`). | ✅ D-32: the root `tests/conventions.test.js` checks every other module in `src/`. |
 | NF-3 | 60 fps target; fixed-timestep simulation (1/60 s) independent of frame rate; frame dt clamped to [0, 0.25 s]. Canvas re-sizes on window resize and on devicePixelRatio change (D-13). | ✅ |
 | NF-4 | Deterministic seeded RNG (flag `seed`) so runs are reproducible. | ✅ |
 | NF-5 | Published on GitHub Pages at https://maredv.github.io/side-quest/games/garden-day/ as part of the Side Quest Project monorepo (root GitHub Actions workflow runs `npm test`, then deploys; no build step). Flags work via the URL query there too. | ✅ moved 2026-11-10 (root D-1, D-2); renamed folder to `garden-day` the same day (D-30) |

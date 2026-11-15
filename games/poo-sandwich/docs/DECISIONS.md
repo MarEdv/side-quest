@@ -96,3 +96,16 @@
 - **Not a flag:** language is a player setting, not a design alternative, so it is not in `src/flags.js` (§2.3).
 - **Alternatives:** translating the labels inside `world.js` (would make game logic depend on the language); a shared
   i18n module with the launcher (games must stay self-contained).
+
+## D20 — 2026-11-15 — Repo conventions: `browserModules` and one docs shape
+- **Chosen:** part of the repo-wide alignment (root D-10, `docs/STREAMLINING.md` S-2 and S-14 at the repo root).
+  `package.json` lists the modules that may touch the browser (`"browserModules"`: `flags.js`, `input.js`, `main.js`,
+  `render.js`); the root `tests/conventions.test.js` fails when any other module in `src/` uses a browser global, when a
+  listed one uses none, when a URL is site-absolute or when an import leaves this folder.
+- **`flags.js` is on the list** because `getFlags()` reads `location` itself (behind a `typeof` guard). `parseFlags()` is
+  pure and is what the tests use. Moving the `location.search` read to `main.js`, as Gem Miner does, would take it off the
+  list; left for the flags alignment (root S-10).
+- **Docs:** the three game `CLAUDE.md` files now follow one skeleton (Non-negotiable 1..8 / Layout / Commands / Deploy), the
+  requirements use the root status legend and the README gives the same run and test instructions as the other games.
+  The legend gained "retired" (❌) and "planned" is now 📋 instead of ⏳; no row used ⏳. ✅ now reads "implemented and
+  verified" as in the other games: existing ✅ rows were not re-verified for this change.

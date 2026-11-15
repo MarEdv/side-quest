@@ -2,7 +2,7 @@
 
 > **Living document.** Every change to gameplay, controls, flags, tech or scope updates this file **in the same commit**
 > (see `../CLAUDE.md`). IDs are stable; retire rows with ❌ instead of deleting or reusing them.
-> Status: ✅ done & verified · 🚧 partial / unverified (note says what) · 📋 planned · ❌ retired
+> Status legend: ✅ implemented and verified · 🚧 implemented but not (fully) verified, or in progress · 📋 planned · ❌ retired
 
 ## 1. Vision
 A small single-player browser game. You are a miner searching a big underground world for gems, hoping to find the
@@ -100,7 +100,7 @@ URL query parameters, e.g. `?worldSize=128&camera=center`. Defined in `src/flags
 | ID | Requirement | Status |
 |----|-------------|--------|
 | NF-1 | No build step, no dependencies; vanilla ES modules + Canvas 2D; relative URLs only so the game works at `games/gem-miner/` and on its own. | ✅ verified in headless Chrome (D19) |
-| NF-2 | Pure game logic (world generation, mining, economy, saving) has no DOM access and is unit-tested with `node --test`. | ✅ verified in headless Chrome (D19) |
+| NF-2 | Pure game logic (world generation, mining, economy, saving) has no DOM access and is unit-tested with `node --test`. The modules that may touch the browser are listed in `package.json` (`"browserModules"`). | ✅ verified in headless Chrome (D19); `tests/purity.test.js` and the root `tests/conventions.test.js` (D30) |
 | NF-3 | 60 fps on a mid-range phone at 512 × 512: tile storage is typed arrays, drawing is culled to the viewport. | 🚧 typed arrays, chunk cache (64 MB budget, D26), culling; at 512 in headless Chrome draw() p95 ≤ 2.5 ms, max 5.4 ms, also with 4x CPU throttling (D28); no real phone measured |
 | NF-4 | The save file is small (fog and mined tiles stored compactly, e.g. as a diff from the seed) and versioned. | ✅ verified in headless Chrome (D19) |
 
