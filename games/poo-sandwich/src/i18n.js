@@ -1,8 +1,8 @@
-// English and Swedish texts (F13, D19). Pure; no DOM access. main.js picks the language, render.js draws with it.
+// English and Swedish texts (F13, D19, D21). Pure; no DOM access. The language rules live in the kit (kit/lang.js);
+// kit/langdom.js (set up in main.js) picks the language and writes the texts, render.js draws with t() and name().
 // Task and station names stay English in world.js (the game logic uses them as ids); NAMES translates them for display.
 
-export const LANGS = ['en', 'sv'];
-export const DEFAULT_LANG = 'en';
+import { createI18n } from './kit/lang.js';
 
 export const STRINGS = {
   en: {
@@ -121,25 +121,8 @@ export const NAMES = {
   },
 };
 
-// 'sv-SE' → 'sv'; unsupported or empty → null.
-export function normalizeLang(code) {
-  const base = String(code || '').trim().toLowerCase().split(/[-_]/)[0];
-  return LANGS.includes(base) ? base : null;
-}
+// Current language, normalizeLang, pickLang and t(key, vars) come from the kit (K-6, D-12).
+export const i18n = createI18n(STRINGS);
+export const { LANGS, DEFAULT_LANG, normalizeLang, pickLang, getLang, setLang, t } = i18n;
 
-// ?lang= (the launcher passes it) wins, then the saved choice, then the browser's languages, then English.
-export function pickLang({ query = null, saved = null, browser = [] } = {}) {
-  for (const c of [query, saved, ...browser]) {
-    const lang = normalizeLang(c);
-    if (lang) return lang;
-  }
-  return DEFAULT_LANG;
-}
-
-// t('sv', 'best', { n: 5 }) → 'Bästa poäng: 5'. Missing keys fall back to English, then to the key.
-export function t(lang, key, vars) {
-  const s = STRINGS[lang]?.[key] ?? STRINGS[DEFAULT_LANG][key] ?? key;
-  return vars ? s.replace(/\{(\w+)\}/g, (m, k) => (k in vars ? String(vars[k]) : m)) : s;
-}
-
-export const name = (lang, english) => NAMES[lang]?.[english] ?? english;
+export const name = (english, lang = getLang()) => NAMES[lang]?.[english] ?? english;

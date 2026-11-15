@@ -127,6 +127,18 @@ test('setupLang: the saved choice beats the browser language, whether stored as 
   assert.equal(setup({ languages: ['fr'] }).i18n.getLang(), 'en');
 });
 
+test('setupLang accepts a storage that only has get and set', () => {
+  const values = { lang: 'sv' };
+  const storage = { get: (k) => values[k] ?? null, set: (k, v) => { values[k] = v; } };
+  const i18n = createI18n(STRINGS), page = fakePage();
+  const lang = setupLang(i18n, { storage, doc: page.doc, search: '', languages: ['en'] });
+  assert.equal(i18n.getLang(), 'sv');
+  lang.set('en');
+  assert.equal(values.lang, 'en');
+  const empty = { get: () => null, set() {} };
+  assert.equal(setupLang(createI18n(STRINGS), { storage: empty, doc: page.doc, search: '', languages: ['sv'] }) && true, true);
+});
+
 test('setupLang works without storage', () => {
   const i18n = createI18n(STRINGS), page = fakePage();
   const lang = setupLang(i18n, { doc: page.doc, search: '?lang=sv', languages: [] });

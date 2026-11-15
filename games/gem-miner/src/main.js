@@ -11,7 +11,8 @@ import { createInput } from './input.js';
 import { createAudio } from './audio.js';
 import { createUI } from './ui.js';
 import { HATCHETS } from './mining.js';
-import { t as tr, num, hatchetName, pickLang, normalizeLang } from './i18n.js';
+import { i18n, t as T, num, hatchetName } from './i18n.js';
+import { setupLang } from './kit/langdom.js';
 
 const flags = parseFlags(location.search);
 let backend = null;
@@ -35,21 +36,14 @@ const ui = createUI({
   toTitle: () => { state = null; showTitle(); },
 });
 
-// Language (P-5): ?lang= from the launcher, else the saved choice, else the browser's; a ?lang= is remembered.
-const queryLang = normalizeLang(new URLSearchParams(location.search).get('lang'));
-let lang = pickLang({ query: queryLang, saved: storage.get('lang'), browser: navigator.languages?.length ? navigator.languages : [navigator.language] });
-if (queryLang) storage.set('lang', queryLang);
-const T = (key, vars) => tr(lang, key, vars);
-ui.setLang(lang);
-document.getElementById('langSwitch').addEventListener('click', (e) => {
-  const next = normalizeLang(e.target.closest('[data-lang]')?.dataset.lang);
-  if (!next || next === lang) return;
-  lang = next;
-  storage.set('lang', lang);
-  ui.setLang(lang);
-  if (state) state.lang = lang;
-  showTitle(titleNote, `lang-${lang}`);
+// Language (P-5, D31): ?lang= from the launcher, else the saved choice, else the browser's; a ?lang= is remembered.
+// The kit applies the page's data-i18n* texts; a switch on the title screen redraws it, focus kept on the pressed button.
+const lang = setupLang(i18n, {
+  storage, key: 'lang',
+  onChange(l) { ui.resetHud(); showTitle(titleNote, `lang-${l}`); },
 });
+lang.bindSwitch(document.getElementById('langSwitch'));
+lang.apply();
 
 const isTouch = () => input.touchActive();
 const controlsText = () => T(isTouch() ? 'controlsTouch' : 'controlsKeys');
@@ -121,7 +115,6 @@ function newGame() {
   newArmed = false;
   const seed = flags.seed !== null ? flags.seed : randomSeed();
   state = createGame({ seed, size: flags.worldSize, flags });
-  state.lang = lang;
   if (!flags.debug) storage.remove('save');
   save();
   enterPlay();
@@ -130,7 +123,6 @@ function continueGame() {
   const s = restore(storage.get('save'), flags);
   if (!s) { storage.remove('save'); showTitle('badSave'); return; }
   state = s;
-  state.lang = lang;
   enterPlay();
 }
 function openOverlay() { input.reset(); setInert(true); }
@@ -144,18 +136,18 @@ function toggleSound() { soundOn = !soundOn; audio.enabled = soundOn; ui.renderP
 function doSell(id, n, key) {
   const r = n === Infinity ? sellGem(state, id, state.inv.gems[id]) : sellGem(state, id, n);
   flushEvents();
-  ui.renderShop(state, r.ok ? T('soldFor', { n: num(lang, r.coins) }) : T('nothingToSell'), key);
+  ui.renderShop(state, r.ok ? T('soldFor', { n: num(r.coins) }) : T('nothingToSell'), key);
 }
 function doSellAll() {
   const r = sellAll(state);
   flushEvents();
-  ui.renderShop(state, r.ok ? T('soldGems', { count: num(lang, r.count), n: num(lang, r.coins) }) : T('backpackEmpty'), 'sellAllBtn');
+  ui.renderShop(state, r.ok ? T('soldGems', { count: num(r.count), n: num(r.coins) }) : T('backpackEmpty'), 'sellAllBtn');
 }
 function doBuy(tier, key) {
   const r = buyHatchet(state, tier);
   flushEvents();
-  const hatchet = hatchetName(lang, HATCHETS[tier].id);
-  const msg = r.ok ? T('bought', { hatchet }) : r.reason === 'poor' ? T('poor', { n: num(lang, r.need), hatchet }) : r.reason === 'owned' ? T('alreadyOwned') : r.reason === 'worse' ? T('alreadyBetter') : T('cannotBuy');
+  const hatchet = hatchetName(HATCHETS[tier].id);
+  const msg = r.ok ? T('bought', { hatchet }) : r.reason === 'poor' ? T('poor', { n: num(r.need), hatchet }) : r.reason === 'owned' ? T('alreadyOwned') : r.reason === 'worse' ? T('alreadyBetter') : T('cannotBuy');
   ui.renderShop(state, msg, r.ok ? 'shopClose' : key);
 }
 

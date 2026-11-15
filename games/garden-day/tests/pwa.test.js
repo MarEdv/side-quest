@@ -16,12 +16,13 @@ function pngSize(p) {
   return { w: b.readUInt32BE(16), h: b.readUInt32BE(20) };
 }
 
-test('sw.js precache list = index, manifest, every src/*.js and every icon', () => {
+test('sw.js precache list = index, manifest, every src/*.js, every src/kit/*.js and every icon', () => {
   const sw = read('sw.js').toString();
   const list = JSON.parse(/const PRECACHE = (\[[\s\S]*?\]);/.exec(sw)[1].replace(/'/g, '"').replace(/,\s*\]/, ']'));
   const expected = ['./', 'index.html', 'manifest.webmanifest',
     ...readdirSync(join(root, 'icons')).filter((f) => f.endsWith('.png')).map((f) => `icons/${f}`),
-    ...readdirSync(join(root, 'src')).filter((f) => f.endsWith('.js')).map((f) => `src/${f}`)];
+    ...readdirSync(join(root, 'src')).filter((f) => f.endsWith('.js')).map((f) => `src/${f}`),
+    ...readdirSync(join(root, 'src', 'kit')).filter((f) => f.endsWith('.js')).map((f) => `src/kit/${f}`)];
   assert.deepEqual([...list].sort(), [...expected].sort());
   for (const u of list) assert.ok(u === './' || existsSync(join(root, u)), `${u} exists`);
   assert.match(sw, /const CACHE = 'sidequest-v\d+'/);

@@ -2,28 +2,25 @@ import { getFlags } from './flags.js';
 import { createGame, update } from './game.js';
 import { createRenderer } from './render.js';
 import { createInput } from './input.js';
-import { pickLang, normalizeLang, t } from './i18n.js';
+import { createStorage } from './kit/storage.js';
+import { setupLang } from './kit/langdom.js';
+import { i18n, t } from './i18n.js';
 
 const flags = getFlags();
 const $ = (id) => document.getElementById(id);
 const canvas = $('game');
 const renderer = createRenderer(canvas);
 const BEST_KEY = 'poo-sandwich-best';
-const LANG_KEY = 'poo-sandwich-lang';
 
 const readBest = () => { try { return Number(localStorage.getItem(BEST_KEY)) || 0; } catch (_) { return 0; } };
 const writeBest = (v) => { try { localStorage.setItem(BEST_KEY, String(v)); } catch (_) { /* ignore */ } };
 
-// Language (F13): ?lang= from the launcher is remembered, so later visits without it keep the same language.
-let lang = (() => {
-  let saved = null;
-  try { saved = localStorage.getItem(LANG_KEY); } catch (_) { /* ignore */ }
-  const query = normalizeLang(new URLSearchParams(location.search).get('lang'));
-  const picked = pickLang({ query, saved, browser: navigator.languages?.length ? navigator.languages : [navigator.language] });
-  if (query) saveLang(query);
-  return picked;
-})();
-function saveLang(l) { try { localStorage.setItem(LANG_KEY, l); } catch (_) { /* ignore */ } }
+// Language (F13, D21): kit/langdom.js reads ?lang= (remembered, so later visits without it keep the language) or the saved
+// choice, writes the data-i18n texts and runs the switch. Reading window.localStorage can itself throw.
+let backend = null;
+try { backend = window.localStorage; } catch (_) { /* not remembered */ }
+const storage = createStorage(backend, 'poo-sandwich-');
+const lang = setupLang(i18n, { storage, key: 'lang', onChange: describeFlags });
 
 let mode = 'title'; // title | playing | paused | over
 let state = createGame(flags, 1);
@@ -42,23 +39,12 @@ function setMode(m) {
   show('pauseBtn', m === 'playing');
 }
 
-// Static texts carry data-i18n (text), data-i18n-html (markup from i18n.js only) or data-i18n-aria (aria-label).
-function applyLang() {
-  document.documentElement.lang = lang;
-  for (const node of document.querySelectorAll('[data-i18n]')) node.textContent = t(lang, node.dataset.i18n);
-  for (const node of document.querySelectorAll('[data-i18n-html]')) node.innerHTML = t(lang, node.dataset.i18nHtml);
-  for (const node of document.querySelectorAll('[data-i18n-aria]')) node.setAttribute('aria-label', t(lang, node.dataset.i18nAria));
-  for (const b of document.querySelectorAll('#langSwitch [data-lang]')) b.setAttribute('aria-pressed', String(b.dataset.lang === lang));
-  renderer.setLang(lang);
-  describeFlags();
-}
-
 function describeFlags() {
-  $('pooRule').innerHTML = t(lang, flags.poo === 'choice' ? 'pooRuleChoice' : 'pooRuleHit');
-  $('controlsHelp').textContent = t(lang, flags.controls === 'joystick' ? 'controlsJoystick' : flags.controls === 'tap' ? 'controlsTap' : 'controlsAuto');
+  $('pooRule').innerHTML = t(flags.poo === 'choice' ? 'pooRuleChoice' : 'pooRuleHit');
+  $('controlsHelp').textContent = t(flags.controls === 'joystick' ? 'controlsJoystick' : flags.controls === 'tap' ? 'controlsTap' : 'controlsAuto');
   $('flagsLine').textContent = `controls=${flags.controls} · poo=${flags.poo} · day=${flags.daySeconds}s${flags.debug ? ' · debug' : ''}`;
   const best = readBest();
-  $('bestTitle').textContent = best ? t(lang, 'best', { n: best }) : '';
+  $('bestTitle').textContent = best ? t('best', { n: best }) : '';
 }
 
 function start() {
@@ -77,11 +63,11 @@ function endGame() {
   const best = readBest();
   const isBest = sm.score > best;
   if (isBest) writeBest(sm.score);
-  $('overTitle').textContent = t(lang, sm.won ? 'wonTitle' : 'lostTitle');
-  $('overText').textContent = sm.won ? t(lang, 'wonText', { stress: sm.stress, bonus: sm.bonus }) : t(lang, 'lostText');
+  $('overTitle').textContent = t(sm.won ? 'wonTitle' : 'lostTitle');
+  $('overText').textContent = sm.won ? t('wonText', { stress: sm.stress, bonus: sm.bonus }) : t('lostText');
   $('overScore').textContent = sm.score;
-  $('overBest').textContent = isBest ? t(lang, 'newBest') : t(lang, 'best', { n: Math.max(best, sm.score) });
-  $('overStats').textContent = t(lang, 'stats', { tasks: sm.tasksDone, poo: sm.pooDone, hits: sm.hits, dodged: sm.dodged, missed: sm.pooExpired });
+  $('overBest').textContent = isBest ? t('newBest') : t('best', { n: Math.max(best, sm.score) });
+  $('overStats').textContent = t('stats', { tasks: sm.tasksDone, poo: sm.pooDone, hits: sm.hits, dodged: sm.dodged, missed: sm.pooExpired });
   setMode('over');
 }
 
@@ -91,13 +77,6 @@ $('menuBtn').addEventListener('click', toTitle);
 $('quitBtn').addEventListener('click', toTitle);
 $('resumeBtn').addEventListener('click', resume);
 $('pauseBtn').addEventListener('click', pause);
-$('langSwitch').addEventListener('click', (e) => {
-  const next = normalizeLang(e.target.closest('[data-lang]')?.dataset.lang);
-  if (!next || next === lang) return;
-  lang = next;
-  saveLang(lang);
-  applyLang();
-});
 document.addEventListener('visibilitychange', () => { if (document.hidden) pause(); });
 window.addEventListener('blur', pause);
 window.addEventListener('keydown', (e) => {
@@ -124,7 +103,9 @@ function frame(now) {
   renderer.draw(state, now, input);
 }
 
-applyLang();
+lang.bindSwitch($('langSwitch'));
+lang.apply();
+describeFlags();
 renderer.resize();
 requestAnimationFrame(frame);
 if (flags.debug) window.__game = { get state() { return state; }, start };

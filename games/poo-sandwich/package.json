@@ -8,9 +8,11 @@
     "start": "python3 -m http.server 8000",
     "test": "node --test tests/*.test.js"
   },
+  "kit": ["lang.js", "langdom.js", "storage.js"],
   "browserModules": [
     "flags.js",
     "input.js",
+    "kit/langdom.js",
     "main.js",
     "render.js"
   ]

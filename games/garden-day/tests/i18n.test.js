@@ -7,15 +7,14 @@ import { END_MESSAGES } from '../src/game.js';
 import { SETTING_GROUPS, inactiveReason, checkInput } from '../src/settings.js';
 import { ENUMS } from '../src/config.js';
 import { rankText, levelBannerText, levelCard } from '../src/uimodel.js';
+import { stringProblems } from '../src/kit/lang.js';
 
 // Runs fn in Swedish and always switches back, so other tests in this file see English.
 const inSwedish = (fn) => { setLang('sv'); try { return fn(); } finally { setLang('en'); } };
 
 test('English and Swedish have the same keys and placeholders', () => {
   assert.deepEqual(LANGS, ['en', 'sv']);
-  assert.deepEqual(Object.keys(STRINGS.sv).sort(), Object.keys(STRINGS.en).sort());
-  const vars = (s) => (s.match(/\{\w+\}/g) || []).sort();
-  for (const k of Object.keys(STRINGS.en)) assert.deepEqual(vars(STRINGS.sv[k]), vars(STRINGS.en[k]), k);
+  assert.deepEqual(stringProblems(STRINGS), []);
 });
 
 test('every text in the data tables has a Swedish translation, and no translation is stale', () => {
@@ -31,7 +30,8 @@ test('every text in the data tables has a Swedish translation, and no translatio
   for (const k of Object.keys(TEXT_SV)) assert.ok(known.has(k), `stale translation "${k}"`);
 });
 
-test('the language starts as English and setLang only accepts supported languages', () => {
+test('the language starts as English and setLang only accepts supported languages', (tt) => {
+  tt.after(() => setLang('en'));
   assert.equal(getLang(), 'en');
   assert.equal(setLang('sv-SE'), 'sv');
   assert.equal(setLang('de'), 'en');

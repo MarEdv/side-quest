@@ -220,6 +220,12 @@ old bare-word values); a game that lists `langdom.js` must add `kit/langdom.js` 
 Day must add its kit copies to the service worker precache list; and S-15's "same i18n test set" is
 `stringProblems()` plus `missingHtmlKeys()` from `kit/lang.js`.
 
+Wave 3 is done: **S-4** and **S-5** (D-13). All four parts use `kit/lang.js` and `kit/langdom.js`; every part's i18n
+test already uses the two kit checks, so that part of S-15 is done too. The launcher and Poo Sandwich also use
+`kit/storage.js` for the saved language, which leaves S-7 with: Poo Sandwich's best score (and no scores in debug
+runs), and replacing Garden Day's and Gem Miner's own `src/storage.js`. Open from this wave: Garden Day has not been
+tried offline with its two new precached files.
+
 Priority reflects value against risk: P1 is the foundation and the two largest sources of drift; P2 is the remaining
 duplicated code and visible inconsistencies; P3 changes behaviour or needs an owner decision.
 

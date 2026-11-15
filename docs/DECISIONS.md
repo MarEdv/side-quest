@@ -206,3 +206,36 @@
 - **Verified:** for every key in both languages, the kit's `t()` returns the same text as each part's current `t()`
   (540 lookups, no difference); the four tables and pages pass the kit's checks; switch, `?lang=`, saving and all four
   attributes were exercised in headless Chrome.
+
+### D-13 — All four parts take their language handling from the kit (2026-11-15)
+- **Chosen:** S-4 and S-5 of `docs/STREAMLINING.md`. Each part's `src/i18n.js` keeps its texts and name lookups and gets
+  `LANGS`, `normalizeLang`, `pickLang`, `getLang`, `setLang` and `t(key, vars)` from `createI18n(STRINGS)`; each part's
+  browser entry calls `setupLang()` from `kit/langdom.js` instead of its own `?lang=` reading, text applier and switch
+  handler. Four copies of `normalizeLang` / `pickLang`, three of `t()`, three of the `data-i18n` walker and three of the
+  switch handler are gone. Lookups that took a language first (`gemName(lang, id)`, `name(lang, english)`, `num(lang, n)`,
+  the launcher's `tagLabel(lang, tag)`) now take it last, defaulting to the current one.
+- **Launcher (this part):** `src/i18n.js` and `src/launcher.js` as above; the saved language goes through
+  `createStorage(backend, 'launcher.')`, so the key is still `launcher.lang`. **Behaviour change, intended:** a `?lang=`
+  in the URL is now remembered, as `ADDING-A-GAME.md` already asked of the games. L-9 updated.
+- **Saved values:** the launcher and Poo Sandwich used to save a bare `sv`; they now save JSON (`"sv"`) and still read
+  the old form (`text()`, D-11). Gem Miner and Garden Day already saved JSON through their own storage, which they keep
+  until S-7.
+- **Garden Day only:** pressing the language that is already selected no longer saves it or re-renders the menu (the
+  kit ignores it, as the other three parts always did). Its D-33.
+- **Kit change on the way:** `setupLang` accepts a storage that has no `text()` (Garden Day's and Gem Miner's own
+  wrappers), so language adoption did not have to wait for storage adoption.
+- **Each game logged its own entry:** Garden Day D-33 (service worker precaches the two kit copies, and its precache test
+  now requires every file in `src/kit/`), Gem Miner D31 (supersedes the `state.lang` part of its D29), Poo Sandwich D21.
+- **How it was checked:** a harness page loaded each part in an iframe, walked first visit, `?lang=sv`, reload, the switch
+  in both directions, an unsupported `?lang=de` and `?lang=en`, and recorded visible text, `aria` labels, focus and the
+  saved value; for Gem Miner and Poo Sandwich it also started a game and opened shop, pause and map. It ran against a
+  clean copy of the previous commit and against this one, in headless Chrome. The only differences are the two above
+  (launcher remembers `?lang=`; saved value format). The harness was a throwaway and is not in the repo.
+- **Not checked:** Garden Day offline after this change; text drawn on canvases (Poo Sandwich's `render.js` change was
+  reviewed line by line instead); a real phone.
+- **Seen while checking, not caused by this change:** in headless Chrome, a repeat load of Garden Day in the same
+  browser profile is often captured before its menu is drawn (the same on the previous commit, and varying from run to
+  run). It looks like a capture-timing effect of headless mode with the game's service worker, not something a player
+  would see, but it was not tried in a normal browser window.
+- **Who did what:** Fable wrote the briefs and the harness, reviewed both diffs and compared before and after; a Sonnet
+  subagent did S-4 (launcher, Poo Sandwich) and an Opus subagent S-5 (Gem Miner, Garden Day).

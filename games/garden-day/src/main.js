@@ -14,7 +14,8 @@ import { createInstall, registerServiceWorker } from './install.js';
 import { gateInput, shouldRecord, startsDay } from './uimodel.js';
 import { render } from './render.js';
 import { W, H } from './world.js';
-import { t, setLang, getLang, pickLang, normalizeLang, summaryText } from './i18n.js';
+import { i18n, t, summaryText } from './i18n.js';
+import { setupLang } from './kit/langdom.js';
 
 const STEP = 1 / 60;
 const MAX_FRAME = 0.25; // clamp big gaps (tab switches)
@@ -30,13 +31,19 @@ const storage = createStorage(backend);
 const scores = createScores(storage);
 const settingsStore = createSettingsStore(storage);
 
-// Language (P-6, D-31): ?lang= (the launcher passes it, and it is remembered) > saved > browser > English. Not a flag:
-// a URL flag would lock the setting on every visit from the launcher (D-23).
-const LANG_KEY = 'lang';
-const queryLang = normalizeLang(new URLSearchParams(location.search).get('lang'));
-if (queryLang) storage.set(LANG_KEY, queryLang);
-setLang(pickLang({ query: queryLang, saved: storage.get(LANG_KEY), browser: navigator.languages?.length ? navigator.languages : [navigator.language] }));
-document.documentElement.lang = getLang();
+// Language (P-6, D-31, D-33): ?lang= (the launcher passes it, and it is remembered) > saved > browser > English. Not a
+// flag: a URL flag would lock the setting on every visit from the launcher (D-23). The kit picks it, saves a switch and
+// sets <html lang>; the screens are built in JS, so after a switch onChange re-renders what shows text.
+const lang = setupLang(i18n, {
+  storage, key: 'lang',
+  onChange(l) {
+    applyStaticTexts();
+    touch.relabel();
+    resize(); // the controls hint
+    menus.refresh(`[data-lang="${l}"]`);
+  },
+});
+lang.apply();
 
 // Flags, three layers (D-23). `resolved` = URL > saved > default, what Settings shows. `flags` = what the running game
 // reads (state.flags is this same object): control/display flags follow `resolved` at once, gameplay flags are copied
@@ -124,15 +131,7 @@ const menus = createUI({
       lvl.flags.maxActiveQuests === 1 ? t('questAtATime') : t('questsAtATime', { n: lvl.flags.maxActiveQuests }),
       t('dayLength', { n: lvl.flags.dayLength })].join(' \u00b7 '),
   },
-  setLang(l) {
-    setLang(l);
-    storage.set(LANG_KEY, getLang());
-    document.documentElement.lang = getLang();
-    applyStaticTexts();
-    touch.relabel();
-    resize(); // the controls hint
-    menus.refresh(`[data-lang="${getLang()}"]`);
-  },
+  setLang: (l) => lang.set(l), // the EN / SV switch on the main menu
   actions: {
     play: () => { mode = null; audio.unlock(); startDay(); }, // Arcade
     again: () => startDay(), // retry the current level, or play Arcade again

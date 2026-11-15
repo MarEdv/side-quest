@@ -637,3 +637,26 @@ Cache-Control, so heuristic freshness hid some effects and showed others that Gi
   `CLAUDE.md` no longer names the browser modules in prose (that list had lost `ui.js`, `touch.js` and the install
   modules, and its sentence had been cut in two by the i18n rule); it now also states the `sidequest.v1.` key prefix.
 - **Alternatives:** keep the list in `CLAUDE.md` only (nothing checked it, and it was wrong).
+
+### D-33 — Language rules from the shared kit (2026-11-15) — amends P-6, D-31
+- **Chosen:** part of the repo-wide alignment (`docs/STREAMLINING.md` S-5 at the repo root). The language rules come from
+  the root kit (`kit/lang.js`, `kit/langdom.js`), copied into `src/kit/` by `npm run kit` and listed in `package.json`
+  (`"kit"`; `kit/langdom.js` is in `"browserModules"`). `src/i18n.js` keeps `STRINGS`, `TEXT_SV`, `tx`, `summaryText` and
+  `dateLocale` (they read the current language through `getLang()`) and builds `LANGS`, `normalizeLang`, `pickLang`,
+  `getLang`, `setLang` and `t` with `createI18n(STRINGS)`: the same API as before, so no other module changed.
+- **`main.js`:** the hand-written `?lang=` / saved / browser picking became `setupLang(i18n, { storage, key: 'lang',
+  onChange })`, and `apply()` sets `<html lang>` once at start (there are no `data-i18n` attributes: the screens are built
+  in JS). The main menu's EN / SV switch (`ctx.setLang` in `ui.js`) calls the kit's `set()`, which saves the choice; its
+  `onChange` does what the old handler did after a change, in the same order: rotate chip texts, touch WORK label, the
+  controls hint (`resize()`), then the menu re-render with focus on the pressed button.
+- **Unchanged:** every text, the language order, the saved key (`sidequest.v1.lang`, through the game's own
+  `src/storage.js`). One small difference: pressing the language that is already on now does nothing (the kit ignores it),
+  where it used to re-render the menu and save that language; focus stays on the pressed button either way.
+- **Service worker:** `sw.js` precaches `src/kit/lang.js` and `src/kit/langdom.js`, and `tests/pwa.test.js` now checks
+  `src/kit/*.js` too. No cache name bump: the worker is network-first (D-25, D-26), so the new files are fetched and cached
+  on the next online load, and the changed `sw.js` installs with the new precache list anyway.
+- **Tests:** `tests/i18n.test.js` uses the kit's `stringProblems`; a test that changes the language sets it back to
+  English afterwards. Still 175 tests.
+- **Alternatives:** keep the game's own `normalizeLang` / `pickLang` / `t` (four copies of the same rules across the repo);
+  call `bindSwitch` on the menu (the menu is rebuilt on every render and would need re-binding; `ctx.setLang` already
+  reaches `main.js`).

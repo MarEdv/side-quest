@@ -27,8 +27,8 @@ export function setupLang(i18n, {
   languages = navigator.languages?.length ? navigator.languages : [navigator.language],
 } = {}) {
   const query = i18n.normalizeLang(new URLSearchParams(search).get('lang'));
-  // A choice saved before the part stored JSON is a bare `sv`: text() reads that.
-  const saved = storage ? storage.get(key) ?? storage.text(key) : null;
+  // A choice saved before the part stored JSON is a bare `sv`: text() reads that (a storage without text() is fine).
+  const saved = storage ? storage.get(key) ?? storage.text?.(key) ?? null : null;
   if (query) storage?.set(key, query);
   i18n.setLang(i18n.pickLang({ query, saved, browser: languages }));
 

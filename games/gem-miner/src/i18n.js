@@ -1,9 +1,8 @@
-// English and Swedish texts (P-5, D29). Pure: no DOM. main.js picks the language and stores it in state.lang (display
-// only, never saved); game.js, ui.js and main.js build their messages with t(). Names of gems, hatchets and rocks are
-// looked up by id, so the economy and mining tables stay language-free.
-
-export const LANGS = ['en', 'sv'];
-export const DEFAULT_LANG = 'en';
+// English and Swedish texts (P-5, D31). Pure: no DOM. The language rules come from the kit (src/kit/lang.js): one
+// current language for the whole game, set by main.js through src/kit/langdom.js (display only, never in the save).
+// game.js, ui.js and main.js build their messages with t(key, vars). Names of gems, hatchets and rocks are looked up by
+// id, so the economy and mining tables stay language-free.
+import { createI18n } from './kit/lang.js';
 
 export const STRINGS = {
   en: {
@@ -117,34 +116,17 @@ export const NAMES = {
   },
 };
 
+export const i18n = createI18n(STRINGS);
+export const { LANGS, DEFAULT_LANG, normalizeLang, pickLang, getLang, setLang, t } = i18n;
+
+// Lookups use the current language unless one is passed.
 const names = (lang) => NAMES[lang] || NAMES[DEFAULT_LANG];
-export const gemName = (lang, id) => names(lang).gems[id] ?? NAMES.en.gems[id] ?? id;
-export const hatchetShort = (lang, id) => names(lang).short[id] ?? id;
-export const hatchetName = (lang, id) => names(lang).full[id] ?? id;
+export const gemName = (id, lang = getLang()) => names(lang).gems[id] ?? NAMES.en.gems[id] ?? id;
+export const hatchetShort = (id, lang = getLang()) => names(lang).short[id] ?? id;
+export const hatchetName = (id, lang = getLang()) => names(lang).full[id] ?? id;
 // Capitalised, for the start of a shop row.
-export const hatchetTitle = (lang, id) => { const n = hatchetName(lang, id); return n.charAt(0).toUpperCase() + n.slice(1); };
-export const rockNames = (lang, power) => names(lang).rocks.slice(0, power).join(', ');
-
-// 'sv-SE' → 'sv'; unsupported or empty → null.
-export function normalizeLang(code) {
-  const base = String(code || '').trim().toLowerCase().split(/[-_]/)[0];
-  return LANGS.includes(base) ? base : null;
-}
-
-// ?lang= (the launcher passes it) wins, then the saved choice, then the browser's languages, then English.
-export function pickLang({ query = null, saved = null, browser = [] } = {}) {
-  for (const c of [query, saved, ...browser]) {
-    const lang = normalizeLang(c);
-    if (lang) return lang;
-  }
-  return DEFAULT_LANG;
-}
+export const hatchetTitle = (id, lang = getLang()) => { const n = hatchetName(id, lang); return n.charAt(0).toUpperCase() + n.slice(1); };
+export const rockNames = (power, lang = getLang()) => names(lang).rocks.slice(0, power).join(', ');
 
 // 12345 → '12,345' (en) / '12 345' (sv).
-export const num = (lang, n) => Number(n).toLocaleString(lang === 'sv' ? 'sv-SE' : 'en');
-
-// t('sv', 'chestCoins', { n: 40 }) → 'Kista: 40 mynt'. Missing keys fall back to English, then to the key.
-export function t(lang, key, vars) {
-  const s = STRINGS[lang]?.[key] ?? STRINGS[DEFAULT_LANG][key] ?? key;
-  return vars ? s.replace(/\{(\w+)\}/g, (m, k) => (k in vars ? String(vars[k]) : m)) : s;
-}
+export const num = (n, lang = getLang()) => Number(n).toLocaleString(lang === 'sv' ? 'sv-SE' : 'en');

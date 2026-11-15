@@ -25,6 +25,6 @@ test('localStorage keys are prefixed gem-miner.', async () => {
 test('no module imports from outside the game folder', () => {
   for (const f of readdirSync(SRC).filter((x) => x.endsWith('.js'))) {
     const code = readFileSync(join(SRC, f), 'utf8');
-    for (const m of code.matchAll(/from\s+'([^']+)'/g)) assert.match(m[1], /^\.\/[\w-]+\.js$/, `${f} imports ${m[1]}`);
+    for (const m of code.matchAll(/from\s+'([^']+)'/g)) assert.match(m[1], /^\.\/(kit\/)?[\w-]+\.js$/, `${f} imports ${m[1]}`); // ./kit/: generated copies
   }
 });

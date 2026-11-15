@@ -5,7 +5,7 @@ import { HATCHETS, bestTier } from './mining.js';
 import { mapPixels } from './render.js';
 import { formatTime } from './scores.js';
 import { townDirection, dreamDirection } from './game.js';
-import { t as tr, num, gemName, hatchetShort, hatchetName, hatchetTitle, rockNames, DEFAULT_LANG } from './i18n.js';
+import { t as T, num as n, gemName, hatchetShort, hatchetName, hatchetTitle, rockNames } from './i18n.js';
 
 const $ = (id) => document.getElementById(id);
 
@@ -14,22 +14,8 @@ export function createUI(h) {
   const el = Object.fromEntries(names.map((n) => [n, $(n)]));
   let current = null;
   let last = {};
-  let lang = DEFAULT_LANG;
-  const T = (key, vars) => tr(lang, key, vars);
-  const n = (v) => num(lang, v);
-
-  // Static texts carry data-i18n (text), data-i18n-html (markup from i18n.js only), data-i18n-aria (aria-label) or
-  // data-i18n-title (title). main.js calls this at start and when the title screen's language switch is used (P-5).
-  function setLang(l) {
-    lang = l;
-    document.documentElement.lang = l;
-    for (const e of document.querySelectorAll('[data-i18n]')) e.textContent = T(e.dataset.i18n);
-    for (const e of document.querySelectorAll('[data-i18n-html]')) e.innerHTML = T(e.dataset.i18nHtml);
-    for (const e of document.querySelectorAll('[data-i18n-aria]')) e.setAttribute('aria-label', T(e.dataset.i18nAria));
-    for (const e of document.querySelectorAll('[data-i18n-title]')) e.title = T(e.dataset.i18nTitle);
-    for (const b of document.querySelectorAll('#langSwitch [data-lang]')) b.setAttribute('aria-pressed', String(b.dataset.lang === l));
-    hudKey = '';
-  }
+  // Texts use the current language (P-5). Static texts carry data-i18n* attributes, which main.js applies through
+  // src/kit/langdom.js; everything built here is rebuilt in the current language by the next render call.
 
   const focusables = (root) => [...root.querySelectorAll('button:not(:disabled), a[href]')].filter((b) => !b.closest('[hidden]'));
 
@@ -113,7 +99,7 @@ export function createUI(h) {
     // innerHTML here only interpolates constants (i18n.js) and numbers (restore() validates every stored count as a number).
     const gems = GEMS.filter((g) => inv.gems[g.id] > 0);
     $('shopGems').innerHTML = gems.length ? gems.map((g) => {
-      const gem = gemName(lang, g.id);
+      const gem = gemName(g.id);
       return `
       <div class="row"><span class="dot" style="background:${g.color}"></span>
         <span class="name">${gem} × ${inv.gems[g.id]}<small>${T('each', { n: n(g.value) })}</small></span>
@@ -121,13 +107,13 @@ export function createUI(h) {
         <button data-sellall="${g.id}" data-k="sellall-${g.id}" aria-label="${T('sellAllGemAria', { gem })}">${T('sellAllGem')}</button></div>`;
     }).join('')
       : `<p class="small">${T('emptyBackpack')}</p>`;
-    if (inv.dream) $('shopGems').insertAdjacentHTML('beforeend', `<div class="row"><span class="name">${gemName(lang, DREAM.id)}<small>${T('notForSale')}</small></span></div>`);
+    if (inv.dream) $('shopGems').insertAdjacentHTML('beforeend', `<div class="row"><span class="name">${gemName(DREAM.id)}<small>${T('notForSale')}</small></span></div>`);
     const sellAll = $('sellAllBtn');
     sellAll.disabled = !gems.length;
     sellAll.textContent = gems.length ? T('sellAllValue', { n: n(backpackValue(inv)) }) : T('sellAll');
     const best = bestTier(inv.hatchets);
     $('shopHatchets').innerHTML = HATCHETS.map((hd, t) => {
-      const cuts = rockNames(lang, hd.power);
+      const cuts = rockNames(hd.power);
       const owned = inv.hatchets[t];
       const price = s.prices[t];
       const need = price - inv.coins;
@@ -135,8 +121,8 @@ export function createUI(h) {
       const status = t === 0 ? T('alwaysYours') : owned ? (t === best ? T('ownedInUse') : T('owned')) : worse ? T('notNeededLong') : null;
       const dur = s.flags.durability && owned && t > 0 ? T('blocksLeft', { n: n(inv.dur[t]) }) : '';
       const btn = t === 0 ? '' : owned ? `<button disabled>${T('owned')}</button>` : worse ? `<button disabled>${T('notNeeded')}</button>`
-        : `<button data-buy="${t}" data-k="buy-${t}" aria-label="${T('buyAria', { hatchet: hatchetName(lang, hd.id), n: n(price) })}"${need > 0 ? ' class="poor"' : ''}>${n(price)} 🪙</button>`;
-      return `<div class="row"><span class="name">🪓 ${hatchetTitle(lang, hd.id)}<small>${T('cuts', { rocks: cuts })}${dur}${status ? ' · ' + status : need > 0 ? ` · ${T('needMore', { n: n(need) })}` : ''}</small></span>${btn}</div>`;
+        : `<button data-buy="${t}" data-k="buy-${t}" aria-label="${T('buyAria', { hatchet: hatchetName(hd.id), n: n(price) })}"${need > 0 ? ' class="poor"' : ''}>${n(price)} 🪙</button>`;
+      return `<div class="row"><span class="name">🪓 ${hatchetTitle(hd.id)}<small>${T('cuts', { rocks: cuts })}${dur}${status ? ' · ' + status : need > 0 ? ` · ${T('needMore', { n: n(need) })}` : ''}</small></span>${btn}</div>`;
     }).join('');
     $('shopMsg').textContent = msg;
     if (current !== 'shop') show('shop', { focus: 'shopClose' });
@@ -192,7 +178,7 @@ export function createUI(h) {
     if (key === hudKey) return;
     hudKey = key;
     $('hudCoins').textContent = `🪙 ${n(s.inv.coins)}`;
-    $('hudHatchet').textContent = `🪓 ${hatchetShort(lang, hd.id)}${s.flags.durability && best > 0 ? ` (${s.inv.dur[best]})` : ''}`;
+    $('hudHatchet').textContent = `🪓 ${hatchetShort(hd.id)}${s.flags.durability && best > 0 ? ` (${s.inv.dur[best]})` : ''}`;
     $('hudNav').textContent = [town.dist ? T('town', { arrow: town.arrow, dist: town.dist }) : T('inTown'), dream ? `💎 ${dream.arrow || '·'} ${dream.dist}` : ''].filter(Boolean).join('  ');
     $('hudGems').replaceChildren(...GEMS.filter((g) => s.inv.gems[g.id] > 0).map((g) => {
       const sp = node('span', undefined, 'g'), dot = node('span', undefined, 'dot');
@@ -208,7 +194,6 @@ export function createUI(h) {
   return {
     // First tap on New game while a save exists: ask for a second one (main.js decides when).
     armNewGame() { const b = $('newBtn'); b.textContent = T('newGameArmed'); b.focus({ preventScroll: true }); },
-    setLang, get lang() { return lang; },
     show, hide, renderTitle, renderShop, renderPause, renderMap, renderWin, setHud, hudVisible, touchVisible,
     get current() { return current; },
     resetHud() { hudKey = ''; $('toast').classList.remove('show'); },

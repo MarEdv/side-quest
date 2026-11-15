@@ -2,7 +2,7 @@
 // answered from the browser's HTTP cache), so a new deploy shows up on the next load; the successful response is copied
 // into the cache. Offline, the cached copy is served (a page load with any query string gets the cached index). The app
 // shell is precached at install so a first offline launch works. Rollback / kill switch: tools/sw-kill.js (D-26).
-// Keep PRECACHE in step with the files: tests/pwa.test.js checks it against src/*.js, icons/ and the manifest.
+// Keep PRECACHE in step with the files: tests/pwa.test.js checks it against src/*.js, src/kit/*.js, icons/ and the manifest.
 const CACHE = 'sidequest-v1'; // bump only to force-drop every old entry; staleness is handled by network-first
 const PRECACHE = [
   './',
@@ -22,6 +22,8 @@ const PRECACHE = [
   'src/install.js',
   'src/installmodel.js',
   'src/installui.js',
+  'src/kit/lang.js',
+  'src/kit/langdom.js',
   'src/levels.js',
   'src/levelsui.js',
   'src/main.js',

@@ -1,18 +1,13 @@
-// English and Swedish (P-6, D-31). Pure: no DOM. One current language for the whole game (setLang), so pure modules
-// can build player-facing text with t() without passing a language around; it starts as English, which is also what
-// the Node tests see. main.js picks the language (?lang= > saved > browser > English) and re-renders on a change.
+// English and Swedish (P-6, D-31, D-33). Pure: no DOM. The language rules come from the kit (src/kit/lang.js): one
+// current language for the whole game (setLang), so pure modules can build player-facing text with t() without passing
+// a language around; it starts as English, which is also what the Node tests see. main.js picks the language through
+// src/kit/langdom.js (?lang= > saved > browser > English) and re-renders on a change.
 //
 // Two kinds of text:
 //   t(key, vars)  UI strings, by key (STRINGS).
 //   tx(english)   Text that lives in data tables (levels, quests, settings, end messages): the tables keep their English
 //                 text and tx() looks up the Swedish one (TEXT_SV), so stored data and tests stay language-free.
-
-export const LANGS = ['en', 'sv'];
-export const DEFAULT_LANG = 'en';
-let current = DEFAULT_LANG;
-
-export const getLang = () => current;
-export function setLang(lang) { current = normalizeLang(lang) || DEFAULT_LANG; return current; }
+import { createI18n } from './kit/lang.js';
 
 export const STRINGS = {
   en: {
@@ -181,32 +176,16 @@ export const TEXT_SV = {
   vision: 'syn', random: 'slump', hybrid: 'hybrid', roam: 'rör sig', patio: 'altan', easy: 'lätt', normal: 'normal', hard: 'svår',
 };
 
-// 'sv-SE' → 'sv'; unsupported or empty → null.
-export function normalizeLang(code) {
-  const base = String(code || '').trim().toLowerCase().split(/[-_]/)[0];
-  return LANGS.includes(base) ? base : null;
-}
-
-// ?lang= (the launcher passes it) wins, then the saved choice, then the browser's languages, then English.
-export function pickLang({ query = null, saved = null, browser = [] } = {}) {
-  for (const c of [query, saved, ...browser]) {
-    const lang = normalizeLang(c);
-    if (lang) return lang;
-  }
-  return DEFAULT_LANG;
-}
-
-// t('best', { n: 5 }). Missing keys fall back to English, then to the key.
-export function t(key, vars, lang = current) {
-  const s = STRINGS[lang]?.[key] ?? STRINGS[DEFAULT_LANG][key] ?? key;
-  return vars ? s.replace(/\{(\w+)\}/g, (m, k) => (k in vars ? String(vars[k]) : m)) : s;
-}
+// LANGS, normalizeLang, pickLang (?lang= > saved > browser > English), getLang / setLang and
+// t('best', { n: 5 }) (missing keys fall back to English, then to the key) come from the kit.
+export const i18n = createI18n(STRINGS);
+export const { LANGS, DEFAULT_LANG, normalizeLang, pickLang, getLang, setLang, t } = i18n;
 
 // Data-table text in the current language (English text without a translation is shown as is).
-export const tx = (english, lang = current) => (lang === 'sv' && english != null && TEXT_SV[english]) || english;
+export const tx = (english, lang = getLang()) => (lang === 'sv' && english != null && TEXT_SV[english]) || english;
 
 // A stored settingsSummary() ("vision·roam·normal") with each word translated.
-export const summaryText = (summary, lang = current) => String(summary || '').split('·').map((w) => tx(w, lang)).join('·');
+export const summaryText = (summary, lang = getLang()) => String(summary || '').split('·').map((w) => tx(w, lang)).join('·');
 
 // Locale for dates in the score table: undefined = the browser's own.
-export const dateLocale = (lang = current) => (lang === 'sv' ? 'sv-SE' : undefined);
+export const dateLocale = (lang = getLang()) => (lang === 'sv' ? 'sv-SE' : undefined);

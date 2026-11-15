@@ -22,9 +22,11 @@ A game is a folder `games/<slug>/` (lower-case kebab-case, it becomes the URL) c
   (an emoji, default 🎮). Games with `order` come first, ascending; the rest follow by title. `i18n` gives the card's
   `title` and/or `description` per language (the launcher offers `en` and `sv`; a missing field falls back to English).
 
-- **Language:** the launcher links to `games/<slug>/?lang=en` or `?lang=sv`. A game with translations should read `?lang=`
-  first (and remember it under its own key), then its saved choice, then `navigator.languages`. Keep the translations in
-  the game folder; don't import the launcher's `src/i18n.js`.
+- **Language:** the launcher links to `games/<slug>/?lang=en` or `?lang=sv`. A game with translations reads `?lang=`
+  first (and remembers it under its own key), then its saved choice, then `navigator.languages`. The kit does all of
+  that: keep the texts in the game's `src/i18n.js`, build the rest with `createI18n(STRINGS)` from `kit/lang.js`, and
+  call `setupLang()` from `kit/langdom.js` in the browser entry (see any of the three games). Mark static texts with
+  `data-i18n` attributes and language buttons with `data-lang`.
 
 - `package.json` – the root `npm test` and CI run the game's own `npm test` inside the folder, and check this shape:
 

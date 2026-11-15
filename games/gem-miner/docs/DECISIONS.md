@@ -278,3 +278,23 @@
 - **Docs:** the three game `CLAUDE.md` files now follow one skeleton (Non-negotiable 1..8 / Layout / Commands / Deploy), the
   requirements use the root status legend and the README gives the same run and test instructions as the other games.
   The status legend's wording changed; no requirement or status did.
+
+## D31 — 2026-11-15 — Language rules from the shared kit (P-5)
+- **Chosen:** part of the repo-wide alignment (`docs/STREAMLINING.md` S-5 at the repo root). The language rules come from
+  the root kit (`kit/lang.js`, `kit/langdom.js`), copied into `src/kit/` by `npm run kit` and listed in `package.json`
+  (`"kit"`; `kit/langdom.js` is in `"browserModules"`). `src/i18n.js` keeps the texts (`STRINGS`), the names by id
+  (`NAMES`, `gemName`, `hatchetShort`, `hatchetName`, `hatchetTitle`, `rockNames`) and `num()`, and builds `LANGS`,
+  `normalizeLang`, `pickLang`, `getLang`, `setLang` and `t` with `createI18n(STRINGS)`.
+- **One current language (supersedes the `state.lang` part of D29):** `t(key, vars)` and the lookups use the current
+  language (`gemName(id, lang = getLang())`, `num(n, lang = getLang())`), so `game.js` builds its hints with `t()`
+  directly and the state has no `lang` field any more (it was never saved, so saves are unchanged). `main.js` calls
+  `setupLang(i18n, { storage, key: 'lang', onChange })`: the kit reads `?lang=` (and remembers it), the saved choice and
+  the browser languages, applies the `data-i18n*` attributes and `<html lang>`, and runs the EN / SV switch; `onChange`
+  redraws the title screen with focus on the pressed button, as before. `ui.setLang` and `ui.lang` are gone.
+- **Unchanged:** every text and key, the language order, the saved key (`gem-miner.lang`, through the game's own
+  `src/storage.js`), the switch and where focus lands after it. `tests/i18n.test.js` uses the kit's `stringProblems` and
+  `missingHtmlKeys`; tests that change the language set it back to English afterwards. `tests/purity.test.js` accepts
+  imports from `./kit/`.
+- **Alternatives:** keep threading the language (`t(lang, key)`, `state.lang`) and only take `normalizeLang` / `pickLang`
+  from the kit (two signatures for the same thing across the repo, and the pure logic still needs a language field);
+  keep the game's own `data-i18n` walker (a copy of what the kit does).

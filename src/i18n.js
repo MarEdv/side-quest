@@ -2,8 +2,7 @@
 // Games have their own translations (games never import from the launcher); the launcher hands its language to a game
 // as ?lang=<code> on the card link.
 
-export const LANGS = ['en', 'sv'];
-export const DEFAULT_LANG = 'en';
+import { createI18n } from '../kit/lang.js';
 
 export const STRINGS = {
   en: {
@@ -48,34 +47,18 @@ export const STRINGS = {
   },
 };
 
-// 'sv-SE' → 'sv'; unknown or empty → null.
-export function normalizeLang(code) {
-  const base = String(code || '').trim().toLowerCase().split(/[-_]/)[0];
-  return LANGS.includes(base) ? base : null;
-}
+// The language rules (current language, normalizeLang, pickLang, t(key, vars)) come from the kit (K-6, D-12).
+export const i18n = createI18n(STRINGS);
+export const { LANGS, DEFAULT_LANG, normalizeLang, pickLang, getLang, setLang, t } = i18n;
 
-// ?lang= wins, then the player's saved choice, then the first supported browser language, then English.
-export function pickLang({ query = null, saved = null, browser = [] } = {}) {
-  for (const c of [query, saved, ...browser]) {
-    const lang = normalizeLang(c);
-    if (lang) return lang;
-  }
-  return DEFAULT_LANG;
-}
-
-// Missing key in a language falls back to English, then to the key itself.
-export function t(lang, key) {
-  return STRINGS[lang]?.[key] ?? STRINGS[DEFAULT_LANG][key] ?? key;
-}
-
-// A tag without a translation is shown as written in game.json.
-export const tagLabel = (lang, tag) => STRINGS[lang]?.[`tag.${tag}`] ?? tag;
+// A tag without a translation is shown as written in game.json (so no fallback to the key, unlike t()).
+export const tagLabel = (tag, lang = getLang()) => STRINGS[lang]?.[`tag.${tag}`] ?? tag;
 
 // A games.json entry's title and description in `lang` (entry.i18n.<lang>, falling back to the English fields).
-export function localizeGame(game, lang) {
+export function localizeGame(game, lang = getLang()) {
   const tr = game.i18n?.[lang] ?? {};
   return { title: tr.title || game.title, description: tr.description || game.description };
 }
 
 // Card link: the game opens in the launcher's language.
-export const gameHref = (game, lang) => `${game.path}?lang=${lang}`;
+export const gameHref = (game, lang = getLang()) => `${game.path}?lang=${lang}`;

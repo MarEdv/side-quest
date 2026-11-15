@@ -1,14 +1,13 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
-import { LANGS, STRINGS, NAMES, pickLang, normalizeLang, t, name } from '../src/i18n.js';
+import { LANGS, STRINGS, NAMES, pickLang, normalizeLang, getLang, setLang, t, name } from '../src/i18n.js';
+import { stringProblems, missingHtmlKeys } from '../src/kit/lang.js';
 import { STATIONS, TASKS, POO_TASKS } from '../src/world.js';
 
-test('English and Swedish have the same keys and placeholders', () => {
+test('English and Swedish have the same keys and placeholders, none empty', () => {
   assert.deepEqual(LANGS, ['en', 'sv']);
-  assert.deepEqual(Object.keys(STRINGS.sv).sort(), Object.keys(STRINGS.en).sort());
-  const vars = (s) => (s.match(/\{\w+\}/g) || []).sort();
-  for (const k of Object.keys(STRINGS.en)) assert.deepEqual(vars(STRINGS.sv[k]), vars(STRINGS.en[k]), k);
+  assert.deepEqual(stringProblems(STRINGS), []);
 });
 
 test('every station, task and poo task has a Swedish name', () => {
@@ -19,9 +18,8 @@ test('every station, task and poo task has a Swedish name', () => {
 
 test('every data-i18n key in index.html exists', () => {
   const html = readFileSync(new URL('../index.html', import.meta.url), 'utf8');
-  const keys = [...html.matchAll(/data-i18n(?:-html|-aria)?="([^"]+)"/g)].map((m) => m[1]);
-  assert.ok(keys.length >= 10);
-  for (const k of keys) assert.ok(k in STRINGS.en, k);
+  assert.ok(html.includes('data-i18n'));
+  assert.deepEqual(missingHtmlKeys(html, STRINGS), []);
 });
 
 test('pickLang: ?lang= then saved choice then browser languages then English', () => {
@@ -33,11 +31,16 @@ test('pickLang: ?lang= then saved choice then browser languages then English', (
   assert.equal(pickLang({ browser: ['fr'] }), 'en');
 });
 
-test('t fills placeholders and falls back to English, then the key; name falls back to English', () => {
-  assert.equal(t('sv', 'best', { n: 1200 }), 'Bästa poäng: 1200');
-  assert.equal(t('en', 'wonText', { stress: 12, bonus: 880 }), '17:00. You clocked out with 12% stress. Calm bonus: +880.');
-  assert.equal(t('xx', 'resume'), 'Resume');
-  assert.equal(t('sv', 'nope'), 'nope');
-  assert.equal(name('sv', 'Get coffee'), 'Hämta kaffe');
-  assert.equal(name('en', 'Get coffee'), 'Get coffee');
+test('t fills placeholders in the current language and falls back to English, then the key; name falls back to English', (ctx) => {
+  ctx.after(() => setLang('en'));
+  assert.equal(getLang(), 'en');
+  assert.equal(t('wonText', { stress: 12, bonus: 880 }), '17:00. You clocked out with 12% stress. Calm bonus: +880.');
+  assert.equal(name('Get coffee'), 'Get coffee');
+  setLang('sv');
+  assert.equal(t('best', { n: 1200 }), 'Bästa poäng: 1200');
+  assert.equal(t('nope'), 'nope');
+  assert.equal(name('Get coffee'), 'Hämta kaffe');
+  assert.equal(name('Not a task'), 'Not a task');
+  assert.equal(t('resume', null, 'xx'), 'Resume');
+  assert.equal(name('Get coffee', 'en'), 'Get coffee');
 });

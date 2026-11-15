@@ -109,3 +109,14 @@
   requirements use the root status legend and the README gives the same run and test instructions as the other games.
   The legend gained "retired" (❌) and "planned" is now 📋 instead of ⏳; no row used ⏳. ✅ now reads "implemented and
   verified" as in the other games: existing ✅ rows were not re-verified for this change.
+
+## D21 — 2026-11-15 — Language code moved to the repo kit
+- **Chosen:** part of the repo-wide alignment (root S-4, `kit/README.md`). `src/i18n.js` keeps `STRINGS` and `NAMES` and
+  builds the rest with `createI18n()` from `src/kit/lang.js` (one current language: `t(key, vars)`, `name(english)`,
+  `getLang`/`setLang`, `pickLang`, `normalizeLang`). `src/main.js` uses `src/kit/langdom.js` (`?lang=` memory, the saved
+  choice, the `data-i18n*` attributes, the EN / SV switch) and `src/kit/storage.js` for the language key; `render.js` no
+  longer holds a language (`renderer.setLang` is gone). `describeFlags()` runs from `onChange` and once at start.
+- **Unchanged:** every key and text in `STRINGS`/`NAMES`, the order of precedence (`?lang=`, saved, browser, English) and the
+  saved key `poo-sandwich-lang`; a bare `sv` saved by the earlier code is still read. The best score keeps its own
+  storage code (`BEST_KEY`) for now.
+- **Alternatives:** keeping the game's own copy of the language code (duplicated in all four parts, already drifting).
