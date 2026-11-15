@@ -6,6 +6,7 @@ import { moveFocus, rankText, bestText, formatDate, levelBannerText, levelEndBut
 import { registerSettings } from './settingsui.js';
 import { registerInstall } from './installui.js';
 import { registerLevels } from './levelsui.js';
+import { LANGS, getLang, t, tx, summaryText, dateLocale } from './i18n.js';
 
 export const END_GUARD_MS = 700; // end-screen buttons ignore clicks this long after the game ends (mashed WORK/Space)
 
@@ -20,7 +21,7 @@ function h(tag, props = {}, ...kids) {
   return e;
 }
 
-// ctx: { actions: {play (arcade), resume, quit, again (retry the current level / arcade)}, levels (see levelsui.js), mode() -> level or null, scores, settings (see settingsui.js), install (see installui.js), persistent(), controlsText(), summary(), isTouch(), now() }
+// ctx: { actions: {play (arcade), resume, quit, again (retry the current level / arcade)}, levels (see levelsui.js), mode() -> level or null, scores, settings (see settingsui.js), install (see installui.js), persistent(), controlsText(), summary(), isTouch(), now(), setLang(lang) }
 export function createUI(ctx, root = document.body) {
   const host = h('div', { class: 'ui', hidden: true });
   root.appendChild(host);
@@ -116,20 +117,25 @@ export function createUI(ctx, root = document.body) {
 
   const A = ctx.actions;
 
+  // EN / SV switch (P-6): main.js changes the language and re-renders this screen with focus on the chosen button.
+  const langSwitch = () => h('div', { class: 'lang', role: 'group', 'aria-label': t('language') },
+    LANGS.map((l) => h('button', { type: 'button', lang: l, 'data-lang': l, 'aria-pressed': String(l === getLang()), onclick: () => ctx.setLang(l) }, l.toUpperCase())));
+
   // ----- screens -----
   api.register('main', {
     phase: 'title',
     build: () => h('div', { class: 'menu' },
+      langSwitch(),
       h('h1', {}, 'GARDEN DAY'),
-      h('p', { class: 'tag' }, 'Finish the garden before sunset. Your wife has other plans.'),
+      h('p', { class: 'tag' }, t('tagline')),
       h('div', { class: 'col' },
-        btn([h('span', {}, 'Levels'), h('small', {}, `${ctx.levels.unlockedCount()} of ${ctx.levels.list.length} unlocked`)], () => api.push('levels'), { primary: true, autofocus: true }),
-        btn([h('span', {}, 'Arcade'), h('small', {}, ctx.summary())], () => A.play()),
-        btn('Settings', () => api.push('settings')),
-        btn('High scores', () => api.push('scores')),
+        btn([h('span', {}, t('levels')), h('small', {}, t('unlockedOf', { n: ctx.levels.unlockedCount(), total: ctx.levels.list.length }))], () => api.push('levels'), { primary: true, autofocus: true }),
+        btn([h('span', {}, t('arcade')), h('small', {}, summaryText(ctx.summary()))], () => A.play()),
+        btn(t('settings'), () => api.push('settings')),
+        btn(t('highScores'), () => api.push('scores')),
         installButton()),
       h('p', { class: 'small' }, ctx.controlsText()),
-      h('p', { class: 'small dim' }, 'Arcade uses your Settings. Levels use their own.')),
+      h('p', { class: 'small dim' }, t('menuNote'))),
   });
 
   api.register('scores', {
@@ -140,28 +146,28 @@ export function createUI(ctx, root = document.body) {
       const hasLevels = Object.keys(recs).length > 0;
       const arcadeTable = list.length
         ? h('table', { class: 'scores' },
-          h('thead', {}, h('tr', {}, ['#', 'Score', 'Result', 'Date', 'Mode'].map((t) => h('th', {}, t)))),
+          h('thead', {}, h('tr', {}, ['colRank', 'colScore', 'colResult', 'colDate', 'colMode'].map((k) => h('th', {}, t(k))))),
           h('tbody', {}, list.map((e, i) => h('tr', {},
             h('td', {}, String(i + 1)), h('td', { class: 'num' }, String(e.score)),
-            h('td', {}, e.won ? 'Won' : 'Lost'), h('td', {}, formatDate(e.date)), h('td', { class: 'dim' }, e.summary)))))
-        : h('p', { class: 'small dim spad' }, 'No Arcade scores yet. Finish a day to get on the board.');
+            h('td', {}, t(e.won ? 'won' : 'lost')), h('td', {}, formatDate(e.date, dateLocale())), h('td', { class: 'dim' }, summaryText(e.summary))))))
+        : h('p', { class: 'small dim spad' }, t('noArcade'));
       const levelTable = h('table', { class: 'scores' },
-        h('thead', {}, h('tr', {}, ['Level', 'Best', 'Won'].map((t) => h('th', {}, t)))),
+        h('thead', {}, h('tr', {}, ['colLevel', 'colBest', 'colWon'].map((k) => h('th', {}, t(k))))),
         h('tbody', {}, ctx.levels.list.map((lvl, i) => { const r = recs[lvl.id]; return h('tr', {},
-          h('td', {}, `${i + 1}. ${lvl.name}`), h('td', { class: 'num' }, r ? String(r.best) : '\u2013'),
+          h('td', {}, `${i + 1}. ${tx(lvl.name)}`), h('td', { class: 'num' }, r ? String(r.best) : '\u2013'),
           h('td', {}, r && r.won ? '\u2713' : '\u2013')); })));
       const body = h('div', { class: 'ui-scroll' },
-        h('h3', { class: 'shead' }, 'Arcade'), arcadeTable, h('h3', { class: 'shead' }, 'Levels'), levelTable);
+        h('h3', { class: 'shead' }, t('arcade')), arcadeTable, h('h3', { class: 'shead' }, t('levels')), levelTable);
       const actions = a.local.confirm
-        ? [h('p', { class: 'warn' }, 'Clear all saved scores AND level progress? Every level you unlocked locks again (only Level 1 stays open). This cannot be undone.'),
+        ? [h('p', { class: 'warn' }, t('clearWarn')),
           h('div', { class: 'row' },
-            btn('Yes, clear scores and progress', () => { ctx.scores.clearAll(); a.local.confirm = false; a.refresh('[data-back]'); }),
-            btn('Cancel', () => { a.local.confirm = false; a.refresh(); }, { primary: true, autofocus: true }))]
+            btn(t('clearYes'), () => { ctx.scores.clearAll(); a.local.confirm = false; a.refresh('[data-back]'); }),
+            btn(t('cancel'), () => { a.local.confirm = false; a.refresh(); }, { primary: true, autofocus: true }))]
         : [h('div', { class: 'row' },
-          btn('Clear scores', () => { a.local.confirm = true; a.refresh(); }, { disabled: !list.length && !hasLevels }),
-          h('button', { type: 'button', class: 'btn primary', 'data-back': true, 'data-autofocus': true, onclick: () => a.back() }, 'Back'))];
-      return h('div', { class: 'menu' }, h('h2', {}, 'High scores'), body,
-        ctx.persistent() ? null : h('p', { class: 'small dim' }, 'Storage is blocked here: scores last only until you close the page.'),
+          btn(t('clearScores'), () => { a.local.confirm = true; a.refresh(); }, { disabled: !list.length && !hasLevels }),
+          h('button', { type: 'button', class: 'btn primary', 'data-back': true, 'data-autofocus': true, onclick: () => a.back() }, t('back')))];
+      return h('div', { class: 'menu' }, h('h2', {}, t('highScores')), body,
+        ctx.persistent() ? null : h('p', { class: 'small dim' }, t('scoresBlocked')),
         actions);
     },
   });
@@ -169,11 +175,11 @@ export function createUI(ctx, root = document.body) {
   api.register('pause', {
     phase: 'paused', kind: 'dock',
     build: () => h('div', { class: 'endp' },
-      ctx.mode() ? h('p', { class: 'small lvlname' }, `Level ${ctx.mode().index + 1}: ${ctx.mode().name}`) : null,
+      ctx.mode() ? h('p', { class: 'small lvlname' }, t('levelLine', { n: ctx.mode().index + 1, name: tx(ctx.mode().name) })) : null,
       h('div', { class: 'row' },
-        btn('Resume', () => A.resume(), { primary: true, autofocus: true }),
-        btn('Settings', () => api.push('settings')),
-        btn('Quit to menu', () => A.quit()))),
+        btn(t('resume'), () => A.resume(), { primary: true, autofocus: true }),
+        btn(t('settings'), () => api.push('settings')),
+        btn(t('quitToMenu'), () => A.quit()))),
   });
 
   registerSettings(api, ctx, btn);
@@ -187,12 +193,12 @@ export function createUI(ctx, root = document.body) {
     const won = !!(api.phase === 'won');
     const kinds = levelEndButtons(won, next && ctx.levels.isUnlocked(ctx.levels.list.indexOf(next)) ? next : null);
     const mk = {
-      next: () => btn('Next level', () => api.openLevelIntro(next.id), { primary: true, autofocus: true, guard: true }),
-      retry: () => btn(ctx.isTouch() ? 'Retry' : 'Retry (R)', () => A.again(), { primary: kinds[0] === 'retry', autofocus: kinds[0] === 'retry', guard: true }),
-      menu: () => btn('Menu', () => A.quit(), { guard: true }),
+      next: () => btn(t('nextLevel'), () => api.openLevelIntro(next.id), { primary: true, autofocus: true, guard: true }),
+      retry: () => btn(t(ctx.isTouch() ? 'retry' : 'retryR'), () => A.again(), { primary: kinds[0] === 'retry', autofocus: kinds[0] === 'retry', guard: true }),
+      menu: () => btn(t('menu'), () => A.quit(), { guard: true }),
     };
     return h('div', { class: 'endp' },
-      h('p', { class: 'small lvlname' }, `Level ${lvl.index + 1}: ${lvl.name}`),
+      h('p', { class: 'small lvlname' }, t('levelLine', { n: lvl.index + 1, name: tx(lvl.name) })),
       line ? h('p', { class: `banner${r && r.isBest ? ' hi' : ''}` }, line) : null,
       h('div', { class: 'row' }, kinds.map((k) => mk[k]())));
   }
@@ -207,8 +213,8 @@ export function createUI(ctx, root = document.body) {
       return h('div', { class: 'endp' },
         line ? h('p', { class: `banner${r && r.isBest ? ' hi' : ''}` }, line) : null,
         h('div', { class: 'row' },
-          btn(ctx.isTouch() ? 'Play again' : 'Play again (R)', () => A.again(), { primary: true, autofocus: true, guard: true }),
-          btn('Menu', () => A.quit(), { guard: true })),
+          btn(t(ctx.isTouch() ? 'playAgain' : 'playAgainR'), () => A.again(), { primary: true, autofocus: true, guard: true }),
+          btn(t('menu'), () => A.quit(), { guard: true })),
         inviteBlock());
     },
   };

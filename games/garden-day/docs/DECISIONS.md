@@ -604,3 +604,23 @@ Cache-Control, so heuristic freshness hid some effects and showed others that Gi
 - **Kept on purpose:** "side quests" as the in-game term for the wife's errands; the `sidequest.v1.*` localStorage keys and
   `sidequest-*` cache names, so players keep their scores, level progress and settings.
 - **Old URL:** `games/side-quest/` redirects here; its retire worker is described in root `docs/DECISIONS.md` D-5.
+
+### D-31 — English and Swedish (2026-11-15) — adds P-6
+- **Chosen:** `src/i18n.js` (pure) holds both languages and one *current* language for the whole game (`setLang`), so pure
+  modules (`settings.js`, `uimodel.js`, `game.js`) build their player-facing text with `t()` without a language parameter;
+  it starts as English, which is what the Node tests see (a Swedish test switches and restores it). UI strings are keyed
+  (`t(key)`); text in data tables (levels, quests, settings layout, end messages, the wife's line) stays English in its
+  table and `tx(english)` looks the Swedish up at display time, so stored data, ids and existing tests are unchanged. A
+  test fails when a data-table text has no Swedish entry, or a translation no longer matches any text.
+- **Language order:** `?lang=` (from the launcher card, root D-7; saved), saved `sidequest.v1.lang`, `navigator.languages`,
+  English. The switch is on the main menu; a change re-renders the menu (focus stays on the switch), the controls hint,
+  the rotate chip and the touch WORK button. The canvas reads the language every frame.
+- **Not a flag:** language is not in `src/config.js` / `docs/FLAGS.md`. A URL flag locks its setting read-only (D-23), and
+  the launcher always passes `?lang=`, so Settings would show the language locked on every visit from the launcher.
+- **Scores:** the Arcade mode tag stored with each score (`vision·roam·normal`) stays English in storage and is
+  translated word by word when shown; dates use `sv-SE` in Swedish (the browser's own locale in English, as before).
+- **Wording:** Levels → "Banor", Arcade → "Arkad", side quests → "sidouppdrag", WORK → "JOBBA", vision / random / hybrid
+  → "syn / slump / hybrid". The seed field keeps the literal "random" (it is what you type). Swedish HUD clock is 24-hour.
+- **Service worker:** `src/i18n.js` added to the precache list (network-first, so no cache name bump).
+- **Alternatives:** threading a language parameter through every helper (touches most signatures and tests for no
+  behavioural gain); translating the data tables in place (would change stored summaries and the ids tests rely on).

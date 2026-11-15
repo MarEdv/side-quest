@@ -1,6 +1,7 @@
 // The Settings screen (browser only). Built once per visit from src/settings.js; edits save immediately, so Back / Esc
 // just leave. Controls are updated in place (sync) so focus and scroll position survive every change.
 import { SETTING_GROUPS, inactiveReason, overrideText, checkInput, numberSpec, enumValues } from './settings.js';
+import { t, tx } from './i18n.js';
 
 // ctx.settings: { state() -> {flags, locked}, pending() -> keys, set(key, value), reset(), clearLinks(), dayInProgress() }
 export function registerSettings(api, ctx, btn) {
@@ -16,7 +17,7 @@ export function registerSettings(api, ctx, btn) {
         const k = item.key;
         if (item.kind === 'select') {
           const el = h('select', { id: cid, name: k, class: 'sctl' },
-            enumValues(k).map((v) => h('option', { value: v }, item.options[v] || v)));
+            enumValues(k).map((v) => h('option', { value: v }, tx(item.options[v]) || v)));
           el.addEventListener('change', () => { S.set(k, el.value); sync(); });
           return el;
         }
@@ -46,17 +47,17 @@ export function registerSettings(api, ctx, btn) {
       };
 
       const groups = SETTING_GROUPS.map((g) => h('fieldset', { class: 'sgroup' },
-        h('legend', {}, g.title),
-        h('p', { class: 'small dim sgnote' }, g.id === 'gameplay' && S.dayInProgress() ? `${g.note} A day is in progress: changes start with the next day.` : g.note),
+        h('legend', {}, tx(g.title)),
+        h('p', { class: 'small dim sgnote' }, g.id === 'gameplay' && S.dayInProgress() ? `${tx(g.note)} ${t('dayInProgress')}` : tx(g.note)),
         g.items.map((item) => {
           const cid = `set-${item.key}`; id++;
           const control = makeControl(item, cid);
           const note = h('p', { class: 'snote', id: `${cid}-note`, 'aria-live': 'polite' });
-          const help = h('p', { class: 'shelp', id: `${cid}-help` }, item.help);
+          const help = h('p', { class: 'shelp', id: `${cid}-help` }, tx(item.help));
           control.setAttribute('aria-describedby', `${cid}-help ${cid}-note`);
-          const label = h('label', { for: cid }, item.label);
+          const label = h('label', { for: cid }, tx(item.label));
           const row = item.kind === 'toggle'
-            ? h('div', { class: 'srow toggle' }, h('label', { class: 'tlabel', for: cid }, item.label, control), help, note)
+            ? h('div', { class: 'srow toggle' }, h('label', { class: 'tlabel', for: cid }, tx(item.label), control), help, note)
             : h('div', { class: 'srow' }, label, control, help, note);
           rows.push({ item, control, note, row, error: '' });
           return row;
@@ -76,24 +77,22 @@ export function registerSettings(api, ctx, btn) {
           }
           let text = '', cls = 'snote';
           if (rec.error) { text = rec.error; cls += ' bad'; }
-          else if (isLocked) { text = `Set by link (${overrideText(k, locked[k])}). Use "Clear link overrides" to change it.`; cls += ' lock'; }
+          else if (isLocked) { text = t('lockedNote', { link: overrideText(k, locked[k]) }); cls += ' lock'; }
           else if (reason) text = `${reason}.`;
-          else if (pending.has(k)) text = 'Saved. Applies from the next day.';
+          else if (pending.has(k)) text = t('savedNext');
           note.textContent = text; note.className = cls;
           rec.row.classList.toggle('off', control.disabled);
         }
         clearBtn && (clearBtn.hidden = !Object.keys(locked).length);
-        confirmText.textContent = Object.keys(locked).length
-          ? 'Reset all saved settings to defaults? Settings set by the link stay until you clear the link.'
-          : 'Reset all settings to defaults?';
+        confirmText.textContent = t(Object.keys(locked).length ? 'resetConfirmLinks' : 'resetConfirm');
       }
 
-      const clearBtn = btn('Clear link overrides', () => S.clearLinks());
+      const clearBtn = btn(t('clearLinks'), () => S.clearLinks());
       const confirmText = h('p', { class: 'warn' });
-      const resetBtn = btn('Reset to defaults', () => a.local.setConfirm(true));
-      const yesBtn = btn('Yes, reset', () => { S.reset(); a.local.setConfirm(false); sync(true); });
-      const noBtn = btn('Cancel', () => a.local.setConfirm(false), { primary: true });
-      const backBtn = h('button', { type: 'button', class: 'btn primary', 'data-back': true, onclick: () => a.back() }, 'Back');
+      const resetBtn = btn(t('resetDefaults'), () => a.local.setConfirm(true));
+      const yesBtn = btn(t('yesReset'), () => { S.reset(); a.local.setConfirm(false); sync(true); });
+      const noBtn = btn(t('cancel'), () => a.local.setConfirm(false), { primary: true });
+      const backBtn = h('button', { type: 'button', class: 'btn primary', 'data-back': true, onclick: () => a.back() }, t('back'));
       const normalRow = h('div', { class: 'row' }, clearBtn, resetBtn, backBtn);
       const confirmRow = h('div', { class: 'sconfirm', hidden: true }, confirmText, h('div', { class: 'row' }, yesBtn, noBtn));
       a.local.setConfirm = (on) => {
@@ -103,9 +102,9 @@ export function registerSettings(api, ctx, btn) {
       };
 
       sync(true);
-      return h('div', { class: 'menu settings' }, h('h2', {}, 'Settings'),
+      return h('div', { class: 'menu settings' }, h('h2', {}, t('settings')),
         h('div', { class: 'ui-scroll sscroll' }, groups),
-        ctx.persistent() ? null : h('p', { class: 'small dim' }, 'Storage is blocked here: settings last only until you close the page.'),
+        ctx.persistent() ? null : h('p', { class: 'small dim' }, t('settingsBlocked')),
         normalRow, confirmRow);
     },
   });

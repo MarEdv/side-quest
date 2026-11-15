@@ -5,6 +5,7 @@
 import {
   STICK_RADIUS, joystickVector, clampOffset, screenToGame, tapWalkVector, tapIntent, touchActive,
 } from './touchmath.js';
+import { t } from './i18n.js';
 
 const END_GUARD_MS = 700; // ignore taps right after the game ends so a mashed action button doesn't restart it
 
@@ -19,10 +20,11 @@ export function createTouch({ mode = 'auto', scheme = 'joystick', root = documen
   overlay.dataset.scheme = scheme;
   const idle = mk('tc-idle', overlay);
   const base = mk('tc-base', overlay), knob = mk('tc-knob', base);
-  const actionBtn = mk('tc-action', overlay, 'WORK');
+  const actionBtn = mk('tc-action', overlay);
   const pauseBtn = mk('tc-pause', overlay, 'Ⅱ');
   const marker = mk('tc-marker', overlay);
-  pauseBtn.setAttribute('aria-label', 'Pause');
+  const relabel = () => { actionBtn.textContent = t('work'); pauseBtn.setAttribute('aria-label', t('pause')); };
+  relabel();
 
   let hasTouch = (
     (typeof matchMedia === 'function' && matchMedia('(pointer: coarse)').matches) || (navigator.maxTouchPoints || 0) > 0);
@@ -108,6 +110,7 @@ export function createTouch({ mode = 'auto', scheme = 'joystick', root = documen
 
   return {
     enabled: true,
+    relabel, // after a language change (P-6)
     active: () => active,
     read,
     ack() { pulse.pause = pulse.start = pulse.restart = false; },

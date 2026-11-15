@@ -10,6 +10,7 @@ import { createChores, findChoreInRange, workOnChore, choresDoneCount, allChores
 import { HARMONY, canGiveQuest, giveQuest, tryQuestInteraction, updateQuests } from './quests.js';
 import { createWife, updateWife, sayBubble } from './wife.js';
 import { DEFAULT_FLAGS, settingsSummary } from './config.js';
+import { tx } from './i18n.js';
 
 export const PLAYER_SPEED = 150;
 export const PLAYER_HALF = 8;
@@ -69,7 +70,7 @@ function handleWife(s, dt) {
       if (e === 'forced') s.events.push({ type: 'forced' });
       if (e === 'spotted') s.events.push({ type: 'spotted' });
       const q = giveQuest(s);
-      sayBubble(s.wife, q ? q.say : 'Oh, you look busy. Carry on!', 4);
+      sayBubble(s.wife, tx(q ? q.say : 'Oh, you look busy. Carry on!'), 4);
     }
   }
 }

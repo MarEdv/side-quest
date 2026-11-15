@@ -4,6 +4,7 @@ import { CHORE_TYPES, INTERACT_RANGE, choresDoneCount } from './chores.js';
 import { QUEST_TEMPLATES, primaryQuest, questTarget } from './quests.js';
 import { WIFE, sightDistance } from './wife.js';
 import { clockMinutes, END_MESSAGES } from './game.js';
+import { t as tr, tx, getLang } from './i18n.js'; // `t` is the animation time in this file
 
 const FONT = 'system-ui, -apple-system, "Segoe UI", sans-serif';
 
@@ -23,8 +24,10 @@ function text(c, s, x, y, size = 14, color = '#fff', align = 'left', weight = 'b
   c.fillStyle = color;
   c.fillText(s, x, y);
 }
+// 9:05 AM in English, 09:05 in Swedish (24-hour clock).
 const fmtClock = (mins) => {
   const h = Math.floor(mins / 60), m = Math.floor(mins % 60);
+  if (getLang() === 'sv') return `${String(h).padStart(2, '0')}:${String(m).padStart(2, '0')}`;
   const hh = h > 12 ? h - 12 : h;
   return `${hh}:${String(m).padStart(2, '0')} ${h >= 12 ? 'PM' : 'AM'}`;
 };
@@ -263,7 +266,7 @@ function drawQuestMarkers(c, s, t) {
   };
   for (const q of s.quests) {
     const tg = questTarget(q);
-    mark(tg.x, tg.y, q.stage === 'fetch' ? `${tg.label}` : `Deliver: ${tg.label}`, q.stage === 'fetch' ? '#4fc3f7' : '#ffd23f');
+    mark(tg.x, tg.y, q.stage === 'fetch' ? tx(tg.label) : tr('deliverTo', { label: tx(tg.label) }), q.stage === 'fetch' ? '#4fc3f7' : '#ffd23f');
   }
 }
 
@@ -290,27 +293,27 @@ function drawHUD(c, s, level) {
   c.fillStyle = '#334'; rr(c, 120, 12, 120, 10, 5); c.fill();
   c.fillStyle = '#f5a623'; rr(c, 120, 12, Math.max(6, 120 * f), 10, 5); c.fill();
   // harmony
-  text(c, 'Harmony', 270, 17, 13, '#ddd');
+  text(c, tr('harmony'), 270, 17, 13, '#ddd');
   const hf = s.harmony / 100;
   c.fillStyle = '#334'; rr(c, 335, 10, 150, 14, 7); c.fill();
   c.fillStyle = hf > 0.5 ? '#5ed26a' : hf > 0.25 ? '#f0c040' : '#ee5555';
   rr(c, 335, 10, Math.max(8, 150 * hf), 14, 7); c.fill();
   // Dark digits only when the fill reaches the centre of the bar; otherwise they sit on the dark track.
   text(c, String(Math.round(s.harmony)), 410, 17, 11, hf >= 0.55 ? '#112' : '#fff', 'center');
-  text(c, `Chores ${choresDoneCount(s.chores)}/${s.chores.length}`, 510, 17, 15, '#fff');
+  text(c, tr('chores', { done: choresDoneCount(s.chores), total: s.chores.length }), 510, 17, 15, '#fff');
   if (s.carry != null) {
     const q = s.quests.find((x) => x.id === s.carry);
-    text(c, `Carrying: ${q ? q.title : '?'}`, 640, 17, 13, '#4fc3f7');
+    text(c, tr('carrying', { title: q ? tx(q.title) : '?' }), 640, 17, 13, '#4fc3f7');
   }
-  if (level) text(c, `L${level.index + 1} \u00b7 ${level.name}`, W - 14, 17, 12, '#ffd23f', 'right');
+  if (level) text(c, tr('levelHud', { n: level.index + 1, name: tx(level.name) }), W - 14, 17, 12, '#ffd23f', 'right');
   // quest list
   if (s.quests.length) {
     const h = 24 + s.quests.length * 20;
     c.fillStyle = 'rgba(15,20,25,0.72)'; rr(c, W - 236, 42, 228, h, 8); c.fill();
-    text(c, 'Side quests', W - 224, 56, 12, '#aab');
+    text(c, tr('sideQuests'), W - 224, 56, 12, '#aab');
     s.quests.forEach((q, i) => {
       const y = 76 + i * 20, low = q.timeLeft < 10;
-      text(c, `${q.title} (${q.stage === 'fetch' ? 'fetch' : 'deliver'})`, W - 224, y, 13, '#fff');
+      text(c, `${tx(q.title)} (${tr(q.stage === 'fetch' ? 'fetch' : 'deliver')})`, W - 224, y, 13, '#fff');
       text(c, `${Math.ceil(q.timeLeft)}s`, W - 18, y, 13, low ? '#ff7070' : '#ffe9a8', 'right');
     });
   }
@@ -322,22 +325,22 @@ function overlay(c, alpha = 0.6) { c.fillStyle = `rgba(10,14,20,${alpha})`; c.fi
 function drawTitle(c) { overlay(c, 0.72); }
 function drawPause(c, touch) {
   overlay(c, 0.55);
-  text(c, 'PAUSED', W / 2, H / 2 - 10, 54, '#fff', 'center');
-  text(c, touch ? 'Tap to resume' : 'Press P or Esc to resume', W / 2, H / 2 + 40, 18, '#cde', 'center', 'normal');
+  text(c, tr('paused'), W / 2, H / 2 - 10, 54, '#fff', 'center');
+  text(c, tr(touch ? 'tapResume' : 'keyResume'), W / 2, H / 2 + 40, 18, '#cde', 'center', 'normal');
 }
 function drawEnd(c, s, touch) {
   overlay(c, 0.72);
   const won = s.phase === 'won';
-  text(c, won ? 'DAY COMPLETE!' : s.endReason === 'harmony' ? 'HARMONY LOST' : 'SUNSET', W / 2, 120, 52, won ? '#7fe08a' : '#ff8a6a', 'center');
-  text(c, END_MESSAGES[s.endReason], W / 2, 175, 24, '#fff', 'center');
+  text(c, tr(won ? 'dayComplete' : s.endReason === 'harmony' ? 'harmonyLost' : 'sunset'), W / 2, 120, 52, won ? '#7fe08a' : '#ff8a6a', 'center');
+  text(c, tx(END_MESSAGES[s.endReason]), W / 2, 175, 24, '#fff', 'center');
   const st = s.stats;
   const rows = [
-    ['Chores done', `${choresDoneCount(s.chores)} / ${s.chores.length}`],
-    ['Quests completed', st.questsCompleted],
-    ['Quests failed', st.questsFailed],
-    ['Quests avoided', st.questsAvoided],
-    ['Harmony', Math.round(s.harmony)],
-    ['Score', s.score],
+    [tr('choresDone'), `${choresDoneCount(s.chores)} / ${s.chores.length}`],
+    [tr('questsCompleted'), st.questsCompleted],
+    [tr('questsFailed'), st.questsFailed],
+    [tr('questsAvoided'), st.questsAvoided],
+    [tr('harmony'), Math.round(s.harmony)],
+    [tr('score'), s.score],
   ];
   rows.forEach(([k, v], i) => {
     const y = 235 + i * 32;

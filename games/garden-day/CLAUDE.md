@@ -13,8 +13,10 @@
 
 ## Layout
 - `index.html` – entry; `src/` – game code; `tests/` – `node --test` unit tests; `docs/` – requirements, decisions, flags.
-- Logic modules (`game.js`, `chores.js`, `quests.js`, `wife.js`, `world.js`, `geometry.js`, `rng.js`, `config.js`)
-  must not touch the DOM so they stay testable in Node. Only `main.js`, `render.js`, `input.js`, `audio.js` may.
+- Logic modules (`game.js`, `chores.js`, `quests.js`, `wife.js`, `world.js`, `geometry.js`, `rng.js`, `config.js`,
+  `i18n.js`) must not touch the DOM so they stay testable in Node.
+- Player-facing text goes through `src/i18n.js` (English and Swedish, D-31): `t(key)` for UI strings, `tx(english)` for
+  text kept in data tables. New text needs both languages (`tests/i18n.test.js` checks). Only `main.js`, `render.js`, `input.js`, `audio.js` may.
 
 ## Commands
 - `npm start` → serves on http://localhost:8000 (python3 http.server)

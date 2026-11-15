@@ -1,6 +1,7 @@
 // Level select and level intro screens (browser only; Features 4 & 5). Built on the ui.js screen system.
 // ctx.levels: { list, records(), isUnlocked(i), start(id), flagsText(level) } from main.js.
 import { levelCard } from './uimodel.js';
+import { t, tx } from './i18n.js';
 
 export function registerLevels(api, ctx, btn) {
   const { h } = api;
@@ -18,17 +19,17 @@ export function registerLevels(api, ctx, btn) {
         const c = levelCard(lvl, i, recs[lvl.id], unlocked, i > 0 ? L.list[i - 1].name : '');
         return h('button', {
           type: 'button', class: `lcard${c.locked ? ' locked' : ''}${c.won ? ' won' : ''}`, disabled: c.locked, 'data-level': lvl.id,
-          'data-autofocus': unlocked && i === firstOpen(recs), 'aria-label': `${c.title}. ${c.locked ? c.lockText : `${c.won ? 'Won. ' : ''}${c.bestText}`}`,
+          'data-autofocus': unlocked && i === firstOpen(recs), 'aria-label': `${c.title}. ${c.locked ? c.lockText : `${c.won ? t('wonPrefix') : ''}${c.bestText}`}`,
           onclick: () => a.openLevelIntro(lvl.id),
         },
         h('span', { class: 'lhead' }, h('span', { class: 'lname' }, c.title),
-          c.locked ? h('span', { class: 'lbadge lock' }, '\u{1F512} Locked') : c.won ? h('span', { class: 'lbadge won' }, '✓ Won') : null),
+          c.locked ? h('span', { class: 'lbadge lock' }, t('lockedBadge')) : c.won ? h('span', { class: 'lbadge won' }, t('wonBadge')) : null),
         h('span', { class: 'lbrief' }, c.briefing),
         h('span', { class: 'lbest' }, c.locked ? c.lockText : c.bestText));
       });
-      return h('div', { class: 'menu levels' }, h('h2', {}, 'Levels'),
+      return h('div', { class: 'menu levels' }, h('h2', {}, t('levels')),
         h('div', { class: 'ui-scroll lscroll' }, h('div', { class: 'lgrid' }, cards)),
-        h('div', { class: 'row' }, h('button', { type: 'button', class: 'btn primary', 'data-back': true, onclick: () => a.back() }, 'Back')));
+        h('div', { class: 'row' }, h('button', { type: 'button', class: 'btn primary', 'data-back': true, onclick: () => a.back() }, t('back'))));
     },
   });
   // The level to focus when the list opens: the furthest unlocked level that has not been won yet (else the last one).
@@ -44,14 +45,14 @@ export function registerLevels(api, ctx, btn) {
       if (!lvl) { queueMicrotask(() => a.back()); return h('div'); }
       const rec = L.records()[lvl.id];
       return h('div', { class: 'menu intro' },
-        h('p', { class: 'small dim' }, `Level ${i + 1} of ${L.list.length}`),
-        h('h2', {}, lvl.name),
-        h('p', { class: 'tag' }, lvl.briefing),
+        h('p', { class: 'small dim' }, t('levelOf', { n: i + 1, total: L.list.length })),
+        h('h2', {}, tx(lvl.name)),
+        h('p', { class: 'tag' }, tx(lvl.briefing)),
         h('p', { class: 'small dim' }, L.flagsText(lvl)),
-        rec && rec.best != null ? h('p', { class: 'small' }, `Best: ${rec.best}${rec.won ? '  ·  ✓ won' : ''}`) : null,
+        rec && rec.best != null ? h('p', { class: 'small' }, `${t('best', { n: rec.best })}${rec.won ? t('wonSuffix') : ''}`) : null,
         h('div', { class: 'row' },
-          btn('Start', () => L.start(lvl.id), { primary: true, autofocus: true }),
-          h('button', { type: 'button', class: 'btn', 'data-back': true, onclick: () => a.back() }, 'Back')));
+          btn(t('start'), () => L.start(lvl.id), { primary: true, autofocus: true }),
+          h('button', { type: 'button', class: 'btn', 'data-back': true, onclick: () => a.back() }, t('back'))));
     },
   });
 }

@@ -94,6 +94,12 @@
     .ui .btn:disabled { opacity: .4; cursor: default; }
     .ui .btn:focus-visible { outline: 3px solid #fff; outline-offset: 2px; }
     .ui .btn:active:not(:disabled) { filter: brightness(1.2); }
+    /* EN / SV switch on the main menu (P-6) */
+    .ui .lang { display: flex; border-radius: 10px; overflow: hidden; border: 2px solid #667; }
+    .ui .lang button { all: unset; box-sizing: border-box; min-width: 48px; min-height: 36px; display: flex; align-items: center; justify-content: center;
+      font: bold 14px system-ui, -apple-system, "Segoe UI", sans-serif; color: #aab; background: #1d2128; cursor: pointer; }
+    .ui .lang button[aria-pressed="true"] { background: #ffd23f; color: #14161a; }
+    .ui .lang button:focus-visible { outline: 3px solid #fff; outline-offset: -3px; }
     .ui .banner { font-size: 20px; font-weight: bold; color: #fff; text-shadow: 0 1px 4px #000; }
     .ui .banner.hi { color: #ffd23f; }
     .ui .endp { gap: 8px; }

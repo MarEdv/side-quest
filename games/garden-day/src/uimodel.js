@@ -1,4 +1,5 @@
 // Pure helpers for the DOM menus (src/ui.js) and the game/menu hand-off. No DOM.
+import { t, tx } from './i18n.js';
 
 // Which game inputs may reach update() in each phase. While a menu is shown the game must not see walking,
 // "action" (Space on a menu button) or "start" (Enter on a button would start/leave a screen twice).
@@ -24,8 +25,8 @@ export function shouldRecord(prevPhase, phase, flags) {
   return prevPhase === 'playing' && (phase === 'won' || phase === 'lost') && !(flags && flags.debug);
 }
 
-export const rankText = (res) => (!res || res.rank == null ? '' : res.isBest ? 'New high score!' : `#${res.rank} on your board`);
-export const bestText = (res) => (!res || res.best == null ? '' : `Best: ${res.best}`);
+export const rankText = (res) => (!res || res.rank == null ? '' : res.isBest ? t('newHigh') : t('rankOnBoard', { rank: res.rank }));
+export const bestText = (res) => (!res || res.best == null ? '' : t('best', { n: res.best }));
 
 // Short, locale-formatted date for the table; '' for missing or unparseable dates.
 export function formatDate(iso, locale) {
@@ -48,9 +49,9 @@ export function moveFocus(count, cur, key) {
 export function levelBannerText(res) {
   if (!res || !res.level) return '';
   const parts = [];
-  if (res.isBest) parts.push('New best!');
-  if (res.best != null) parts.push(`Level best: ${res.best}`);
-  if (res.unlocked) parts.push(`${res.unlocked} unlocked!`);
+  if (res.isBest) parts.push(t('newBest'));
+  if (res.best != null) parts.push(t('levelBest', { n: res.best }));
+  if (res.unlocked) parts.push(t('unlocked', { name: tx(res.unlocked) }));
   if (res.note) parts.push(res.note);
   return parts.join('  ·  ');
 }
@@ -59,12 +60,12 @@ export function levelBannerText(res) {
 export function levelCard(level, index, rec, unlocked, prevName) {
   const best = rec && Number.isFinite(rec.best) ? rec.best : null;
   return {
-    title: `${index + 1}. ${level.name}`,
-    briefing: level.briefing,
+    title: `${index + 1}. ${tx(level.name)}`,
+    briefing: tx(level.briefing),
     locked: !unlocked,
     won: !!(rec && rec.won),
-    bestText: unlocked ? (best == null ? 'Not played yet' : `Best: ${best}`) : '',
-    lockText: unlocked ? '' : `Win ${prevName || 'the previous level'} to unlock it.`,
+    bestText: unlocked ? (best == null ? t('notPlayed') : t('best', { n: best })) : '',
+    lockText: unlocked ? '' : t('winToUnlock', { name: prevName ? tx(prevName) : t('prevLevel') }),
   };
 }
 

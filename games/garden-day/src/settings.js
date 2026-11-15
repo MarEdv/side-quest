@@ -1,6 +1,7 @@
 // Settings model (pure, no DOM): which flags the Settings screen edits, how URL / saved / default values combine,
 // and the split between gameplay flags and control/display flags (Levels ignore the gameplay ones, src/levels.js, D-20/D-23/D-27).
 import { DEFAULT_FLAGS, ENUMS, NUMBERS, parseFlagValue, parseFlagEntries } from './config.js';
+import { t } from './i18n.js';
 
 export const SETTINGS_KEY = 'settings'; // stored as sidequest.v1.settings = { v: 1, flags: { ...only the player's choices } }
 
@@ -50,10 +51,10 @@ export const SETTING_ITEMS = Object.freeze(SETTING_GROUPS.flatMap((g) => g.items
 
 // Why an option does not matter right now (null = it matters). Shown as a note; the control is disabled, not hidden.
 export function inactiveReason(key, flags) {
-  if (key === 'wifeRoam' && flags.wifeMode === 'hybrid') return 'Hybrid mode always roams';
-  if (key === 'wifeRoam' && flags.wifeMode !== 'vision') return 'Only in vision mode';
-  if (key === 'visionRange' && flags.wifeMode === 'random') return 'Only in vision and hybrid mode';
-  if (key === 'touchScheme' && flags.touch === 'off') return 'Only when touch controls are on';
+  if (key === 'wifeRoam' && flags.wifeMode === 'hybrid') return t('inactiveHybrid');
+  if (key === 'wifeRoam' && flags.wifeMode !== 'vision') return t('inactiveVision');
+  if (key === 'visionRange' && flags.wifeMode === 'random') return t('inactiveRange');
+  if (key === 'touchScheme' && flags.touch === 'off') return t('inactiveTouch');
   return null;
 }
 
@@ -102,10 +103,10 @@ export function withSetting(saved, key, value, defaults = DEFAULT_FLAGS) {
 export function checkInput(key, text) {
   const v = parseFlagValue(key, text);
   if (v !== undefined) return { ok: true, value: v, error: '' };
-  if (key === 'seed') return { ok: false, value: undefined, error: 'Type "random" or a whole number.' };
+  if (key === 'seed') return { ok: false, value: undefined, error: t('badSeed') };
   const spec = NUMBERS[key];
-  if (spec) return { ok: false, value: undefined, error: `Enter ${spec.int ? 'a whole number' : 'a number'} from ${spec.min} to ${spec.max}.` };
-  return { ok: false, value: undefined, error: 'Not a valid value.' };
+  if (spec) return { ok: false, value: undefined, error: t(spec.int ? 'badInt' : 'badNumber', { min: spec.min, max: spec.max }) };
+  return { ok: false, value: undefined, error: t('badValue') };
 }
 
 export const enumValues = (key) => (ENUMS[key] ? [...ENUMS[key]] : []);

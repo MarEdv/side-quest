@@ -14,6 +14,7 @@ import { createInstall, registerServiceWorker } from './install.js';
 import { gateInput, shouldRecord, startsDay } from './uimodel.js';
 import { render } from './render.js';
 import { W, H } from './world.js';
+import { t, setLang, getLang, pickLang, normalizeLang, summaryText } from './i18n.js';
 
 const STEP = 1 / 60;
 const MAX_FRAME = 0.25; // clamp big gaps (tab switches)
@@ -28,6 +29,14 @@ try { backend = window.localStorage; } catch { backend = null; }
 const storage = createStorage(backend);
 const scores = createScores(storage);
 const settingsStore = createSettingsStore(storage);
+
+// Language (P-6, D-31): ?lang= (the launcher passes it, and it is remembered) > saved > browser > English. Not a flag:
+// a URL flag would lock the setting on every visit from the launcher (D-23).
+const LANG_KEY = 'lang';
+const queryLang = normalizeLang(new URLSearchParams(location.search).get('lang'));
+if (queryLang) storage.set(LANG_KEY, queryLang);
+setLang(pickLang({ query: queryLang, saved: storage.get(LANG_KEY), browser: navigator.languages?.length ? navigator.languages : [navigator.language] }));
+document.documentElement.lang = getLang();
 
 // Flags, three layers (D-23). `resolved` = URL > saved > default, what Settings shows. `flags` = what the running game
 // reads (state.flags is this same object): control/display flags follow `resolved` at once, gameplay flags are copied
@@ -70,11 +79,13 @@ function refreshResolved() {
 const hintEl = document.getElementById('hint');
 const rotateEl = document.getElementById('rotate');
 const probe = document.getElementById('probe');
-const HINT_KEYS = hintEl.textContent;
-const HINT_TOUCH = {
-  joystick: 'Left thumb: steer \u00b7 hold WORK: work / interact \u00b7 II: pause',
-  tap: 'Tap / drag: walk \u00b7 hold on a task: work \u00b7 II: pause',
-};
+const HINT_TOUCH = { joystick: 'hintJoystick', tap: 'hintTap' };
+const hintText = (isTouch) => t(isTouch ? HINT_TOUCH[flags.touchScheme] : 'hintKeys');
+function applyStaticTexts() {
+  rotateEl.querySelector('span').textContent = t('rotate');
+  rotateEl.querySelector('button').setAttribute('aria-label', t('dismiss'));
+}
+applyStaticTexts();
 let rotateDismissed = false;
 
 // Install invitation (I-1..I-4, D-25). The menus re-render when the browser offers / completes an install, but only the
@@ -85,7 +96,7 @@ const install = createInstall({
 });
 registerServiceWorker();
 
-const controlsText = () => (touch.active() ? HINT_TOUCH[flags.touchScheme] : HINT_KEYS);
+const controlsText = () => hintText(touch.active());
 const startDay = () => { debugTainted = false; applyGameplay(); startGame(state); };
 const startLevel = (id) => { mode = modeOf(levelById(id)); audio.unlock(); startDay(); };
 const records = () => scores.levels();
@@ -109,7 +120,18 @@ const menus = createUI({
     unlockedCount: () => unlockedCount(records()),
     next: (id) => nextLevel(id),
     start: startLevel,
-    flagsText: (lvl) => settingsSummary(levelFlags(lvl, resolved.flags)) + ` \u00b7 ${lvl.flags.maxActiveQuests} quest${lvl.flags.maxActiveQuests === 1 ? '' : 's'} at a time \u00b7 ${lvl.flags.dayLength} s day`,
+    flagsText: (lvl) => [summaryText(settingsSummary(levelFlags(lvl, resolved.flags))),
+      lvl.flags.maxActiveQuests === 1 ? t('questAtATime') : t('questsAtATime', { n: lvl.flags.maxActiveQuests }),
+      t('dayLength', { n: lvl.flags.dayLength })].join(' \u00b7 '),
+  },
+  setLang(l) {
+    setLang(l);
+    storage.set(LANG_KEY, getLang());
+    document.documentElement.lang = getLang();
+    applyStaticTexts();
+    touch.relabel();
+    resize(); // the controls hint
+    menus.refresh(`[data-lang="${getLang()}"]`);
   },
   actions: {
     play: () => { mode = null; audio.unlock(); startDay(); }, // Arcade
@@ -141,7 +163,7 @@ function resize() {
   canvas.style.width = `${L.width}px`; canvas.style.height = `${L.height}px`;
   canvas.width = Math.round(L.width * dpr);
   canvas.height = Math.round(L.height * dpr);
-  hintEl.textContent = isTouch ? HINT_TOUCH[flags.touchScheme] : HINT_KEYS;
+  hintEl.textContent = hintText(isTouch);
   hintEl.style.display = showHint ? '' : 'none';
   hintEl.style.top = `${chrome.hintTop}px`;
   const showRotate = isTouch && portrait && !rotateDismissed;
@@ -185,7 +207,7 @@ function syncMenus() {
         unlocked: won && next && !wasOpen && rec ? next.name : null });
     } else menus.setEndResult(scores.recordArcade({ score: state.score, won: state.phase === 'won', date: new Date().toISOString(), summary: state.summary }));
   } else if (state.phase === 'won' || state.phase === 'lost') {
-    menus.setEndResult((debugTainted || flags.debug) ? { rank: null, isBest: false, best: null, level: !!mode, note: 'Debug run: not recorded' } : null);
+    menus.setEndResult((debugTainted || flags.debug) ? { rank: null, isBest: false, best: null, level: !!mode, note: t('debugNote') } : null);
   }
   // A new day starts clean: R on the end screen restarts from game.js without startDay(), and must not inherit the
   // previous day's debug mark (D-24). The frame loop marks it again before the next step if debug is still on.

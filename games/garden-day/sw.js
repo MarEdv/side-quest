@@ -17,6 +17,7 @@ const PRECACHE = [
   'src/config.js',
   'src/game.js',
   'src/geometry.js',
+  'src/i18n.js',
   'src/input.js',
   'src/install.js',
   'src/installmodel.js',
