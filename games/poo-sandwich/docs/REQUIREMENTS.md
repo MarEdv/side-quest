@@ -28,6 +28,7 @@ and solving them.
 | F10 | Score: points for regular tasks, more points for solved poo tasks, bonus for low stress at 17:00. Best score stored in `localStorage`. | ✅ |
 | F11 | Difficulty ramps during the day (boss throws more often, sandwiches faster). | ✅ |
 | F12 | Screens: title / how-to-play, playing, paused, game-over/win summary with restart. | ✅ |
+| F13 | English and Swedish: every player-facing text (screens, how-to, canvas HUD, map labels, task names, floating texts, aria labels) in both languages. Language from `?lang=en|sv` (the launcher passes it), else the saved choice (`poo-sandwich-lang`), else the browser language, else English; an **EN / SV** switch on the title card changes and remembers it. The game name and the debug flags line stay as they are. | ✅ D19; `tests/i18n.test.js`; Swedish title, play, to-do list and game-over screens, `?lang=` memory and the switch checked in headless Chrome at 1000x700, 390x844 and 844x390. |
 
 ### 2.2 Controls & platforms
 | ID | Requirement | Status |

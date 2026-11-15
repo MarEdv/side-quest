@@ -82,3 +82,17 @@
 - History imported into `MarEdv/side-quest` under `games/poo-sandwich/` (git filter-repo + merge); now served at
   https://maredv.github.io/side-quest/games/poo-sandwich/ behind the project launcher. Game code unchanged (all URLs relative).
 - The Pages workflow moved to the repo root and now runs every game's tests before deploying. See root `docs/DECISIONS.md` D-1.
+
+## D19 — 2026-11-15 — English and Swedish (F13)
+- **Chosen:** `src/i18n.js` (pure) holds both languages and the language rules; `main.js` applies them to the HTML via
+  `data-i18n` / `data-i18n-html` / `data-i18n-aria` attributes, and `render.js` draws canvas text through `t()` after
+  `renderer.setLang()`. Task and station names keep their English `label` in `world.js` because the game logic uses it to
+  avoid duplicate tasks; `NAMES` translates them at draw time, and a test fails when a label has no Swedish name.
+- **Language order:** `?lang=` (from the launcher card, root D-7), saved choice, `navigator.languages`, English. A `?lang=`
+  is saved, so reopening the game directly keeps the language. The switch sits on the title card only (not in pause/game
+  over) to keep the small screens uncluttered; the corner position moves above the heading below 560 px wide.
+- **Wording:** "poo sandwich" → "bajsmacka", "poo task" → "bajsuppdrag"; the game name stays "Poo Sandwich". Swedish
+  uses "100 %" in prose; the HUD keeps the compact "62%".
+- **Not a flag:** language is a player setting, not a design alternative, so it is not in `src/flags.js` (§2.3).
+- **Alternatives:** translating the labels inside `world.js` (would make game logic depend on the language); a shared
+  i18n module with the launcher (games must stay self-contained).

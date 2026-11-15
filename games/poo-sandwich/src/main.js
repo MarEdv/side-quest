@@ -2,15 +2,28 @@ import { getFlags } from './flags.js';
 import { createGame, update } from './game.js';
 import { createRenderer } from './render.js';
 import { createInput } from './input.js';
+import { pickLang, normalizeLang, t } from './i18n.js';
 
 const flags = getFlags();
 const $ = (id) => document.getElementById(id);
 const canvas = $('game');
 const renderer = createRenderer(canvas);
 const BEST_KEY = 'poo-sandwich-best';
+const LANG_KEY = 'poo-sandwich-lang';
 
 const readBest = () => { try { return Number(localStorage.getItem(BEST_KEY)) || 0; } catch (_) { return 0; } };
 const writeBest = (v) => { try { localStorage.setItem(BEST_KEY, String(v)); } catch (_) { /* ignore */ } };
+
+// Language (F13): ?lang= from the launcher is remembered, so later visits without it keep the same language.
+let lang = (() => {
+  let saved = null;
+  try { saved = localStorage.getItem(LANG_KEY); } catch (_) { /* ignore */ }
+  const query = normalizeLang(new URLSearchParams(location.search).get('lang'));
+  const picked = pickLang({ query, saved, browser: navigator.languages?.length ? navigator.languages : [navigator.language] });
+  if (query) saveLang(query);
+  return picked;
+})();
+function saveLang(l) { try { localStorage.setItem(LANG_KEY, l); } catch (_) { /* ignore */ } }
 
 let mode = 'title'; // title | playing | paused | over
 let state = createGame(flags, 1);
@@ -29,17 +42,23 @@ function setMode(m) {
   show('pauseBtn', m === 'playing');
 }
 
+// Static texts carry data-i18n (text), data-i18n-html (markup from i18n.js only) or data-i18n-aria (aria-label).
+function applyLang() {
+  document.documentElement.lang = lang;
+  for (const node of document.querySelectorAll('[data-i18n]')) node.textContent = t(lang, node.dataset.i18n);
+  for (const node of document.querySelectorAll('[data-i18n-html]')) node.innerHTML = t(lang, node.dataset.i18nHtml);
+  for (const node of document.querySelectorAll('[data-i18n-aria]')) node.setAttribute('aria-label', t(lang, node.dataset.i18nAria));
+  for (const b of document.querySelectorAll('#langSwitch [data-lang]')) b.setAttribute('aria-pressed', String(b.dataset.lang === lang));
+  renderer.setLang(lang);
+  describeFlags();
+}
+
 function describeFlags() {
-  $('pooRule').innerHTML = flags.poo === 'choice'
-    ? '💩 Dodged sandwiches stay on the floor for a few seconds. <b>Walk over one to take the challenge</b> for bonus points, or ignore it (a little stress). A direct hit gives you the task anyway.'
-    : '💩 If a sandwich <b>hits you</b>, you get an urgent poo task with a deadline. Solve it at its station before time runs out!';
-  const touch = flags.controls === 'joystick' ? 'Drag on the left half of the screen to steer (virtual joystick).'
-    : flags.controls === 'tap' ? 'Tap or click where you want the worker to walk.'
-      : 'Keyboard: WASD / arrows to move, P or Esc to pause. Mouse: click to walk. Touch: drag on the left half as a joystick.';
-  $('controlsHelp').textContent = touch;
+  $('pooRule').innerHTML = t(lang, flags.poo === 'choice' ? 'pooRuleChoice' : 'pooRuleHit');
+  $('controlsHelp').textContent = t(lang, flags.controls === 'joystick' ? 'controlsJoystick' : flags.controls === 'tap' ? 'controlsTap' : 'controlsAuto');
   $('flagsLine').textContent = `controls=${flags.controls} · poo=${flags.poo} · day=${flags.daySeconds}s${flags.debug ? ' · debug' : ''}`;
   const best = readBest();
-  $('bestTitle').textContent = best ? `Best score: ${best}` : '';
+  $('bestTitle').textContent = best ? t(lang, 'best', { n: best }) : '';
 }
 
 function start() {
@@ -58,13 +77,11 @@ function endGame() {
   const best = readBest();
   const isBest = sm.score > best;
   if (isBest) writeBest(sm.score);
-  $('overTitle').textContent = sm.won ? '🎉 Survived the day!' : '🔥 Burnout!';
-  $('overText').textContent = sm.won
-    ? `17:00. You clocked out with ${sm.stress}% stress. Calm bonus: +${sm.bonus}.`
-    : 'Stress hit 100%. HR sends you a mug that says "Resilience".';
+  $('overTitle').textContent = t(lang, sm.won ? 'wonTitle' : 'lostTitle');
+  $('overText').textContent = sm.won ? t(lang, 'wonText', { stress: sm.stress, bonus: sm.bonus }) : t(lang, 'lostText');
   $('overScore').textContent = sm.score;
-  $('overBest').textContent = isBest ? '🏆 New best score!' : `Best score: ${Math.max(best, sm.score)}`;
-  $('overStats').textContent = `Tasks ${sm.tasksDone} · Poo tasks solved ${sm.pooDone} · Hits ${sm.hits} · Dodged ${sm.dodged} · Missed deadlines ${sm.pooExpired}`;
+  $('overBest').textContent = isBest ? t(lang, 'newBest') : t(lang, 'best', { n: Math.max(best, sm.score) });
+  $('overStats').textContent = t(lang, 'stats', { tasks: sm.tasksDone, poo: sm.pooDone, hits: sm.hits, dodged: sm.dodged, missed: sm.pooExpired });
   setMode('over');
 }
 
@@ -74,10 +91,17 @@ $('menuBtn').addEventListener('click', toTitle);
 $('quitBtn').addEventListener('click', toTitle);
 $('resumeBtn').addEventListener('click', resume);
 $('pauseBtn').addEventListener('click', pause);
+$('langSwitch').addEventListener('click', (e) => {
+  const next = normalizeLang(e.target.closest('[data-lang]')?.dataset.lang);
+  if (!next || next === lang) return;
+  lang = next;
+  saveLang(lang);
+  applyLang();
+});
 document.addEventListener('visibilitychange', () => { if (document.hidden) pause(); });
 window.addEventListener('blur', pause);
 window.addEventListener('keydown', (e) => {
-  if (e.code === 'Enter' || e.code === 'Space') {
+  if ((e.code === 'Enter' || e.code === 'Space') && !e.target.closest?.('#langSwitch')) {
     if (mode === 'title' || mode === 'over') { e.preventDefault(); start(); }
     else if (mode === 'paused') { e.preventDefault(); resume(); }
   }
@@ -100,7 +124,7 @@ function frame(now) {
   renderer.draw(state, now, input);
 }
 
-describeFlags();
+applyLang();
 renderer.resize();
 requestAnimationFrame(frame);
 if (flags.debug) window.__game = { get state() { return state; }, start };

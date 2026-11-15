@@ -2,6 +2,7 @@
 import { WORLD, OBSTACLES, STATIONS } from './world.js';
 import { CONFIG as C } from './config.js';
 import { clockString } from './game.js';
+import { DEFAULT_LANG, t, name } from './i18n.js';
 
 const EMOJI = "'Apple Color Emoji','Segoe UI Emoji','Noto Color Emoji',sans-serif";
 const FONT = `system-ui,-apple-system,'Segoe UI',Roboto,sans-serif`;
@@ -22,6 +23,7 @@ export function createRenderer(canvas) {
   let shake = 0;
   let lastNow = 0;
   let fps = 60;
+  let lang = DEFAULT_LANG;
 
   // Everything is laid out inside the safe area (notch, home indicator); only backgrounds bleed.
   function computeLayout() {
@@ -76,14 +78,14 @@ export function createRenderer(canvas) {
     for (const e of events) {
       switch (e.type) {
         case 'taskDone': floatText(e.x, e.y - 20, `+${e.points}`, COL.good); break;
-        case 'pooDone': floatText(e.x, e.y - 20, `+${e.points} Solved!`, COL.good, 22); break;
-        case 'hit': floatText(e.x, e.y - 24, 'SPLAT! 💩', COL.bad, 24); shake = 0.3; break;
-        case 'dodged': floatText(e.x, e.y - 10, 'Dodged!', COL.warn, 16); break;
-        case 'pooExpired': floatText(s.player.x, s.player.y - 28, 'Deadline missed!', COL.bad, 20); shake = 0.3; break;
-        case 'overload': floatText(s.player.x, s.player.y - 28, 'Too many tasks!', COL.warn, 18); break;
-        case 'pickup': floatText(e.x, e.y - 20, 'Challenge accepted', COL.warn, 18); break;
-        case 'ignored': floatText(e.x, e.y - 10, 'Ignored...', COL.warn, 16); break;
-        case 'spawn': floatText(s.player.x, s.player.y - 34, 'New task!', COL.text, 14); break;
+        case 'pooDone': floatText(e.x, e.y - 20, t(lang, 'fxSolved', { n: e.points }), COL.good, 22); break;
+        case 'hit': floatText(e.x, e.y - 24, t(lang, 'fxHit'), COL.bad, 24); shake = 0.3; break;
+        case 'dodged': floatText(e.x, e.y - 10, t(lang, 'fxDodged'), COL.warn, 16); break;
+        case 'pooExpired': floatText(s.player.x, s.player.y - 28, t(lang, 'fxExpired'), COL.bad, 20); shake = 0.3; break;
+        case 'overload': floatText(s.player.x, s.player.y - 28, t(lang, 'fxOverload'), COL.warn, 18); break;
+        case 'pickup': floatText(e.x, e.y - 20, t(lang, 'fxPickup'), COL.warn, 18); break;
+        case 'ignored': floatText(e.x, e.y - 10, t(lang, 'fxIgnored'), COL.warn, 16); break;
+        case 'spawn': floatText(s.player.x, s.player.y - 34, t(lang, 'fxSpawn'), COL.text, 14); break;
         default:
       }
     }
@@ -120,7 +122,7 @@ export function createRenderer(canvas) {
     ctx.fillStyle = COL.floorAlt;
     for (let y = 0; y < WORLD.h; y += 40) for (let x = (y / 40) % 2 ? 0 : 40; x < WORLD.w; x += 80) ctx.fillRect(x, y, 40, 40);
     ctx.fillStyle = COL.meetFloor; ctx.fillRect(16, 16, 244, 154);
-    text('MEETING ROOM', 140, 30, 11, 'rgba(255,255,255,.35)');
+    text(t(lang, 'meetingRoom'), 140, 30, 11, 'rgba(255,255,255,.35)');
   }
 
   function drawObstacle(o) {
@@ -144,7 +146,7 @@ export function createRenderer(canvas) {
     if (o.kind === 'desk') {
       emoji(o.own ? '💻' : '🖥️', cx - (o.own ? 0 : 20), cy - 3, 20);
       if (!o.own) emoji(['☕', '📎', '🪴', '📱'][Math.floor(o.x / 7) % 4], cx + 28, cy - 3, 14);
-      if (o.own) { text('YOU', cx + 42, cy - 3, 11, '#2b1d0e', 'center', '800'); }
+      if (o.own) { text(t(lang, 'you'), cx + 42, cy - 3, 11, '#2b1d0e', 'center', '800'); }
     } else if (o.kind === 'table') emoji('📊', cx, cy - 2, 22);
     else if (o.kind === 'coffee') emoji('☕', cx, cy, 26);
     else if (o.kind === 'printer') emoji('🖨️', cx, cy, 28);
@@ -156,7 +158,7 @@ export function createRenderer(canvas) {
     if (layout.mode === 'overlay') return; // hidden under the to-do panel
     const o = OBSTACLES.find((x) => x.kind === 'ceo');
     emoji('🏢', o.x + o.w - 22, o.y + o.h - 22, 18);
-    text('EXEC SUITE', o.x + 60, o.y + o.h - 14, 11, 'rgba(255,255,255,.35)');
+    text(t(lang, 'execSuite'), o.x + 60, o.y + o.h - 14, 11, 'rgba(255,255,255,.35)');
   }
 
   function drawStations(s, now) {
@@ -174,7 +176,7 @@ export function createRenderer(canvas) {
       } else {
         ctx.setLineDash([4, 6]); ctx.lineWidth = 1.5; ctx.strokeStyle = 'rgba(255,255,255,.18)'; ctx.stroke(); ctx.setLineDash([]);
       }
-      if (st.id !== 'desk' && st.id !== 'meeting') text(st.label, st.x, st.y + st.r + 10, 11, 'rgba(255,255,255,.55)');
+      if (st.id !== 'desk' && st.id !== 'meeting') text(name(lang, st.label), st.x, st.y + st.r + 10, 11, 'rgba(255,255,255,.55)');
       // marker of what is waiting here
       if (t) emoji(t.kind === 'poo' ? '💩' : st.icon, st.x, st.y - 2, 22 + (t.kind === 'poo' ? 2 * Math.sin(now * 8) : 0));
     }
@@ -231,7 +233,7 @@ export function createRenderer(canvas) {
       text('!', b.x, b.y - 46 - Math.sin(now * 25) * 2, 30 + k * 8, COL.bad, 'center', '900');
       emoji('🥪', b.x + 20 * b.face, b.y - 2, 16);
     } else {
-      text('BOSS', b.x, b.y + 26, 10, 'rgba(255,255,255,.55)', 'center', '800');
+      text(t(lang, 'boss'), b.x, b.y + 26, 10, 'rgba(255,255,255,.55)', 'center', '800');
     }
   }
 
@@ -300,7 +302,7 @@ export function createRenderer(canvas) {
     const f = Math.max(0, Math.min(1, s.stress / C.stress.max));
     const col = f < 0.5 ? COL.good : f < 0.75 ? COL.warn : COL.bad;
     ctx.fillStyle = col; rrect(bx, by, Math.max(bh, bw * f), bh, 9); ctx.fill();
-    text(`${bw < 110 ? '' : 'STRESS '}${Math.round(s.stress)}%`, bx + bw / 2, mid + 1, 11, '#0c0f16', 'center', '900');
+    text(`${bw < 110 ? '' : `${t(lang, 'stress')} `}${Math.round(s.stress)}%`, bx + bw / 2, mid + 1, 11, '#0c0f16', 'center', '900');
     if (f > 0.8 && Math.floor(performance.now() / 250) % 2) { ctx.strokeStyle = COL.bad; ctx.lineWidth = 2; rrect(bx - 1, by - 1, bw + 2, bh + 2, 10); ctx.stroke(); }
     // day progress line
     ctx.fillStyle = '#5b6bff'; ctx.fillRect(0, T + TOP_H - 3, W * s.day, 3);
@@ -315,7 +317,7 @@ export function createRenderer(canvas) {
     rrect(P.x, P.y, P.w, P.h, 8); ctx.fill();
     const fs = overlay ? Math.max(10, 13 * layout.scale) : Math.max(13, Math.min(16, P.w / 24));
     const headH = fs + 8;
-    text('TO-DO', P.x + 8, P.y + headH / 2 + 2, fs - 1, 'rgba(255,255,255,.5)', 'left', '800');
+    text(t(lang, 'todo'), P.x + 8, P.y + headH / 2 + 2, fs - 1, 'rgba(255,255,255,.5)', 'left', '800');
     const poo = s.tasks.filter((t) => t.kind === 'poo').sort((a, b) => a.timeLeft - b.timeLeft);
     const reg = s.tasks.filter((t) => t.kind === 'task');
     const list = [...poo, ...reg];
@@ -337,7 +339,7 @@ export function createRenderer(canvas) {
       const st = STATIONS[t.station];
       emoji('→' , x + colW - 4 - fs * 2.6, y + (rowH - 3) / 2 - (isPoo ? 2 : 0), fs - 2);
       emoji(st.icon, x + colW - 4 - fs * 1.2, y + (rowH - 3) / 2 - (isPoo ? 2 : 0), fs);
-      const lab = fitText(t.label, colW - 4 - fs * 4.6 - fs * 1.2, fs - 1, isPoo ? '800' : '600');
+      const lab = fitText(name(lang, t.label), colW - 4 - fs * 4.6 - fs * 1.2, fs - 1, isPoo ? '800' : '600');
       text(lab, x + fs * 1.8, y + (rowH - 3) / 2 - (isPoo ? 2 : 0), fs - 1, isPoo ? '#ffd0d4' : COL.text, 'left', isPoo ? '800' : '600');
       // bar: deadline for poo, progress for regular
       const bw = colW - 4 - 8;
@@ -352,7 +354,7 @@ export function createRenderer(canvas) {
       }
       if (working) { ctx.strokeStyle = COL.good; ctx.lineWidth = 1.5; rrect(x, y, colW - 4, rowH - 3, 5); ctx.stroke(); }
     });
-    if (!list.length) text('Inbox zero. Suspicious.', P.x + P.w / 2, P.y + headH + rowH / 2, fs - 1, 'rgba(255,255,255,.5)');
+    if (!list.length) text(t(lang, 'inboxZero'), P.x + P.w / 2, P.y + headH + rowH / 2, fs - 1, 'rgba(255,255,255,.5)');
     ctx.restore();
   }
 
@@ -397,7 +399,7 @@ export function createRenderer(canvas) {
     ].sort((a, b) => a.y - b.y);
     drawProgress(s);
     for (const c of chars) c.f();
-    text('YOU', p.x, p.y + 22, 10, 'rgba(255,255,255,.6)', 'center', '800');
+    text(t(lang, 'you'), p.x, p.y + 22, 10, 'rgba(255,255,255,.6)', 'center', '800');
     drawProjectiles(s);
     drawFx(dt);
     if (s.flags.debug) drawDebug(s);
@@ -412,5 +414,7 @@ export function createRenderer(canvas) {
   // Clear transient effects (floating texts, shake) when a new day starts.
   function reset() { fx = []; shake = 0; }
 
-  return { resize, draw, handle, toWorld, reset, get layout() { return layout; } };
+  function setLang(l) { lang = l; }
+
+  return { resize, draw, handle, toWorld, reset, setLang, get layout() { return layout; } };
 }

@@ -41,6 +41,16 @@ button.big {
 }
 button.big.secondary { background: #2a3150; color: var(--text); }
 button.big:active { transform: translateY(1px); filter: brightness(.9); }
+.card { position: relative; }
+.lang { position: absolute; top: 10px; right: 10px; display: flex; border-radius: 10px; overflow: hidden; }
+.lang button {
+  min-width: 40px; min-height: 32px; border: 0; background: #232940; color: var(--muted);
+  font: 700 13px system-ui, sans-serif; cursor: pointer;
+}
+.lang button[aria-pressed="true"] { background: #2f3858; color: var(--text); }
+.lang button:focus-visible { outline: 2px solid var(--accent); outline-offset: -2px; }
+/* narrow cards: the corner switch would cover the heading, so it sits above it */
+@media (max-width: 560px) { .lang { position: static; width: max-content; margin: -8px -10px 6px auto; } }
 @media (max-height: 520px) {
   .card { padding: 12px 18px; } .howto { font-size: 13px; margin: 8px 0; } .howto li { margin: 4px 0; }
   button.big { min-height: 44px; font-size: 16px; margin-top: 6px; }
