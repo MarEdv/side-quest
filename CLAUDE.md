@@ -24,7 +24,8 @@ https://maredv.github.io/side-quest/ (repo `MarEdv/side-quest`).
 - `sw.js` – retires Side Quest's (now Garden Day's) pre-move root service worker (D-2). Never register it; never delete it.
 - `games/side-quest/` – redirect stub for Garden Day's old URL (`"movedTo"` in its `game.json`, D-5), with its own retire
   `sw.js`. Not a game; keep it.
-- `tools/build-registry.mjs`, `tools/test-all.mjs`; `docs/` – launcher requirements, decisions, `ADDING-A-GAME.md`.
+- `tools/build-registry.mjs`, `tools/test-all.mjs`; `docs/` – launcher requirements, decisions, `ADDING-A-GAME.md`,
+  `STREAMLINING.md` (cross-part alignment analysis and task plan, D-8).
 
 ## Commands
 - `npm start` → serves on http://localhost:8000 (python3 http.server)

@@ -99,3 +99,18 @@
 | ID | Date | Assumption |
 |----|------|------------|
 | A-3 | 2026-11-15 | Game and launcher names are proper nouns and stay untranslated in Swedish; descriptions, tags and UI text are translated. |
+
+### D-8 — Streamlining analysis of the launcher and the games; nothing implemented yet (2026-11-15)
+- **Chosen:** Owner asked for an analysis of how the four parts solve the same technical problems, with prioritised
+  alignment tasks and a model per task (Fable orchestrates; Opus and Sonnet take the simpler tasks). It is written up in
+  `docs/STREAMLINING.md`: findings per area, 17 tasks (S-1..S-17) in three priorities, and the order to run them in.
+- **Proposed, not yet decided:** shared code lives in a root `kit/` folder that a script copies into each game and a test
+  checks for drift, like `games.json` (D-3). Rule 4 (games stay self-contained) stays as it is. The decision is taken when
+  S-1 is carried out.
+- **Alternatives for the document:** a section in `REQUIREMENTS.md` (it lists what must hold, not what could change); one
+  analysis per game folder (the subject is the differences between the parts, which no single game owns).
+- **No requirement changed**, so `REQUIREMENTS.md` is untouched.
+
+| ID | Date | Assumption |
+|----|------|------------|
+| A-4 | 2026-11-15 | "Analyse and write up" means a document and a plan only; the tasks in `docs/STREAMLINING.md` are carried out when the owner asks. |
