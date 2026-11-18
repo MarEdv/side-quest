@@ -120,3 +120,17 @@
   saved key `poo-sandwich-lang`; a bare `sv` saved by the earlier code is still read. The best score keeps its own
   storage code (`BEST_KEY`) for now.
 - **Alternatives:** keeping the game's own copy of the language code (duplicated in all four parts, already drifting).
+
+## D22 — 2026-11-18 — Best score through the shared kit's storage; debug runs are not recorded
+- **Chosen:** part of the repo-wide alignment (root D-14, `docs/STREAMLINING.md` S-7 at the repo root). The best score
+  goes through the same `createStorage(backend, 'poo-sandwich-')` as the language (D21), under key `best`, so the stored
+  key is still `poo-sandwich-best`. The old code stored a bare number string (`"1200"`), which is valid JSON, so old scores
+  read as numbers; the kit writes them the same way. `BEST_KEY` and the direct `localStorage` calls are gone.
+- **New rule (behaviour change):** a run with `debug` on is never recorded and never a "New best!", as in the other two
+  games. The game-over line then reads "Debug run: not saved as best score. · Best: <stored best>" (Swedish:
+  "Felsökningsläge: sparas inte som bästa poäng."). Before, `?debug=1` could put any score on the board.
+- **Pure decision:** `src/best.js` (`sanitizeBest`, `judgeRun`) decides whether a run is a new best and whether to save
+  it, so the rule is tested in Node (`tests/best.test.js`); `main.js` only stores and shows the result. A stored value
+  that is not a finite number above 0 counts as no best.
+- **Alternatives:** keep the best score out of storage when `debug` is on but still show "New best!" (says something
+  that is not true); a debug-only best score (nobody asked for one).

@@ -239,3 +239,20 @@
   would see, but it was not tried in a normal browser window.
 - **Who did what:** Fable wrote the briefs and the harness, reviewed both diffs and compared before and after; a Sonnet
   subagent did S-4 (launcher, Poo Sandwich) and an Opus subagent S-5 (Gem Miner, Garden Day).
+
+### D-14 — All four parts store through kit/storage.js; no debug scores anywhere (2026-11-18)
+- **Chosen:** S-7 of `docs/STREAMLINING.md`. Garden Day's and Gem Miner's own wrappers are replaced by a one-line binding
+  of the kit's (`createStorage(backend)` → `kit createStorage(backend, KEY_PREFIX)`), so their importers, tests and
+  prefixes are untouched. Poo Sandwich's best score joins its language on the kit storage. The launcher already used it
+  for its language (D-13). No key is renamed and no stored format changes.
+- **Behaviour that changes for players:** only in failure cases. A refused write no longer ends saving for the session in
+  Garden Day, and a later write delivers what was refused in both games; Garden Day's "storage is blocked" notes go away
+  again once storage recovers. Each game's log has the details (Garden Day D-34, Gem Miner D32).
+- **One new rule:** Poo Sandwich no longer records a best score in a debug run, as the other two games never did
+  (its D22). That was the last part breaking the "no debug runs on the board" rule from `docs/STREAMLINING.md` 3.2.
+- **How it was checked:** each game was loaded in headless Chrome with storage seeded in the formats the earlier code
+  wrote (Garden Day: arcade scores, level progress, a JSON language; Gem Miner: best times and a language, then a real
+  save, Continue and a reload; Poo Sandwich: a bare-number best, a bare-word language and a non-number best), on a clean
+  copy of the previous commit and on this one, and the visible text and the stored values were compared.
+- **Who did what:** an Opus subagent wrote the code and tests; it was stopped before the docs when the session hit its
+  usage limit. Fable reviewed the diff, wrote the docs and ran the comparison.

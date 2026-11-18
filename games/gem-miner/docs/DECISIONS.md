@@ -298,3 +298,15 @@
 - **Alternatives:** keep threading the language (`t(lang, key)`, `state.lang`) and only take `normalizeLang` / `pickLang`
   from the kit (two signatures for the same thing across the repo, and the pure logic still needs a language field);
   keep the game's own `data-i18n` walker (a copy of what the kit does).
+
+## D32 — 2026-11-18 — Storage from the shared kit (amends the storage part of D24)
+- **Chosen:** part of the repo-wide alignment (root D-14, `docs/STREAMLINING.md` S-7 at the repo root). `src/storage.js`
+  keeps `createStorage(backend)` and `KEY_PREFIX = 'gem-miner.'` and binds the kit's wrapper (`src/kit/storage.js`, root
+  D-11) to that prefix. Keys (`gem-miner.save`, `gem-miner.scores`, `gem-miner.lang`) and formats are unchanged.
+- **What changed:** D24's retry stays (every write tries the backend again). New: a key that is safely stored is read from
+  the backend instead of from memory, so a change made in another tab is seen; a write that succeeds also delivers the keys
+  refused earlier, so a refused save reaches the disk on the next write of any key, not only of `save`; and `persistent`
+  means "everything written this session is stored", not "the last write worked" (nothing in this game reads it).
+- **Tests:** new `tests/storage.test.js` for this game's contract (prefix, JSON, old data, a refused save kept and
+  delivered later, a removed save not coming back); the storage tests in `tests/save.test.js` pass unchanged.
+- **Alternative:** keep this game's wrapper (it was the better of the two copies, and became the basis of the kit's).

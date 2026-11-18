@@ -77,3 +77,15 @@ test('a backend whose getter blows up on every call never throws out of the wrap
   const b = { get getItem() { throw new Error('SecurityError'); }, setItem() {}, removeItem() {} };
   assert.doesNotThrow(() => { const st = createStorage(b); st.set('a', 1); st.get('a'); st.remove('a'); });
 });
+
+test('a refused write is delivered by a later successful write, and persistent recovers (D-34)', () => {
+  const b = memBackend(), real = b.setItem;
+  const st = createStorage(b);
+  b.setItem = () => { throw new Error('quota'); };
+  assert.equal(st.set('scores', { n: 1 }), false);
+  assert.equal(st.persistent, false);
+  b.setItem = real; // room again
+  assert.equal(st.set('settings', { v: 1 }), true);
+  assert.equal(b.m.get('sidequest.v1.scores'), '{"n":1}');
+  assert.equal(st.persistent, true);
+});

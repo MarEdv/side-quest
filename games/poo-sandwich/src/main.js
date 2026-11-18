@@ -5,21 +5,22 @@ import { createInput } from './input.js';
 import { createStorage } from './kit/storage.js';
 import { setupLang } from './kit/langdom.js';
 import { i18n, t } from './i18n.js';
+import { sanitizeBest, judgeRun } from './best.js';
 
 const flags = getFlags();
 const $ = (id) => document.getElementById(id);
 const canvas = $('game');
 const renderer = createRenderer(canvas);
-const BEST_KEY = 'poo-sandwich-best';
 
-const readBest = () => { try { return Number(localStorage.getItem(BEST_KEY)) || 0; } catch (_) { return 0; } };
-const writeBest = (v) => { try { localStorage.setItem(BEST_KEY, String(v)); } catch (_) { /* ignore */ } };
-
-// Language (F13, D21): kit/langdom.js reads ?lang= (remembered, so later visits without it keep the language) or the saved
-// choice, writes the data-i18n texts and runs the switch. Reading window.localStorage can itself throw.
+// Everything this game stores goes through the kit's storage under `poo-sandwich-`: `best` and `lang` (D21, D22). It never
+// throws; when storage is blocked the values last for the session. Reading window.localStorage can itself throw.
 let backend = null;
 try { backend = window.localStorage; } catch (_) { /* not remembered */ }
 const storage = createStorage(backend, 'poo-sandwich-');
+const readBest = () => sanitizeBest(storage.get('best'));
+
+// Language (F13, D21): kit/langdom.js reads ?lang= (remembered, so later visits without it keep the language) or the saved
+// choice, writes the data-i18n texts and runs the switch.
 const lang = setupLang(i18n, { storage, key: 'lang', onChange: describeFlags });
 
 let mode = 'title'; // title | playing | paused | over
@@ -60,13 +61,15 @@ function toTitle() { describeFlags(); state = createGame(flags, 1); setMode('tit
 
 function endGame() {
   const sm = state.summary;
-  const best = readBest();
-  const isBest = sm.score > best;
-  if (isBest) writeBest(sm.score);
+  // A debug run is never recorded and never a new best (D22): the line shows the note and the stored best.
+  const run = judgeRun(storage.get('best'), sm.score, flags.debug);
+  if (run.save) storage.set('best', run.best);
   $('overTitle').textContent = t(sm.won ? 'wonTitle' : 'lostTitle');
   $('overText').textContent = sm.won ? t('wonText', { stress: sm.stress, bonus: sm.bonus }) : t('lostText');
   $('overScore').textContent = sm.score;
-  $('overBest').textContent = isBest ? t('newBest') : t('best', { n: Math.max(best, sm.score) });
+  $('overBest').textContent = run.isBest ? t('newBest')
+    : flags.debug ? [t('debugRun'), run.best ? t('best', { n: run.best }) : ''].filter(Boolean).join(' · ')
+    : t('best', { n: run.best });
   $('overStats').textContent = t('stats', { tasks: sm.tasksDone, poo: sm.pooDone, hits: sm.hits, dodged: sm.dodged, missed: sm.pooExpired });
   setMode('over');
 }

@@ -11,8 +11,8 @@
 5. **Self-contained**: relative URLs only. Never import from the launcher, another game or the root `kit/` folder.
    Files in `src/kit/` are generated copies of root `kit/` modules: never edit them; change `kit/<name>.js` at the repo
    root and run `npm run kit` there (root `CLAUDE.md` rule 5).
-6. **localStorage is shared by every game on the origin.** This game uses `poo-sandwich-best` and `poo-sandwich-lang`
-   (`src/main.js`).
+6. **localStorage is shared by every game on the origin.** This game uses `poo-sandwich-best` and `poo-sandwich-lang`:
+   the kit's storage with prefix `poo-sandwich-` (`src/main.js`). Never rename them: players' best scores live there.
 7. **Commit often**, small focused commits. Run `npm test` in this folder and at the repo root before committing.
 8. Don't ask the owner questions — make a reasonable assumption and log it.
 

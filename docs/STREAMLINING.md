@@ -226,6 +226,11 @@ test already uses the two kit checks, so that part of S-15 is done too. The laun
 runs), and replacing Garden Day's and Gem Miner's own `src/storage.js`. Open from this wave: Garden Day has not been
 tried offline with its two new precached files.
 
+Wave 4 is done: **S-7** (D-14). All four parts store through `kit/storage.js`; no part records a debug run. That ends
+P1: the kit mechanism, the convention checks, and the two areas whose copies had drifted in behaviour (language and
+storage) now have one implementation each. Garden Day now precaches three kit files and has still not been tried
+offline.
+
 Priority reflects value against risk: P1 is the foundation and the two largest sources of drift; P2 is the remaining
 duplicated code and visible inconsistencies; P3 changes behaviour or needs an owner decision.
 

@@ -660,3 +660,19 @@ Cache-Control, so heuristic freshness hid some effects and showed others that Gi
 - **Alternatives:** keep the game's own `normalizeLang` / `pickLang` / `t` (four copies of the same rules across the repo);
   call `bindSwitch` on the menu (the menu is rebuilt on every render and would need re-binding; `ctx.setLang` already
   reaches `main.js`).
+
+### D-34 — Storage from the shared kit; a refused write is no longer final (2026-11-18) — amends D-22
+- **Chosen:** part of the repo-wide alignment (root D-14, `docs/STREAMLINING.md` S-7 at the repo root). `src/storage.js`
+  keeps its name, its `createStorage(backend)` signature and `KEY_PREFIX = 'sidequest.v1.'`, and binds the kit's wrapper
+  (`src/kit/storage.js`, root D-11) to that prefix. No other module changed. Keys and stored formats are unchanged, so
+  scores, level progress, settings, the install state and the language survive.
+- **What changed (amends the storage part of D-22):** a refused write (a quota error) used to switch the wrapper to memory
+  for the rest of the session. Now every later write tries the backend again and also delivers the keys refused earlier,
+  newest value each. `persistent` means "everything written this session is stored", so the "storage is blocked" notes on
+  Settings and High scores now disappear again once storage recovers. D-22's other rules hold: this session's value wins
+  for a key whose write was refused, a refused removal never brings the old value back, and keys this session has not
+  failed on are read from the backend.
+- **Tests:** the nine existing tests in `tests/storage.test.js` pass against the kit unchanged; one test added for the
+  recovery. The service worker precaches `src/kit/storage.js` (network-first, so no cache name bump, as in D-31 / D-33).
+- **Alternatives:** keep this game's own wrapper (two drifting copies of the same code, which is what the alignment
+  removes); call the kit directly from every importer (seven call sites and the prefix in each, instead of one binding).
