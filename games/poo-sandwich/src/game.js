@@ -108,7 +108,7 @@ export function findPath(from, to, r = C.player.r, rects = OBSTACLES) {
 
 // ---------- state ----------
 export function createGame(flags = {}, seed = 1) {
-  const f = { controls: 'auto', poo: 'hit', daySeconds: 180, debug: false, ...flags };
+  const f = { controls: 'auto', poo: 'hit', dayLength: 180, debug: false, ...flags };
   const rng = mulberry32(seed);
   return {
     flags: f, rng, t: 0, day: 0, phase: 'playing', score: 0, stress: 10,
@@ -172,7 +172,7 @@ export function update(s, dt, input = {}) {
   if (s.phase !== 'playing') return s;
   dt = Math.min(dt, 0.05);
   s.t += dt;
-  s.day = Math.min(1, s.t / s.flags.daySeconds);
+  s.day = Math.min(1, s.t / s.flags.dayLength);
 
   updatePlayer(s, dt, input);
   updateBoss(s, dt);

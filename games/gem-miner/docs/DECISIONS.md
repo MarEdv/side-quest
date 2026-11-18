@@ -335,3 +335,22 @@
   (it could be an unhandled promise rejection). A context that cannot be made still turns sound off quietly.
 - **Alternative:** keep this game's engine (two engines that had already drifted apart, each with a defect the other had
   fixed).
+
+## D35 — 2026-11-18 — Feature flags from the shared kit; `touchScheme`, Garden Day's boolean spellings
+- **Chosen:** part of the repo-wide alignment (`docs/STREAMLINING.md` S-10 at the repo root). The hand-written parser in
+  `src/flags.js` is replaced by the kit's schema-driven one (`src/kit/flags.js`, `createFlags`), shared with the other
+  games; `src/flags.js` only declares the schema (`worldSize` and `seed` keep their own rules). Flags are now documented in
+  `docs/FLAGS.md` (moved out of REQUIREMENTS §3.7, which points there).
+- **Renamed:** the touch scheme flag is `touchScheme` (`dpad`/`joystick`), the same name as in Garden Day; `touchControls`
+  is accepted as an alias, so old links keep working (when both are given, a valid `touchScheme` wins). `main.js` reads
+  `flags.touchScheme`.
+- **New spellings:** `fog`, `durability`, `sound` and `debug` accept `true/false/on/off/yes/no` as well as `1/0` (any
+  case, spaces ignored), as in Garden Day. A link with those spellings was ignored before and now sets the flag.
+- **Unchanged:** every link that worked before gives the same flags. `tests/flags-golden.test.js` pins `parseFlags` for 89
+  queries, recorded from the old code (and passing against it) before the move; the only edit since is the result key
+  `touchControls` → `touchScheme`. Enum values stay case- and space-sensitive (`camera=CENTER` is still ignored) and for a
+  repeated name only the first occurrence counts, as before (kit options `exactEnums`, `firstWins`). `tests/flags.test.js`
+  had `durability=yes&debug=true` as invalid values; they are valid now, so that row uses `maybe` and `2` instead.
+  `tools/sim.mjs` prints the same output before and after.
+- **Alternatives:** keep the hand-written parser (a third flag parser with its own rules); adopt Garden Day's case-folding
+  and last-wins duplicates too (would change what some existing links give, so not done without the owner).

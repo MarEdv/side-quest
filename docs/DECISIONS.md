@@ -312,3 +312,27 @@
 - **Who did what:** an Opus subagent wrote the engine, the tests and the change; Fable reviewed and ran the checks.
 - **Alternatives:** one shared sound table (the games' sounds are their own); leave Poo Sandwich without the engine (it
   has no sound, and adding sound is a feature, not an alignment).
+
+### D-18 — One URL flag parser in the kit; same names for the same flags (2026-11-18)
+- **Chosen:** S-10 of `docs/STREAMLINING.md`. `kit/flags.js` builds a game's parser from a schema (enum, number, bool or
+  a custom parse function per flag), based on Garden Day's. Garden Day's `src/config.js` and the other two games'
+  `src/flags.js` keep their file names and exports and declare a schema. K-10.
+- **Every link that worked before gives the same flags:** each game's `tests/flags-golden.test.js` pins its old results
+  (Garden Day 135 queries plus 49 typed values from saved settings, Gem Miner 89, Poo Sandwich 49, including junk,
+  whitespace, case and duplicates). Fable re-ran them against a clean copy of the previous commit: every pinned row
+  passes there. To keep that true the kit has two options Garden Day does not use: `exactEnums` (Gem Miner and Poo
+  Sandwich never trimmed or lower-cased enum values, so `?camera=CENTER` stays ignored) and `firstWins` (they took the
+  first occurrence of a repeated flag).
+- **What changed for links:** Gem Miner's `touchControls` is now `touchScheme` and Poo Sandwich's `daySeconds` is now
+  `dayLength`, the names Garden Day uses; the old names are aliases, so old links work. Booleans in Gem Miner and Poo
+  Sandwich accept Garden Day's spellings (`true`, `on`, `yes`, ...), which they used to ignore. Poo Sandwich's
+  `controls` keeps its name: its `auto` mixes mouse and touch, so it is not the same flag as `touchScheme`.
+- **Poo Sandwich's `flags.js` is pure now:** `main.js` passes `location.search`, as in Gem Miner, so it left
+  `browserModules` (D-10 noted it as the one listed module that only read the URL).
+- **Not done:** renaming Garden Day's `src/config.js` to `flags.js` (the plan's suggestion). Its docs, settings and tests
+  all name it, and Poo Sandwich's `config.js` means tunables, so the rename would add churn without making the name
+  mean one thing.
+- **Docs:** Gem Miner and Poo Sandwich got a `docs/FLAGS.md` in Garden Day's shape; their REQUIREMENTS flag sections
+  point to it, and their `CLAUDE.md` rule 3 says so.
+- **Who did what:** an Opus subagent wrote the parser, the golden tests and the change; Fable reviewed, ran the golden
+  tests against the old parsers and checked old and new names in headless Chrome.

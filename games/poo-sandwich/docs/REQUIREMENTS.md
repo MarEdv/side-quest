@@ -39,16 +39,7 @@ and solving them.
 | C4 | Runs in any modern evergreen browser (Chrome, Firefox, Safari, Edge). Primary test target: Chrome desktop + Chrome mobile emulation. | 🚧 Verified in headless Chrome 157 (desktop + mobile emulation via CDP, gameplay frames); Safari, Firefox and real touch devices untested. |
 
 ### 2.3 Feature flags
-Selectable via URL query string (e.g. `?controls=joystick&poo=choice`) and listed in `src/flags.js`. Defaults in **bold**.
-
-| Flag | Values | Meaning |
-|------|--------|---------|
-| `controls` | **`auto`**, `tap`, `joystick` | `tap`: tap/click a point and the worker walks there. `joystick`: virtual thumb stick. `auto`: joystick on touch devices, keyboard+click-to-move on desktop. |
-| `poo` | **`hit`**, `choice` | `hit`: being hit automatically assigns the poo task. `choice`: sandwiches that land stay on the floor briefly; walking over one picks it up (accept = more points), ignoring it is "avoiding" but adds a little stress. Being hit directly still assigns it. |
-| `daySeconds` | number, **`180`** | Real-time length of the work day. |
-| `debug` | **`0`**, `1` | Show zones, hitboxes, FPS. Also exposes `window.__game` (`state`, `start()`) for scripted testing. |
-
-All four flags are implemented (✅) in `src/flags.js`; invalid values fall back to defaults. `daySeconds` accepts 10-3600.
+Selectable via URL query string (e.g. `?controls=joystick&poo=choice`), defined in `src/flags.js` (parser from the shared kit, D24). All four flags (`controls`, `poo`, `dayLength`, `debug`) are implemented (✅); every flag, its values and the old names still accepted are listed in [`docs/FLAGS.md`](FLAGS.md).
 
 ## 3. Non-functional requirements
 | ID | Requirement |

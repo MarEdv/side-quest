@@ -143,3 +143,23 @@
   and 2^32+5, and the state after `createGame` plus 1500 scripted `update` steps for two seeds. The values were recorded
   from the old code before the move.
 - **Alternative:** keep the function in `game.js` (a third copy of the same arithmetic, which is what the alignment removes).
+
+## D24 — 2026-11-18 — Feature flags from the shared kit; `dayLength`, Garden Day's boolean spellings; `flags.js` is pure
+- **Chosen:** part of the repo-wide alignment (`docs/STREAMLINING.md` S-10 at the repo root). The hand-written parser in
+  `src/flags.js` is replaced by the kit's schema-driven one (`src/kit/flags.js`, `createFlags`), shared with the other
+  games; `src/flags.js` only declares the schema. Flags are now documented in `docs/FLAGS.md` (moved out of REQUIREMENTS
+  §2.3, which points there).
+- **Renamed:** `daySeconds` is `dayLength` (10-3600 s, the same concept and name as in Garden Day); `daySeconds` is
+  accepted as an alias, so old links keep working (when both are given, a valid `dayLength` wins). `game.js`, `main.js`
+  (the title flags line now reads `flags.dayLength`) and the tests use the new name. `controls` keeps its name and values:
+  its `auto` mixes mouse and touch behaviour, a different concept from the other games' touch flags.
+- **New spellings:** `debug` accepts `1/true/on/yes` and `0/false/off/no` (any case, spaces ignored), as in Garden Day;
+  before only `1` turned it on.
+- **Pure:** `getFlags()` is gone; `main.js` passes `location.search` to `parseFlags` (as Gem Miner does), so `flags.js`
+  left `"browserModules"` (this supersedes the `flags.js` point of D20).
+- **Unchanged:** every link that worked before gives the same flags. `tests/flags-golden.test.js` pins `parseFlags` for 49
+  queries, recorded from the old code (and passing against it) before the move; the only edit since is the result key
+  `daySeconds` → `dayLength`. Enum values stay case- and space-sensitive (`controls=TAP` is still ignored) and for a
+  repeated name only the first occurrence counts, as before (kit options `exactEnums`, `firstWins`).
+- **Alternatives:** keep the hand-written parser (a third flag parser with its own rules); also rename `controls` (rejected:
+  not the same concept, see above).

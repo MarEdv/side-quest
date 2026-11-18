@@ -6,7 +6,7 @@
 2. **Log decisions and assumptions** in `docs/DECISIONS.md` (append-only; supersede, never rewrite). Append a new
    `D<n>`.
 3. **Feature flags**: when several reasonable solutions exist, pick one or put them behind a flag in `src/flags.js`;
-   document the flag in REQUIREMENTS §3.7.
+   document the flag in `docs/FLAGS.md`.
 4. **Zero dependencies** (runtime and dev). Vanilla JS ES modules, Canvas 2D, WebAudio. No build step.
 5. **Self-contained**: relative URLs only. Never import from the launcher, another game or the root `kit/` folder.
    Files in `src/kit/` are generated copies of root `kit/` modules: never edit them; change `kit/<name>.js` at the repo
@@ -17,7 +17,7 @@
 
 ## Layout
 - `index.html` – entry; `style.css` – styles; `tools/` – scripts; `src/` – game code; `tests/` – `node --test` unit
-  tests; `docs/` – requirements and decisions.
+  tests; `docs/` – requirements, decisions, flags.
 - Modules that may touch the browser are listed in `package.json` (`"browserModules"`); every other module in `src/`
   stays DOM-free so it can be tested in Node (the root `tests/conventions.test.js` checks this).
 - Desktop (keyboard) and mobile (touch). Test in Chrome, including device emulation.

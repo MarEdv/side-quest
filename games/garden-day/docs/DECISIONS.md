@@ -711,3 +711,19 @@ Cache-Control, so heuristic freshness hid some effects and showed others that Gi
   worker precaches `src/kit/audio.js` (network-first, so no cache name bump).
 - **Alternative:** keep this game's engine (two engines that had already drifted apart, each with a defect the other had
   fixed).
+
+### D-38 — Flag parser from the shared kit (2026-11-18)
+- **Chosen:** part of the repo-wide alignment (`docs/STREAMLINING.md` S-10 at the repo root). This game's schema-driven
+  parser became the kit's (`src/kit/flags.js`, `createFlags(schema)`), now used by all three games. `src/config.js` keeps
+  its name and every export (`DEFAULT_FLAGS`, `ENUMS`, `NUMBERS`, `BOOLS`, `parseBool`, `parseFlagValue`,
+  `parseFlagEntries`, `parseFlags`, `settingsSummary`) and only declares the schema (default and kind per flag; `seed` is a
+  custom rule for `random` or an integer). `ENUMS`, `NUMBERS` and `BOOLS` are derived from the schema with the same shape,
+  so `src/settings.js`, `src/levels.js` and the Settings screen are unchanged. The service worker precaches
+  `src/kit/flags.js` (network-first, so no cache name bump).
+- **Nothing renamed, nothing changed:** this game already had the target names and spellings. `tests/flags-golden.test.js`
+  pins `parseFlags` for 135 queries (every flag and value, out-of-range, wrong-type, empty and junk values, duplicates,
+  unknown keys, whitespace and upper case), `parseFlagValue` on typed values as saved settings use them, and
+  `parseFlagEntries`. The values were recorded from the old code, and the test passed against it, before the move;
+  `tools/level-balance.mjs 15` prints the same output before and after. FLAGS.md now lists all boolean spellings
+  (`on/off/yes/no` were always accepted but not documented).
+- **Alternative:** keep this game's parser and give the other two a copy (three parsers drifting apart again).

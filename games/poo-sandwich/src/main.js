@@ -1,4 +1,4 @@
-import { getFlags } from './flags.js';
+import { parseFlags } from './flags.js';
 import { createGame, update } from './game.js';
 import { createRenderer } from './render.js';
 import { createInput } from './input.js';
@@ -7,7 +7,7 @@ import { setupLang } from './kit/langdom.js';
 import { i18n, t } from './i18n.js';
 import { sanitizeBest, judgeRun } from './best.js';
 
-const flags = getFlags();
+const flags = parseFlags(location.search);
 const $ = (id) => document.getElementById(id);
 const canvas = $('game');
 const renderer = createRenderer(canvas);
@@ -43,7 +43,7 @@ function setMode(m) {
 function describeFlags() {
   $('pooRule').innerHTML = t(flags.poo === 'choice' ? 'pooRuleChoice' : 'pooRuleHit');
   $('controlsHelp').textContent = t(flags.controls === 'joystick' ? 'controlsJoystick' : flags.controls === 'tap' ? 'controlsTap' : 'controlsAuto');
-  $('flagsLine').textContent = `controls=${flags.controls} · poo=${flags.poo} · day=${flags.daySeconds}s${flags.debug ? ' · debug' : ''}`;
+  $('flagsLine').textContent = `controls=${flags.controls} · poo=${flags.poo} · day=${flags.dayLength}s${flags.debug ? ' · debug' : ''}`;
   const best = readBest();
   $('bestTitle').textContent = best ? t('best', { n: best }) : '';
 }

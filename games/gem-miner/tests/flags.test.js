@@ -12,11 +12,11 @@ test('defaults', () => {
 
 test('valid values are parsed', () => {
   const f = parseFlags('?worldSize=128&seed=42&camera=center&fog=0&durability=1&touch=on&touchControls=joystick&sound=0&debug=1');
-  assert.deepEqual(f, { worldSize: 128, seed: 42, camera: 'center', fog: false, durability: true, touch: 'on', touchControls: 'joystick', sound: false, debug: true });
+  assert.deepEqual(f, { worldSize: 128, seed: 42, camera: 'center', fog: false, durability: true, touch: 'on', touchScheme: 'joystick', sound: false, debug: true });
 });
 
 test('invalid values fall back to the defaults', () => {
-  const f = parseFlags('?worldSize=999&seed=abc&camera=x&fog=2&durability=yes&touch=maybe&touchControls=gamepad&sound=&debug=true');
+  const f = parseFlags('?worldSize=999&seed=abc&camera=x&fog=2&durability=maybe&touch=maybe&touchControls=gamepad&sound=&debug=2');
   assert.deepEqual(f, DEFAULT_FLAGS);
   assert.equal(parseFlags('?seed=-5').seed, null);
   assert.equal(parseFlags('?seed=99999999999').seed, null);

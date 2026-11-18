@@ -1,22 +1,18 @@
-// Feature flags parsed from the URL query string. Pure; no DOM access.
-export const DEFAULT_FLAGS = Object.freeze({ controls: 'auto', poo: 'hit', daySeconds: 180, debug: false });
+// Feature flags parsed from the URL query string (docs/FLAGS.md). Pure: no DOM access, main.js passes
+// `location.search`. Unknown or invalid values fall back to the default. The parser comes from the kit (S-10,
+// src/kit/flags.js); this file holds Poo Sandwich's schema. tests/flags-golden.test.js pins what every link gives.
+import { createFlags, enumFlag, numberFlag, boolFlag } from './kit/flags.js';
 
-export function parseFlags(search = '') {
-  const p = new URLSearchParams(search);
-  const out = { ...DEFAULT_FLAGS };
-  const controls = p.get('controls');
-  if (['auto', 'tap', 'joystick'].includes(controls)) out.controls = controls;
-  const poo = p.get('poo');
-  if (['hit', 'choice'].includes(poo)) out.poo = poo;
-  const ds = p.get('daySeconds');
-  if (ds !== null && ds.trim() !== '') {
-    const n = Number(ds);
-    if (Number.isFinite(n) && n >= 10 && n <= 3600) out.daySeconds = n;
-  }
-  out.debug = p.get('debug') === '1';
-  return out;
-}
+const FLAGS = createFlags({
+  controls: enumFlag('auto', ['auto', 'tap', 'joystick']),
+  poo: enumFlag('hit', ['hit', 'choice']),
+  dayLength: numberFlag(180, 10, 3600),
+  debug: boolFlag(false),
+}, {
+  aliases: { daySeconds: 'dayLength' }, // the name before S-10: old links keep working
+  exactEnums: true, // as before S-10: `controls=TAP` is ignored
+  firstWins: true, // as before S-10: for a repeated name only the first occurrence counts
+});
 
-export function getFlags() {
-  return parseFlags(typeof location !== 'undefined' ? location.search : '');
-}
+export const DEFAULT_FLAGS = FLAGS.DEFAULTS;
+export const parseFlags = FLAGS.parseFlags;

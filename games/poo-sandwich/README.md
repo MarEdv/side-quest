@@ -6,7 +6,7 @@ A tiny single-player browser game: survive the office work day while your boss t
 
 - Requirements: [docs/REQUIREMENTS.md](docs/REQUIREMENTS.md)
 - Decisions & assumptions: [docs/DECISIONS.md](docs/DECISIONS.md)
-- Feature flags: append to the URL, e.g. `?controls=tap&poo=choice&daySeconds=120&debug=1` (see REQUIREMENTS §2.3)
+- Feature flags: append to the URL, e.g. `?controls=tap&poo=choice&dayLength=120&debug=1` (see [docs/FLAGS.md](docs/FLAGS.md))
 
 ## Develop
 ```sh

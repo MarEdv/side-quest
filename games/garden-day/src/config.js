@@ -1,82 +1,46 @@
-// Feature flags. Pure module: no DOM/window access. main.js passes location.search to parseFlags.
-export const DEFAULT_FLAGS = Object.freeze({
-  wifeMode: 'vision',
-  dayLength: 180,
-  maxActiveQuests: 2,
-  questInterval: 20,
-  difficulty: 'normal',
-  showVisionCone: true,
-  wifeRoam: true,
-  visionRange: 320,
-  sound: true,
-  seed: 'random',
-  debug: false,
-  touch: 'auto',
-  touchScheme: 'joystick',
+// Feature flags. Pure module: no DOM/window access. main.js passes location.search to parseFlags. The parser comes from
+// the kit (S-10, src/kit/flags.js); this file holds Garden Day's schema. docs/FLAGS.md lists every flag.
+import { createFlags, enumFlag, numberFlag, boolFlag, customFlag } from './kit/flags.js';
+
+export { parseBool } from './kit/flags.js';
+
+// 'random', or an integer.
+function parseSeed(text) {
+  const t = text.trim();
+  if (t.toLowerCase() === 'random') return 'random';
+  return t !== '' && Number.isInteger(Number(t)) ? Number(t) : undefined;
+}
+
+// Schema order is the order of DEFAULT_FLAGS. Numbers are [min, max] inclusive; `int` flags must be whole numbers.
+const FLAGS = createFlags({
+  wifeMode: enumFlag('vision', ['vision', 'random', 'hybrid']),
+  dayLength: numberFlag(180, 10, 3600),
+  maxActiveQuests: numberFlag(2, 0, 5, true),
+  questInterval: numberFlag(20, 3, 300),
+  difficulty: enumFlag('normal', ['easy', 'normal', 'hard']),
+  showVisionCone: boolFlag(true),
+  wifeRoam: boolFlag(true),
+  visionRange: numberFlag(320, 50, 1200),
+  sound: boolFlag(true),
+  seed: customFlag('random', parseSeed),
+  debug: boolFlag(false),
+  touch: enumFlag('auto', ['auto', 'on', 'off']),
+  touchScheme: enumFlag('joystick', ['joystick', 'tap']),
 });
 
-export const ENUMS = {
-  wifeMode: ['vision', 'random', 'hybrid'],
-  difficulty: ['easy', 'normal', 'hard'],
-  touch: ['auto', 'on', 'off'],
-  touchScheme: ['joystick', 'tap'],
-};
-
-// [min, max] inclusive bounds for numeric flags; `int` flags must be whole numbers.
-export const NUMBERS = {
-  dayLength: { min: 10, max: 3600, int: false },
-  maxActiveQuests: { min: 0, max: 5, int: true },
-  questInterval: { min: 3, max: 300, int: false },
-  visionRange: { min: 50, max: 1200, int: false },
-};
-
-export const BOOLS = ['showVisionCone', 'wifeRoam', 'sound', 'debug'];
-
-export function parseBool(v) {
-  const s = String(v).trim().toLowerCase();
-  if (s === '1' || s === 'true' || s === 'on' || s === 'yes') return true;
-  if (s === '0' || s === 'false' || s === 'off' || s === 'no') return false;
-  return undefined;
-}
+export const DEFAULT_FLAGS = FLAGS.DEFAULTS;
+export const ENUMS = FLAGS.ENUMS; // { wifeMode: [...], difficulty: [...], touch: [...], touchScheme: [...] }
+export const NUMBERS = FLAGS.NUMBERS; // { dayLength: { min, max, int }, ... }
+export const BOOLS = FLAGS.BOOLS; // ['showVisionCone', 'wifeRoam', 'sound', 'debug']
 
 // Validate one flag value (string from a URL, or a typed value from storage). Returns the clean value, or undefined
 // when it is not acceptable. The single source of truth for URL parsing and for sanitising saved settings.
-export function parseFlagValue(key, raw) {
-  if (!Object.prototype.hasOwnProperty.call(DEFAULT_FLAGS, key)) return undefined;
-  if (typeof raw !== 'string' && typeof raw !== 'number' && typeof raw !== 'boolean') return undefined;
-  const text = String(raw);
-  if (ENUMS[key]) {
-    const v = text.trim().toLowerCase();
-    return ENUMS[key].includes(v) ? v : undefined;
-  }
-  if (NUMBERS[key]) {
-    const { min, max, int } = NUMBERS[key];
-    if (text.trim() === '') return undefined;
-    const n = Number(text);
-    return Number.isFinite(n) && n >= min && n <= max && (!int || Number.isInteger(n)) ? n : undefined;
-  }
-  if (BOOLS.includes(key)) return parseBool(text);
-  if (key === 'seed') {
-    const t = text.trim();
-    if (t.toLowerCase() === 'random') return 'random';
-    return t !== '' && Number.isInteger(Number(t)) ? Number(t) : undefined;
-  }
-  return undefined;
-}
+export const parseFlagValue = FLAGS.parseFlagValue;
 
 // Only the flags a query string sets to a valid value, e.g. {wifeMode: 'random'}. Later duplicates win; junk is dropped.
-export function parseFlagEntries(queryString = '') {
-  const out = {};
-  for (const [key, raw] of new URLSearchParams(String(queryString || ''))) {
-    const v = parseFlagValue(key, raw);
-    if (v !== undefined) out[key] = v;
-  }
-  return out;
-}
+export const parseFlagEntries = FLAGS.parseFlagEntries;
 
-export function parseFlags(queryString = '') {
-  return { ...DEFAULT_FLAGS, ...parseFlagEntries(queryString) };
-}
+export const parseFlags = FLAGS.parseFlags;
 
 // Short human-readable summary of the gameplay flags, stored with each high score, e.g. "vision·roam·normal".
 // Roaming only exists in vision and hybrid mode (hybrid always roams), so random mode reads "random·normal".

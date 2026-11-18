@@ -1,7 +1,8 @@
 # Feature Flags
 
-Flags live in `src/config.js` (`DEFAULT_FLAGS`). Override any flag via URL query string, e.g.
-`http://localhost:8000/?wifeMode=random&dayLength=120&debug=1`.
+Flags live in `src/config.js` (`DEFAULT_FLAGS`): the schema is this game's, the parser comes from the shared kit
+(`src/kit/flags.js`, generated from the repo's `kit/flags.js`, D-38); `tests/flags-golden.test.js` pins what every link gives.
+Override any flag via URL query string, e.g. `http://localhost:8000/?wifeMode=random&dayLength=120&debug=1`.
 
 **Settings screen.** Every flag below can also be edited in the game (main menu or pause screen > Settings). Choices are saved
 on this device (`localStorage` key `sidequest.v1.settings`). Precedence: **URL query > saved setting > default**
@@ -19,7 +20,8 @@ same validation and clamps as URL values; unusable ones are ignored. Two kinds o
 **Levels** (tuned in D-28). 1 Saturday Morning (vision, patio, easy, 1 quest, interval 24) · 2 Honey-Do List (random, normal, 2 quests, interval 24) ·
 3 Eyes Everywhere (vision + roam, normal, range 600, 2 quests, interval 11) · 4 The Inspection (hybrid, hard, 3 quests, interval 12, range 320, 175 s day).
 
-Booleans accept `1/0/true/false`. Unknown flags are ignored. **Any new flag must be added here and in REQUIREMENTS.md.**
+Booleans accept `1/0/true/false/on/off/yes/no` (any case, spaces ignored). Enum values are not case-sensitive. When a flag is
+given twice, the last valid value wins. Unknown flags are ignored. **Any new flag must be added here and in REQUIREMENTS.md.**
 
 | Flag | Type | Default | Values / meaning |
 |------|------|---------|------------------|

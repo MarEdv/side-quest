@@ -24,7 +24,7 @@ const audio = createAudio({ enabled: flags.sound });
 const cam = createCamera();
 let state = null, newArmed = false, mapFrom = 'play', persistAsked = false, lastSave = 0, soundOn = flags.sound;
 
-const input = createInput({ touchMode: flags.touch, scheme: flags.touchControls, isBlocked: () => ui.current !== null || !state });
+const input = createInput({ touchMode: flags.touch, scheme: flags.touchScheme, isBlocked: () => ui.current !== null || !state });
 
 const ui = createUI({
   continueGame, newGame, resume, pause, quit, toggleSound, openMap: () => openMap(),

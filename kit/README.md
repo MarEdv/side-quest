@@ -10,6 +10,7 @@ One canonical copy of the code that every part needs and that knows nothing abou
 | `storage.js` | pure | `createStorage(backend, prefix)`: JSON in `localStorage` under the part's prefix; never throws; retries refused writes (D-11). |
 | `lang.js` | pure | `createI18n(STRINGS)`: languages, `t(key, vars)`, `pickLang`; `stringProblems`, `missingHtmlKeys` for tests (D-12). |
 | `rng.js` | pure | `mulberry32(seed)`, `createRng(seed)` (helpers; seed 0 becomes 0x9e3779b9), `hash2(x, y, seed)`, `randomSeed()`. The arithmetic must never change: games pin it with `tests/rng-golden.test.js` (D-16). |
+| `flags.js` | pure | `createFlags(schema, { aliases })`: a game's URL flag parser from a schema; `parseBool` (D-18). |
 | `install.js` | pure | `installKind()`, `detectIOS()`, `detectStandalone()`: what "install as an app" can offer here (D-15). |
 | `audio.js` | browser | `createAudio({ enabled, sounds, ramp })`: a WebAudio engine; the part passes its sound table, built on `tone()`. Never throws (D-17). |
 | `langdom.js` | browser | `setupLang(i18n, { storage })`: `?lang=`, the saved choice, `data-i18n*` attributes, the `[data-lang]` switch (D-12). Needs `lang.js` only through the object passed in. |

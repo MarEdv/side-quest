@@ -69,7 +69,7 @@ Sonnet implements, Haiku looks up docs; never ask the owner questions.
 | ID | Requirement | Status |
 |----|-------------|--------|
 | C-1 | Desktop: WASD / arrows to move and mine, **E** / Enter to use the shop, **M** minimap, **P** / Esc pause. | ✅ verified in headless Chrome (D19) |
-| C-2 | Touch (like the sibling games): an on-screen D-pad (default, flag `touchControls=dpad`) or a floating joystick (`joystick`). A shop button appears in town. Shown automatically on touch devices (flag `touch`: auto/on/off). | ✅ verified with emulation (D-pad, joystick, touch=on/off); not on a real device |
+| C-2 | Touch (like the sibling games): an on-screen D-pad (default, flag `touchScheme=dpad`, old name `touchControls` still accepted) or a floating joystick (`joystick`). A shop button appears in town. Shown automatically on touch devices (flag `touch`: auto/on/off). | ✅ verified with emulation (D-pad, joystick, touch=on/off); not on a real device |
 | C-3 | No page scroll, zoom or text selection while playing; safe-area insets respected; works in portrait and landscape. | 🚧 touch-action/overscroll/gesture blocking and portrait + landscape verified in emulation; safe-area insets and iOS not tested |
 
 ### 3.6 Presentation
@@ -82,19 +82,7 @@ Sonnet implements, Haiku looks up docs; never ask the owner questions.
 | P-5 | English and Swedish: every player-facing text (title, shop, pause, minimap, win, HUD, hints, aria labels and tooltips) in both languages, numbers grouped per language. Language from `?lang=en|sv` (the launcher passes it), else the saved choice (`gem-miner.lang`), else the browser language, else English; an **EN / SV** switch on the title screen changes and remembers it. The game name stays "Gem Miner". | ✅ D29, D31 (language rules from the shared kit, one current language; title, switch, reloads, HUD, shop, pause and map compared before and after D31 in headless Chrome, both languages: identical); `tests/i18n.test.js`; Swedish title (with save and second-tap New game), HUD, shop buy/sell messages and pause checked in headless Chrome at 1000x760 and 390x844; the switch back to English keeps focus and is remembered. |
 
 ### 3.7 Feature flags
-URL query parameters, e.g. `?worldSize=128&camera=center`. Defined in `src/flags.js`; unknown or invalid values fall back to the default.
-
-| Flag | Values (default first) | Meaning |
-|------|------------------------|---------|
-| `worldSize` | `256`, `128`, `512` | World width and height in tiles. |
-| `seed` | random / integer | World seed. A new game without `seed` picks a random one and saves it. |
-| `camera` | `deadzone`, `center` | Camera follow style (W-2). |
-| `fog` | `1`, `0` | Fog of war (W-7). |
-| `durability` | `0`, `1` | Hatchets wear out (M-5). |
-| `touch` | `auto`, `on`, `off` | Touch controls. |
-| `touchControls` | `dpad`, `joystick` | Touch control style. |
-| `sound` | `1`, `0` | Sound effects. |
-| `debug` | `0`, `1` | Show tile coordinates and FPS, reveal the map, start with coins; runs with debug on are not autosaved and not saved to the best times. |
+URL query parameters, e.g. `?worldSize=128&camera=center`, defined in `src/flags.js` (parser from the shared kit, D35). Every flag, its values and the old names still accepted are listed in [`docs/FLAGS.md`](FLAGS.md).
 
 ## 4. Non-functional
 | ID | Requirement | Status |

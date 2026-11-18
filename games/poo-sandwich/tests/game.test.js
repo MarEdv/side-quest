@@ -150,7 +150,7 @@ test('stress reaching 100 ends the game (burnout)', () => {
 });
 
 test('clock reaching 17:00 wins and awards low-stress bonus', () => {
-  const s = quiet(createGame({ daySeconds: 10 }, 1));
+  const s = quiet(createGame({ dayLength: 10 }, 1));
   assert.equal(clockString(s), '09:00');
   s.stress = 20;
   for (let i = 0; i < 1000 && s.phase === 'playing'; i++) { s.stress = 20; update(s, 0.05, {}); }
@@ -161,7 +161,7 @@ test('clock reaching 17:00 wins and awards low-stress bonus', () => {
 });
 
 test('deterministic with the same seed', () => {
-  const run = () => { const s = createGame({ daySeconds: 30 }, 42); for (let i = 0; i < 600; i++) update(s, 1 / 60, { moveX: 0.3, moveY: 0 }); return [s.stress, s.score, s.tasks.length, s.projectiles.length, s.boss.x]; };
+  const run = () => { const s = createGame({ dayLength: 30 }, 42); for (let i = 0; i < 600; i++) update(s, 1 / 60, { moveX: 0.3, moveY: 0 }); return [s.stress, s.score, s.tasks.length, s.projectiles.length, s.boss.x]; };
   assert.deepEqual(run(), run());
 });
 
