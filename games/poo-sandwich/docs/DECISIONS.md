@@ -134,3 +134,12 @@
   that is not a finite number above 0 counts as no best.
 - **Alternatives:** keep the best score out of storage when `debug` is on but still show "New best!" (says something
   that is not true); a debug-only best score (nobody asked for one).
+
+## D23 — 2026-11-18 — Random numbers from the shared kit
+- **Chosen:** part of the repo-wide alignment (`docs/STREAMLINING.md` S-8 at the repo root). `mulberry32` is gone from
+  `src/game.js`, which imports it from `src/kit/rng.js` (generated from the repo's `kit/rng.js`). Nothing else imported
+  it from `game.js`, so no re-export is kept. Seed 0 is still used as it is; callers still pass `|| 1`.
+- **Sequences unchanged:** `tests/rng-golden.test.js` pins the first eight values for seeds 0, 1, 2, 42, 0x7fffffff, -1
+  and 2^32+5, and the state after `createGame` plus 1500 scripted `update` steps for two seeds. The values were recorded
+  from the old code before the move.
+- **Alternative:** keep the function in `game.js` (a third copy of the same arithmetic, which is what the alignment removes).

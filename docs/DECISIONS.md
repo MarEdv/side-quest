@@ -272,3 +272,22 @@
   the launcher's tool importing Garden Day's (the launcher never imports from a game).
 - **Plan change:** wave 5's tasks all edit Garden Day's `package.json` kit list and its service worker precache list, so
   they run one after another rather than in parallel. S-13 was small enough for Fable to do directly.
+
+### D-16 — One seeded generator, in the kit; every game's sequences pinned (2026-11-18)
+- **Chosen:** S-8 of `docs/STREAMLINING.md`. `kit/rng.js` holds `mulberry32` (raw, as Gem Miner and Poo Sandwich had it),
+  `createRng` (Garden Day's helpers and its zero-seed substitution, built on `mulberry32`), `hash2` and `randomSeed`.
+  Garden Day's and Gem Miner's `src/rng.js` re-export from their kit copy; Poo Sandwich's `game.js` imports it instead of
+  defining its own. K-8.
+- **The two zero-seed rules both stay:** `createRng(0)` uses 0x9e3779b9, `mulberry32(0)` uses 0. Unifying them would change
+  the sequences of whichever game moved, which would scramble Gem Miner saves (worlds are rebuilt from the seed) or
+  Garden Day's tuned levels (its D-28).
+- **Pinned first:** before any generator changed, each game got `tests/rng-golden.test.js` with literal values taken
+  from its old code: first values for seeds 0, 1, 2, 42, 0x7fffffff, -1 and 2^32+5; Garden Day's helpers and
+  `createGame` draws; Gem Miner's `hash2` and a hash of a whole generated world for three seeds; Poo Sandwich's state
+  after 1500 scripted `update` steps for two seeds. Fable re-ran these tests against a clean copy of the previous commit:
+  they pass there and on the kit, so no sequence changed. Gem Miner's `sim.mjs` and Garden Day's `level-balance.mjs`
+  give identical output before and after.
+- **Who did what:** a Sonnet subagent wrote the tests and the change; Fable reviewed and checked the tests against the
+  old code.
+- **Alternative:** leave the three copies (they were identical in arithmetic, so the risk was low, but a fix to one
+  would not reach the others, and nothing pinned the sequences at all).

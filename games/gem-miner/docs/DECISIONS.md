@@ -310,3 +310,13 @@
 - **Tests:** new `tests/storage.test.js` for this game's contract (prefix, JSON, old data, a refused save kept and
   delivered later, a removed save not coming back); the storage tests in `tests/save.test.js` pass unchanged.
 - **Alternative:** keep this game's wrapper (it was the better of the two copies, and became the basis of the kit's).
+
+## D33 — 2026-11-18 — Random numbers from the shared kit
+- **Chosen:** part of the repo-wide alignment (`docs/STREAMLINING.md` S-8 at the repo root). `src/rng.js` is now a thin
+  re-export of `mulberry32`, `hash2` and `randomSeed` from `src/kit/rng.js` (generated from the repo's `kit/rng.js`);
+  importers and `tests/rng.test.js` are unchanged. Seed 0 is still used as it is.
+- **Sequences unchanged:** a saved world is rebuilt from its seed, so `tests/rng-golden.test.js` pins the first eight
+  values for seeds 0, 1, 2, 42, 0x7fffffff, -1, 1.5 and 2^32+5, eight `hash2` values (negative and fractional
+  coordinates, the default seed) and a hash of `createWorld(seed, 128).tiles` for seeds 1, 0x7fffffff and 0. The values
+  were recorded from the old code before the move. `tools/sim.mjs` prints the same output before and after.
+- **Alternative:** keep this game's file (a third copy of the same arithmetic, which is what the alignment removes).

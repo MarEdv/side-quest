@@ -25,6 +25,7 @@ const PRECACHE = [
   'src/kit/install.js',
   'src/kit/lang.js',
   'src/kit/langdom.js',
+  'src/kit/rng.js',
   'src/kit/storage.js',
   'src/levels.js',
   'src/levelsui.js',

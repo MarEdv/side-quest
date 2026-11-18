@@ -685,3 +685,13 @@ Cache-Control, so heuristic freshness hid some effects and showed others that Gi
   `tests/installmodel.test.js` passes unchanged. The service worker precaches `src/kit/install.js` (network-first, so no
   cache name bump).
 - **Alternative:** keep this game's copy (the launcher's copy had already lost the comments explaining D-26).
+
+### D-36 — Random numbers from the shared kit (2026-11-18)
+- **Chosen:** part of the repo-wide alignment (`docs/STREAMLINING.md` S-8 at the repo root). `src/rng.js` is now a thin
+  re-export of `createRng` from `src/kit/rng.js` (generated from the repo's `kit/rng.js`); `createRng` there is built on
+  the kit's `mulberry32` and keeps the zero-seed substitution (`0x9e3779b9`). Importers and `tests/rng.test.js` are unchanged.
+- **Sequences unchanged:** `tests/rng-golden.test.js` pins the first eight values for seeds 0, 1, 2, 42, 0x7fffffff, -1, 1.5
+  and 2^32+5, the `range`/`int`/`pick`/`chance` results, and what `createGame` draws for four seeds. The values were
+  recorded from the old code before the move; the level tuning (D-28) depends on them. `tools/level-balance.mjs` prints
+  the same table before and after. The service worker precaches `src/kit/rng.js` (network-first, so no cache name bump).
+- **Alternative:** keep this game's copy (a third copy of the same arithmetic, which is what the alignment removes).
