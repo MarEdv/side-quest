@@ -676,3 +676,12 @@ Cache-Control, so heuristic freshness hid some effects and showed others that Gi
   recovery. The service worker precaches `src/kit/storage.js` (network-first, so no cache name bump, as in D-31 / D-33).
 - **Alternatives:** keep this game's own wrapper (two drifting copies of the same code, which is what the alignment
   removes); call the kit directly from every importer (seven call sites and the prefix in each, instead of one binding).
+
+### D-35 — Install detection from the shared kit (2026-11-18)
+- **Chosen:** part of the repo-wide alignment (root D-15, `docs/STREAMLINING.md` S-13 at the repo root). `installKind`,
+  `detectIOS` and `detectStandalone` moved to the kit (`src/kit/install.js`), where the launcher uses the same code;
+  `src/installmodel.js` re-exports them, so `src/install.js` and the tests import them as before. The invitation rules
+  (`inviteKind`, the snooze) and the stored install state stay here. The rules themselves are unchanged (D-25, D-26);
+  `tests/installmodel.test.js` passes unchanged. The service worker precaches `src/kit/install.js` (network-first, so no
+  cache name bump).
+- **Alternative:** keep this game's copy (the launcher's copy had already lost the comments explaining D-26).

@@ -256,3 +256,19 @@
   copy of the previous commit and on this one, and the visible text and the stored values were compared.
 - **Who did what:** an Opus subagent wrote the code and tests; it was stopped before the docs when the session hit its
   usage limit. Fable reviewed the diff, wrote the docs and ran the comparison.
+
+### D-15 — Install detection from the kit; the PNG encoder stays copied (2026-11-18)
+- **Chosen:** S-13 of `docs/STREAMLINING.md`. `kit/install.js` holds `installKind`, `detectIOS` and `detectStandalone`,
+  which the launcher's `src/installmodel.js` had copied from Garden Day's (its D-26). Both files now re-export them from
+  the kit; Garden Day's keeps its own invitation rules and stored install state, which only it has. The fuller comments
+  (Garden Day's) went into the kit. K-7.
+- **The PNG encoder is not moved:** `tools/make-icons.mjs` here and in Garden Day share about 20 lines of PNG encoding.
+  A kit module is copied into the game's `src/kit/`, which is served to players, listed in the service worker's precache
+  (Garden Day's test requires every `src/kit/` file there), and checked as browser code, while the encoder needs Node
+  (`zlib`, `Buffer`). Moving it would ship Node-only code to every player of the game to remove one duplicate in two
+  tools that are run by hand once in a while. The two copies stay, with the comment in the launcher's tool saying where
+  it came from. Revisit if a third game needs generated icons.
+- **Alternatives:** a separate `tools/kit/` copied into game `tools/` folders (a second sync mechanism for one function);
+  the launcher's tool importing Garden Day's (the launcher never imports from a game).
+- **Plan change:** wave 5's tasks all edit Garden Day's `package.json` kit list and its service worker precache list, so
+  they run one after another rather than in parallel. S-13 was small enough for Fable to do directly.

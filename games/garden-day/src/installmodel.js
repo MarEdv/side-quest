@@ -1,18 +1,14 @@
 // Pure decision logic for the "install as an app" feature (I-1..I-3, D-25). No DOM, no storage backend: the browser
 // module src/install.js gathers the facts and calls these.
 
+// installKind, detectIOS and detectStandalone come from the kit (src/kit/install.js, root D-15; D-35), shared with the
+// launcher: what can be offered ('native' / 'ios-instructions' / 'none'), iOS / iPadOS detection, and "already running as an
+// app" (fullscreen only counts on touch hardware, D-26).
+import { installKind } from './kit/install.js';
+export { installKind, detectIOS, detectStandalone } from './kit/install.js';
+
 export const SNOOZE_DAYS = 7;
 export const SNOOZE_MS = SNOOZE_DAYS * 24 * 60 * 60 * 1000;
-
-// What can be offered: 'native' (a stashed beforeinstallprompt event: Chrome / Edge / Samsung Internet on Android, desktop
-// Chromium), 'ios-instructions' (iOS / iPadOS have no API: show Share > Add to Home Screen), or 'none'. Already running as an
-// app, or known to be installed (the appinstalled event), is always 'none'.
-export function installKind(f) {
-  if (f.isStandalone || f.installed) return 'none';
-  if (f.hasDeferredPrompt) return 'native';
-  if (f.isIOS) return 'ios-instructions';
-  return 'none';
-}
 
 // Whether to invite after a finished day: only on touch devices, only after at least one finished day, never when
 // the player said "Don't ask again", not before the "Not now" snooze ran out, and only when something can be offered.
@@ -24,21 +20,6 @@ export function inviteKind(f) {
   // it was set (or has been turned back since); treat it as over so a bad clock cannot silence the invitation for good.
   if (f.dismissedUntil && f.now < f.dismissedUntil && f.dismissedUntil - f.now <= SNOOZE_MS) return 'none';
   return kind;
-}
-
-// iPhone / iPod / iPad report themselves in the UA; iPadOS 13+ asks for the desktop site and says "Macintosh", so a Mac
-// with touch points (a real Mac has none) is an iPad.
-export function detectIOS({ userAgent = '', platform = '', maxTouchPoints = 0 } = {}) {
-  if (/iPhone|iPad|iPod/.test(userAgent)) return true;
-  return (platform === 'MacIntel' || /Macintosh/.test(userAgent)) && maxTouchPoints > 1;
-}
-
-// Already launched as an installed app? navigator.standalone is iOS only; display-mode is everyone else. The manifest asks
-// for fullscreen first (display_override), which is what Android uses, and a WebKit bug reports fullscreen where standalone
-// was expected, so fullscreen counts too - but only on touch hardware: on a desktop it is also what F11 browser fullscreen
-// reports, and installed desktop apps never get fullscreen (they fall back to standalone). D-26.
-export function detectStandalone({ navStandalone = false, standaloneMQ = false, fullscreenMQ = false, touchHardware = false, referrer = '' } = {}) {
-  return !!(navStandalone || standaloneMQ || (fullscreenMQ && touchHardware) || String(referrer).startsWith('android-app://'));
 }
 
 // ----- persisted state (sidequest.v1.install) -----

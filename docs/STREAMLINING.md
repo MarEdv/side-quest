@@ -231,6 +231,9 @@ P1: the kit mechanism, the convention checks, and the two areas whose copies had
 storage) now have one implementation each. Garden Day now precaches three kit files and has still not been tried
 offline.
 
+Wave 5: **S-13** is done (D-15, K-7) for install detection; the PNG encoder stays copied in the two `make-icons.mjs`
+tools (D-15 says why). The wave runs its tasks one at a time: they all edit Garden Day's kit list and precache list.
+
 Priority reflects value against risk: P1 is the foundation and the two largest sources of drift; P2 is the remaining
 duplicated code and visible inconsistencies; P3 changes behaviour or needs an owner decision.
 
