@@ -234,6 +234,7 @@ offline.
 Wave 5: **S-13** is done (D-15, K-7) for install detection; the PNG encoder stays copied in the two `make-icons.mjs`
 tools (D-15 says why). The wave runs its tasks one at a time: they all edit Garden Day's kit list and precache list.
 **S-8** is done (D-16, K-8): one generator, and every game's sequences are now pinned by golden tests.
+**S-9** is done (D-17, K-9): one audio engine; every sound pinned by golden tests in both games.
 
 Priority reflects value against risk: P1 is the foundation and the two largest sources of drift; P2 is the remaining
 duplicated code and visible inconsistencies; P3 changes behaviour or needs an owner decision.

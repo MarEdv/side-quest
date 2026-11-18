@@ -291,3 +291,24 @@
   old code.
 - **Alternative:** leave the three copies (they were identical in arithmetic, so the risk was low, but a fix to one
   would not reach the others, and nothing pinned the sequences at all).
+
+### D-17 — One WebAudio engine in the kit; each game keeps its own sounds (2026-11-18)
+- **Chosen:** S-9 of `docs/STREAMLINING.md`. `kit/audio.js` has the engine: a lazy AudioContext, `unlock()` for the first
+  gesture, resume, enable/disable, and one primitive, `tone(freq, dur, { type, vol, at, slide, ramp })`. Garden Day and
+  Gem Miner keep `src/audio.js` with their old API (so neither `main.js` changed): the sound table, plus Garden Day's work
+  tick and Gem Miner's 90 ms limit on the hit sound. K-9.
+- **Taken from each game:** Garden Day's resume rule (any state other than running or closed, so iOS's "interrupted"
+  counts, and a refused resume is caught) and Gem Miner's guarding (nothing ever throws out of the engine; no WebAudio
+  means silence). Gem Miner therefore gains sound coming back after an iOS interruption and loses a possible unhandled
+  rejection; in Garden Day an error inside one sound can no longer escape.
+- **Slides keep their shape:** Garden Day's are linear, Gem Miner's exponential with a 30 Hz floor, via `ramp`. Making
+  them one shape would change how the games sound.
+- **Checked:** each game's `tests/audio-golden.test.js` records every scheduled oscillator call (frequency, waveform,
+  gain, timing, ramp) with a fake AudioContext; the values were captured from the old engines, and Fable re-ran these
+  tests against a clean copy of the previous commit, where they pass too. In headless Chrome, with the AudioContext
+  wrapped to count oscillators, scripted play makes the same counts on old and new code (Gem Miner 54, then 0 while muted
+  from the pause screen, then 31 after unmuting; Garden Day 10 and 3 over two 10-second stretches), and `?sound=0` never
+  creates a context. Not reached by the browser check: Garden Day's Settings Sound toggle mid-game (unit-tested).
+- **Who did what:** an Opus subagent wrote the engine, the tests and the change; Fable reviewed and ran the checks.
+- **Alternatives:** one shared sound table (the games' sounds are their own); leave Poo Sandwich without the engine (it
+  has no sound, and adding sound is a feature, not an alignment).

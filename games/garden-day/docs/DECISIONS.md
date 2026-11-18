@@ -695,3 +695,19 @@ Cache-Control, so heuristic freshness hid some effects and showed others that Gi
   recorded from the old code before the move; the level tuning (D-28) depends on them. `tools/level-balance.mjs` prints
   the same table before and after. The service worker precaches `src/kit/rng.js` (network-first, so no cache name bump).
 - **Alternative:** keep this game's copy (a third copy of the same arithmetic, which is what the alignment removes).
+
+### D-37 — Sound engine from the shared kit (2026-11-18)
+- **Chosen:** part of the repo-wide alignment (`docs/STREAMLINING.md` S-9 at the repo root). The WebAudio engine (lazy
+  context, unlock on a gesture, resume, one `tone()` primitive, on/off) moved to the kit (`src/kit/audio.js`), shared with
+  Gem Miner. `src/audio.js` keeps this game's sound table, its linear slides, the work-in-progress `tick()` (with its random
+  pitch) and its API (`createAudio(bool)`, `unlock`, `setEnabled`, `play`, `tick`), so `src/main.js` is unchanged.
+  `src/audio.js` no longer touches the browser itself and left `"browserModules"`; `src/kit/audio.js` joined it.
+- **Sounds unchanged:** `tests/audio-golden.test.js` records, with a fake AudioContext, every oscillator each sound and the
+  tick schedule (waveform, frequency and its ramp, gain and its fade, start, stop). The values were recorded from the old
+  code, and the test passed against it, before the move. Resume handling is this game's (D-19: every state but `running`
+  and `closed`, the rejection caught).
+- **What improved:** an error inside a sound or while scheduling no longer escapes into the game loop; a context that
+  cannot be made turns sound off quietly instead of being retried on every blip (Settings turns it on again). The service
+  worker precaches `src/kit/audio.js` (network-first, so no cache name bump).
+- **Alternative:** keep this game's engine (two engines that had already drifted apart, each with a defect the other had
+  fixed).

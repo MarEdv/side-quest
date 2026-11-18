@@ -320,3 +320,18 @@
   coordinates, the default seed) and a hash of `createWorld(seed, 128).tiles` for seeds 1, 0x7fffffff and 0. The values
   were recorded from the old code before the move. `tools/sim.mjs` prints the same output before and after.
 - **Alternative:** keep this game's file (a third copy of the same arithmetic, which is what the alignment removes).
+
+## D34 — 2026-11-18 — Sound engine from the shared kit
+- **Chosen:** part of the repo-wide alignment (`docs/STREAMLINING.md` S-9 at the repo root). The WebAudio engine (lazy
+  context, unlock on a gesture, resume, one `tone()` primitive, the `enabled` switch, guarding) moved to the kit
+  (`src/kit/audio.js`), shared with Garden Day. `src/audio.js` keeps this game's sound table, its exponential slides (never
+  below 30 Hz), the 90 ms limit on `hit` and its API (`createAudio({ enabled })`, `play`, `unlock`, `enabled`), so
+  `src/main.js` is unchanged.
+- **Sounds unchanged:** `tests/audio-golden.test.js` records, with a fake AudioContext, every oscillator each sound
+  schedules (waveform, frequency and its ramp, gain and its fade, start, stop) and checks the `hit` limit and the switch.
+  The values were recorded from the old code, and the test passed against it, before the move.
+- **What improved:** the context is resumed in every state but `running` and `closed`, so sound comes back after an iOS
+  interruption (a call, backgrounding: state `interrupted`), not only from `suspended`; a refused `resume()` is caught
+  (it could be an unhandled promise rejection). A context that cannot be made still turns sound off quietly.
+- **Alternative:** keep this game's engine (two engines that had already drifted apart, each with a defect the other had
+  fixed).
