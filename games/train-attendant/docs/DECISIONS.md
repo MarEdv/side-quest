@@ -393,3 +393,43 @@ the bag (D28); the end screen at 390 px shows the "Score" label (D33); a real no
 `localStorage` ended with "Nytt rekord!" plus the note "Sparas inte på den här enheten (lagring ej tillgänglig)" (D35); the HUD
 head still sits correctly under the chips with the cached measurement (D36). NOT re-checked in the browser: the Swedish texts
 by eye beyond that run, a rescue or a lost bag played through, real phones.
+
+## D38 — 2026-11-19 — The pace of the work in the sim, and a good bot that plans like a skilled player
+- **Context:** An Opus review found that a calm passenger's next need was drawn 150-250 s after the ticket check, so a short
+  trip (~170 s) was tickets only and a normal trip had no coffee, snack or question in its first 2 minutes. The old
+  `good` bot also looked too crude to stand in for a skilled player: pure least-slack-first with an 8 s hysteresis, blind to
+  passengers getting off, it let tickets wait 40 s on average and lost 5.5 fares per normal trip (`diag` run, 8 seeds).
+- **Measuring the pace:** `tools/play.mjs` plays one trip and records non-ticket needs per minute, café (coffee + snack)
+  needs, the first non-ticket need, and the stretches with no open work after the first 20 s (a passenger need or an
+  active quest that is not waiting for its stop): longest, mean of those over 1 s, and the idle share. `tools/sim.mjs`
+  prints them (columns need/m, café, 1st, gapMax, gapAvg, idle%), and the balance test uses the same runner.
+- **The good bot is now a short-horizon planner:** about six times a second it takes the 4 most urgent and the 4 nearest
+  jobs, tries every order of 3 of them and keeps the order with the fewest expected points lost: complaints (when
+  stress reaches 100 and every (100 - afterComplaint) / rate s after that), needs and fares lost when the passenger may get
+  off at the next station, failed quests, and 3 points per second of work. It follows the first walk of that plan, stops as
+  soon as the job is in reach, carries a café item into the plan, puts a café item back before fetching the kit or the
+  bag, and finishes a hold before re-planning. To stay human it sees only what the screen shows: stress (the colours), not
+  destinations (only the public chance 1 / stations left that a passenger gets off at the next station), and it reacts to
+  a new job 0.5 s after it appears. Knowing the destinations made no difference (5.0 / 3.8 stars on normal / long hard,
+  10 seeds, with and without). Pure least-slack-first with the correct slack (walk subtracted) was far worse (58
+  complaints vs 6 on the same trips): it sends the attendant on long walks.
+- **Alternatives:** tuning the old greedy rule (nearest-first below an urgency threshold, smaller hysteresis): every variant
+  was noisy and some spiralled (1-star trips), best 3.9 stars where the planner got 5.0; a full search (too slow for the
+  sim and tests). The sloppy bot is unchanged (same moves for the same seed).
+- **Result with the old numbers** (`node tools/sim.mjs --seeds 20 --bots good`): the planner gets 5.0 stars on every trip
+  length and difficulty (old bot 4.2 on normal and hard, 3.3 on long hard), 0-3.5 complaints, and the pace columns show
+  the starving: 0.0-0.4 non-ticket needs per minute on short trips, the first at ~170 s, the longest idle stretch 26-44 s and
+  29-51% of the trip with nothing to do. So the old balance came from starved needs and a weak bot; the re-tune is D39.
+
+```
+trip    diff    bot     score  ratio  stars  dist(1-5)    complaints  clean  carried  calm%  done  failed  decl  min  need/m  café   1st  gapMax  gapAvg  idle%
+short   easy    good      1021   1.00    5.0  0/0/0/0/20         0.0  20/20       42    100   2.8     0.0   0.0  2.8     0.0   0.0   170    28.7    16.7     51
+short   normal  good      1231   0.99    5.0  0/0/0/0/20         0.2  19/20       55    100   2.5     0.0   0.0  2.9     0.2   0.3   166    25.7    14.8     46
+short   hard    good      1340   0.98    5.0  0/0/0/1/19         0.7  16/20       61    100   2.8     0.1   0.0  3.0     0.4   0.7   170    26.2    14.6     42
+normal  easy    good      1996   1.00    5.0  0/0/0/0/20         0.0  20/20       69    100   7.1     0.0   0.0  6.1     0.9   2.5   258    42.9    15.4     49
+normal  normal  good      2434   0.97    5.0  0/0/0/1/19         1.0  15/20       87     99   6.9     0.1   0.0  6.2     3.6   9.9   172    34.1    12.9     33
+normal  hard    good      2736   0.97    5.0  0/0/0/1/19         1.8   8/20      100    100   7.5     0.1   0.0  6.4     4.1  10.9   168    29.6    11.0     29
+long    easy    good      2865   1.00    5.0  0/0/0/0/20         0.2  16/20       90    100  12.2     0.0   0.0  9.6     0.8   3.9   369    43.8    16.8     51
+long    normal  good      3516   0.99    5.0  0/0/0/0/20         1.0  14/20      114    100  12.6     0.0   0.0  9.6     2.8  12.6   253    36.2    12.7     35
+long    hard    good      3801   0.96    5.0  0/0/0/1/19         3.5   5/20      131     99  12.6     0.1   0.0 10.0     3.4  15.8   248    38.6    11.7     32
+```
