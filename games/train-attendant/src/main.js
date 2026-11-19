@@ -74,7 +74,7 @@ function start() {
   questVars.clear(); acc = 0; endTimer = 0; lastRank = 0;
   phase = 'play';
   ui.hide(); ui.resetHud();
-  ui.hudVisible(true); input.showTouch(input.touchActive()); ui.showFast(flags.debug); ui.markFast(speed !== 1);
+  ui.hudVisible(true); measureHead(); input.showTouch(input.touchActive()); ui.showFast(flags.debug); ui.markFast(speed !== 1);
   input.reset(); renderer.resize(); renderer.reset(state);
   audio.unlock();
   collect(state.events);
@@ -143,6 +143,11 @@ function collect(events) {
 }
 
 // ---------- the loop
+// The HUD head's bottom edge is measured when its size or the window changes, not every frame (D36).
+const hudRoot = document.getElementById('hud'), hudHead = document.getElementById('hudHead');
+let headBottom = 80;
+const measureHead = () => { if (hudHead) headBottom = hudHead.getBoundingClientRect().bottom; };
+if (typeof ResizeObserver === 'function' && hudHead) new ResizeObserver(measureHead).observe(hudHead);
 let lastTop = 0, last = performance.now(), fpsFrames = 0, fpsT = 0, fps = 0;
 function frame(now) {
   requestAnimationFrame(frame);
@@ -165,8 +170,7 @@ function frame(now) {
     if (endTimer <= 0) showEnd();
   }
   if (state && phase !== 'title') {
-    const hudEl = document.getElementById('hudHead');
-    const top = hudEl && !document.getElementById('hud').hidden ? hudEl.getBoundingClientRect().bottom + 6 : 80;
+    const top = hudHead && !hudRoot.hidden ? headBottom + 6 : 80;
     if (top !== lastTop) { lastTop = top; document.documentElement.style.setProperty('--head-b', `${top - 6}px`); }
     renderer.draw(state, { dt: simDt, now, top, bottom: input.touchActive() ? 92 : 0 });
     if (!document.getElementById('hud').hidden) ui.hud(state);
@@ -181,7 +185,7 @@ function frame(now) {
 // C-3: the game never runs unseen: losing focus or hiding the page pauses it.
 window.addEventListener('blur', pause);
 document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'hidden') pause(); });
-window.addEventListener('resize', () => { renderer.resize(); });
+window.addEventListener('resize', () => { renderer.resize(); measureHead(); });
 input.onTouchChange((on) => { if (phase === 'play') input.showTouch(on); if (phase === 'title') showTitle(); });
 
 if (flags.debug) {

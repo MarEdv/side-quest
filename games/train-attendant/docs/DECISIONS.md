@@ -377,3 +377,8 @@ With a throwing or blocked `localStorage` the scores live in memory for the sess
 score!". The rank text stays (it is true for this session's list), and a small note under it ("Not saved on this device
 (storage unavailable)", SV "Sparas inte på den här enheten (lagring ej tillgänglig)") shows when the kit storage's
 `persistent` is false. Debug runs show their own text instead. Checked in headless Chrome with a throwing store (D37).
+
+## D36 — 2026-11-19 — The HUD head is measured on resize, not every frame
+`main.js` called `getBoundingClientRect()` on the HUD head every frame (a forced layout). It is now measured by a
+`ResizeObserver` on the head (which also fires when the HUD is shown, the chips wrap or the language changes), on window
+`resize` and when a trip starts; the frame reads the cached number. Same pixel result as before; checked in Chrome (D37).
