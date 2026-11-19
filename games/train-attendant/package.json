@@ -1,0 +1,21 @@
+{
+  "name": "train-attendant",
+  "version": "0.1.0",
+  "private": true,
+  "description": "A top-down browser game: keep the passengers of a train calm and take on side quests from the train manager. Zero runtime dependencies.",
+  "type": "module",
+  "scripts": {
+    "start": "python3 -m http.server 8000",
+    "test": "node --test tests/*.test.js"
+  },
+  "kit": ["audio.js", "flags.js", "lang.js", "langdom.js", "rng.js", "storage.js"],
+  "browserModules": [
+    "audio.js",
+    "input.js",
+    "kit/audio.js",
+    "kit/langdom.js",
+    "main.js",
+    "render.js",
+    "ui.js"
+  ]
+}

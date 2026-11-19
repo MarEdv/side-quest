@@ -394,3 +394,15 @@
 - **Alternatives:** a linter (a dependency); leave style to review (it is what let the two styles exist).
 
 Wave 6 (S-11, S-12, S-15) is done, which completes every P1 and P2 task in `docs/STREAMLINING.md`.
+
+### D-22 — Fourth game: Train Attendant (2026-11-19)
+- **Chosen:** a new game at `games/train-attendant/`, added the way `docs/ADDING-A-GAME.md` describes: own folder,
+  `game.json` (order 4), the same six kit modules as Gem Miner, the shared page shell (T-4), Back to games (T-5), EN/SV
+  (L-9), checked by the conventions test (T-3). Its own requirements, decisions and flags live in its `docs/`.
+- **Aligned on purpose with S-16** before the older games are: a fixed 1/60 s timestep and "losing focus pauses" (the
+  game's D7), so it doesn't add a fourth timing style.
+- **Gaps left, as in the siblings:** no service worker / offline and not installable on its own (S-17 is still an owner
+  decision); not tried on a real phone or in Safari.
+- **No launcher change:** the registry picks the game up; only `games.json`, the README table and this log change.
+  `docs/ADDING-A-GAME.md` no longer says "the three games".
+- **Who did what:** Opus planned the game and verified it; Sonnet subagents implemented the logic and the browser layer.

@@ -1,0 +1,10 @@
+{
+  "title": "Train Attendant",
+  "description": "Walk the aisle, check tickets, serve coffee and keep the passengers calm, while the train manager radios you side quests.",
+  "icon": "🚆",
+  "tags": ["keyboard", "touch"],
+  "order": 4,
+  "i18n": {
+    "sv": { "description": "Gå längs gången, kontrollera biljetter, servera kaffe och håll passagerarna lugna medan tågchefen ger dig sidouppdrag." }
+  }
+}

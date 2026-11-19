@@ -1,0 +1,28 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no">
+  <title>Train Attendant</title>
+  <meta name="description" content="Walk the aisle, check tickets, serve coffee and keep the passengers calm, while the train manager radios you side quests.">
+  <meta name="theme-color" content="#14202b">
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='.9em' font-size='90'%3E%F0%9F%9A%86%3C/text%3E%3C/svg%3E">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <!-- Placeholder shell: the browser layer replaces this page. -->
+  <canvas id="game" aria-label="Train Attendant game view" data-i18n-aria="canvas"></canvas>
+  <section id="title" class="screen">
+    <div class="card">
+      <div id="langSwitch" class="lang" role="group" aria-label="Language" data-i18n-aria="language">
+        <button type="button" id="lang-en" data-lang="en" lang="en" aria-pressed="true">EN</button>
+        <button type="button" id="lang-sv" data-lang="sv" lang="sv" aria-pressed="false">SV</button>
+      </div>
+      <h1>🚆 Train Attendant</h1>
+      <p class="tag" data-i18n="tagline">Keep the passengers calm from the first station to the last.</p>
+      <a class="big secondary linkbtn" id="backLink" href="../../" data-i18n="back">Back to games</a>
+    </div>
+  </section>
+  <script type="module" src="src/main.js"></script>
+</body>
+</html>

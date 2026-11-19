@@ -25,7 +25,7 @@ A game is a folder `games/<slug>/` (lower-case kebab-case, it becomes the URL) c
 - **Language:** the launcher links to `games/<slug>/?lang=en` or `?lang=sv`. A game with translations reads `?lang=`
   first (and remembers it under its own key), then its saved choice, then `navigator.languages`. The kit does all of
   that: keep the texts in the game's `src/i18n.js`, build the rest with `createI18n(STRINGS)` from `kit/lang.js`, and
-  call `setupLang()` from `kit/langdom.js` in the browser entry (see any of the three games). Mark static texts with
+  call `setupLang()` from `kit/langdom.js` in the browser entry (see any of the games). Mark static texts with
   `data-i18n` attributes and language buttons with `data-lang`.
 
 - `package.json` – the root `npm test` and CI run the game's own `npm test` inside the folder, and check this shape:
@@ -101,4 +101,4 @@ Then move anything that must live at the repo root (CI workflows, `.gitignore` e
 - **localStorage** is shared by every game on the origin: prefix your keys with the game's slug.
 - **Back to games:** the start screen has a link to `../../?lang=<the game's current language>` ("Back to games" /
   "Tillbaka till spelen"), updated when the player switches language: the mirror of the launcher's `?lang=` hand-off.
-  The three games build it with a `backHref()` in their `src/i18n.js`.
+  The games build it with a `backHref()` in their `src/i18n.js`.

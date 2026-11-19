@@ -1,0 +1,8 @@
+/* Placeholder styles: the browser layer replaces this file. */
+:root { --bg: #14202b; --panel: #1d2f3f; --text: #eef3f7; --accent: #ffc857; }
+html, body { margin: 0; height: 100%; background: var(--bg); color: var(--text); font-family: system-ui, sans-serif; }
+[hidden] { display: none !important; }
+.screen { position: fixed; inset: 0; display: grid; place-items: center; }
+.card { background: var(--panel); padding: 20px 24px; border-radius: 16px; text-align: center; }
+.lang button { font: inherit; }
+.linkbtn { color: var(--accent); }
