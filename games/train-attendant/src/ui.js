@@ -34,7 +34,6 @@ export function createUI(h) {
   function hide() { current = null; for (const s of SCREENS) $(s).hidden = true; document.activeElement?.blur?.(); }
 
   $('startBtn').addEventListener('click', () => h.start());
-  $('pauseBtn').addEventListener('click', () => h.pause());
   $('resumeBtn').addEventListener('click', () => h.resume());
   $('soundBtn').addEventListener('click', () => h.toggleSound());
   $('quitBtn').addEventListener('click', () => h.quit());
@@ -43,6 +42,9 @@ export function createUI(h) {
   $('fastBtn').addEventListener('click', () => h.toggleFast());
   // Buttons that raise input edges react on pointerdown (works while another finger holds the walk pad).
   const press = (node, fn) => node.addEventListener('pointerdown', (e) => { e.preventDefault(); fn(); });
+  // Pause also reacts on pointerdown (a finger on the walk pad must not block it); `click` stays for Enter / Space (pause is idempotent).
+  press($('pauseBtn'), () => h.pause());
+  $('pauseBtn').addEventListener('click', () => h.pause());
   press($('acceptBtn'), () => h.accept());
   press($('declineBtn'), () => h.decline());
   for (const b of el.picker.querySelectorAll('[data-pick]')) press(b, () => h.pick(b.dataset.pick));

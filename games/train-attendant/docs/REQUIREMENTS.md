@@ -76,7 +76,7 @@ Sonnet implements, Haiku looks up docs; never ask the owner questions.
 | ID | Requirement | Status |
 |----|-------------|--------|
 | C-1 | Desktop: ←/→ or A/D walk, **Space** / **E** action (hold for timed actions), **1/2/3** pick at the café (0 or Backspace puts the item back), **Y**/**N** accept / decline an offer, **P** / Esc pause. | ✅ |
-| C-2 | Touch: ◀ ▶ buttons bottom left, a large action button bottom right (hold works), on-screen Accept / Decline and café buttons, a pause button. Shown automatically on touch devices (flag `touch`: auto/on/off). Multi-touch: walking and the action at the same time. | 🚧 |
+| C-2 | Touch: ◀ ▶ buttons bottom left, a large action button bottom right (hold works), on-screen Accept / Decline and café buttons, a pause button (reacts on pointerdown, so it works while a finger holds the walk pad, D26). Shown automatically on touch devices (flag `touch`: auto/on/off). Multi-touch: walking and the action at the same time. | 🚧 |
 | C-3 | No page scroll, zoom or text selection while playing; works in landscape and portrait (portrait shows a shorter slice of the train). Losing focus or hiding the page pauses the game. | 🚧 |
 
 ### 3.7 Presentation and platform

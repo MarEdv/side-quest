@@ -308,3 +308,9 @@ station even if the quest was done. Alternatives: restore the need after the que
 sit with the need cleared for minutes); pick only passengers whose ticket is checked. Chosen: the second (candidates need
 `p.ticket`), as it is one line and a pure filter; nervous quests simply come a little later to a freshly boarded passenger.
 Tested in `tests/quests.test.js` (offers only to the checked passenger; a seed-7 short trip with quests assigned).
+
+## D26 — 2026-11-19 — The pause button reacts on pointerdown
+The ⏸ button used `click`, which a browser does not deliver for a second finger while the first holds the walk pad (the
+same reason Accept / Decline and the café buttons use `pointerdown`). Now it listens for `pointerdown` like them, and keeps
+`click` so Enter / Space on the focused button still work (`pause()` ignores a second call). Browser-only, so checked in
+headless Chrome with a held walk touch (D37 lists the run), not in a unit test.
