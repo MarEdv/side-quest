@@ -1,0 +1,22 @@
+# Feature Flags
+
+Flags live in `src/flags.js` (`DEFAULT_FLAGS`): the schema is this game's, the parser comes from the shared kit
+(`src/kit/flags.js`, generated from the repo's `kit/flags.js`). Set them in the URL query string, e.g.
+`http://localhost:8000/games/train-attendant/?trip=short&quests=assign`.
+
+Precedence: **URL query > default**. There is no settings screen; the in-game sound toggle lasts for the session only.
+
+Booleans accept `1/0/true/false/on/off/yes/no` (any case, spaces ignored). Unknown flags and invalid values are ignored
+(the default applies). **Any new flag must be added here.**
+
+| Flag | Type | Default | Values / meaning |
+|------|------|---------|------------------|
+| `trip` | enum | `normal` | `short` (4 stations, 45 s legs), `normal` (6 stations, 60 s), `long` (8 stations, 70 s). T-2. Best scores are kept per trip. |
+| `cars` | enum (number) | `3` | `2`, `3`, `4`: passenger cars (the café car is extra). T-1. |
+| `difficulty` | enum | `normal` | `easy`, `normal`, `hard`. S-5. |
+| `quests` | enum | `offer` | `offer` (Accept / Decline) or `assign` (every offer is accepted). Q-1, D5. |
+| `stress` | enum | `solo` | `solo` or `contagious`. P-4, D6. |
+| `seed` | int | random | Trip seed, `0`-`2147483647`: stations, passengers and quests. |
+| `touch` | enum | `auto` | Touch controls: `auto` (on touch devices), `on`, `off`. |
+| `sound` | bool | `true` | Sound effects. |
+| `debug` | bool | `false` | Shows FPS and the seed, a 4× time button, and exposes `window.__game` (`state`, ...). Runs with debug on are not saved to the best scores. |
