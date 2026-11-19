@@ -547,3 +547,12 @@ long    hard    good      4141   0.80    3.5  0/0/11/9/0        14.2   0/20     
   passengers are rare now, so the seat-leading mechanic is mostly used for rescues); the sloppy bot is bimodal near its
   capacity (4 of 20 normal trips under .10, D39 table); 4 cars on hard stays rough for everyone; a human on a phone may react more
   slowly than the good bot's 0.5 s.
+
+## D40 — 2026-11-19 — Browser sanity run after the re-tune
+Headless Chrome over CDP (throw-away scripts outside the repo), `python3 -m http.server`, 1280x800, `?trip=normal&seed=7&debug=1`:
+a real keyboard ticket check (arrow keys to the passenger, Space held 0.9 s) scored 10 and drew the passenger's next need
+53.7 s later (inside `firstNeed` 12-55); then the good bot (imported into the page, stepping the game while the page
+rendered) played to 120 s of game time: the first non-ticket need at 28.5 s, 16 non-ticket needs in the first 2 minutes
+(14 questions, 2 snacks: this seed's start is question-heavy; over whole trips about 40% are café needs), no stretch
+of 1 s or more without open work after the first 20 s, 0 complaints, no console errors or warnings. Not checked: touch,
+the give-up after a complaint on screen (unit-tested), a whole trip by hand.
