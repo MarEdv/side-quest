@@ -358,3 +358,9 @@ still shows up, with the lowest priority (5), so handing over the carried item t
 action that fires it emits `handsFull` (EN "Hands full: put it back at the café first", SV "Händerna är fulla: lägg tillbaka
 det i caféet först") and nothing changes. The picker's "Put back" still empties the hand (a carried kit or bag goes back to
 its fetch stage, as before). Tests in `tests/quests.test.js`.
+
+## D33 — 2026-11-19 — Key hints hidden on touch; the end-screen score label stays
+The `<kbd>` hints (Y / N, 1 / 2 / 3 / 0) on the Accept / Decline and café buttons are hidden while the touch controls are shown
+(`body.touch`, the class `showTouch` already sets). The end screen's "Score" label reused `.lbl`, which narrow screens
+hide (a chip rule, max-width 560 px); it has its own class `endlbl` now and is always visible. CSS only; checked at 390 px in
+Chrome (D37).
