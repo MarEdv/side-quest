@@ -62,7 +62,7 @@ export function createUI(h) {
     $('flagsLine').hidden = !flags;
   }
   function renderPause(soundOn) { $('soundBtn').textContent = t(soundOn ? 'soundOn' : 'soundOff'); }
-  function renderEnd({ summary: s, rank, list, debug, trip }) {
+  function renderEnd({ summary: s, rank, list, debug, trip, saved = true }) {
     $('endScore').textContent = s.score;
     $('endStars').textContent = '★'.repeat(s.stars) + '☆'.repeat(5 - s.stars);
     $('endStarsText').textContent = t('endStars', { n: s.stars });
@@ -73,6 +73,7 @@ export function createUI(h) {
       stat(t('endQuestsDeclined'), s.questsDeclined),
     ].join('');
     $('endRank').textContent = debug ? t('debugRun') : rank ? t('newBest', { rank, trip: t(`trip_${trip}`) }) : '';
+    $('endNote').textContent = t('notSaved'); $('endNote').hidden = debug || saved; // storage unavailable: the rank lives in memory only
     $('endBest').innerHTML = debug ? '' : `<p class="small">${esc(t('scoresTitle', { trip: t(`trip_${trip}`) }))}</p>${scoreList(list, rank)}`;
   }
 

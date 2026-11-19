@@ -371,3 +371,9 @@ Hill, Northcombe, Kettleton, Alderby, Cinderton, Fernwick) are close to real tow
 invented compounds: Alderwick, Birchmere, Cinderlow, Dunmere, Eastholm, Fernlow, Gullcross, Hollowfen, Ironwater, Junebrook,
 Kettlebrae, Larkmoor, Mossgate, Northwend, Oakenholt, Pebbleford. I know of no station or town with these names, but cannot
 check a map: if one turns out to be real, swap it in `src/route.js`. A-1 ("fictional names") is unchanged.
+
+## D35 — 2026-11-19 — The end screen says when the score is not saved
+With a throwing or blocked `localStorage` the scores live in memory for the session, yet the end screen said "New best
+score!". The rank text stays (it is true for this session's list), and a small note under it ("Not saved on this device
+(storage unavailable)", SV "Sparas inte på den här enheten (lagring ej tillgänglig)") shows when the kit storage's
+`persistent` is false. Debug runs show their own text instead. Checked in headless Chrome with a throwing store (D37).

@@ -62,6 +62,7 @@ export const STRINGS = {
     endTitle: 'End of the line', endScore: 'Score', endStars: '{n} of 5 stars', endCarried: 'Passengers carried',
     endCalm: 'Calm arrivals', endComplaints: 'Complaints', endQuestsDone: 'Quests done', endQuestsFailed: 'Quests failed',
     endQuestsDeclined: 'Quests declined', endTime: 'Trip time', newBest: 'New best score! You are #{rank} on the {trip} list.',
+    notSaved: 'Not saved on this device (storage unavailable)',
     debugRun: 'Debug run: not saved to the best scores.',
     // title: how to play, toasts added by the browser layer
     howtoTitle: 'How to play',
@@ -120,6 +121,7 @@ export const STRINGS = {
     endTitle: 'Slutstation', endScore: 'Poäng', endStars: '{n} av 5 stjärnor', endCarried: 'Resenärer som åkt med',
     endCalm: 'Lugna ankomster', endComplaints: 'Klagomål', endQuestsDone: 'Uppdrag klarade', endQuestsFailed: 'Uppdrag misslyckade',
     endQuestsDeclined: 'Uppdrag avböjda', endTime: 'Restid', newBest: 'Nytt rekord! Du är nummer {rank} på listan för {trip}.',
+    notSaved: 'Sparas inte på den här enheten (lagring ej tillgänglig)',
     debugRun: 'Felsökningsläge: sparas inte bland bästa poäng.',
     howtoTitle: 'Så spelar du',
     howto1: 'Gå längs gången till passagerare med en pratbubbla: 🎫 biljett, ❓ fråga, ☕ 🥪 dryck eller mellanmål, 💺 plats.',

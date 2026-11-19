@@ -95,7 +95,7 @@ function toggleSound() { soundOn = !soundOn; audio.enabled = soundOn; if (soundO
 let endView = null;
 function showEnd() {
   const s = state.summary;
-  endView = { summary: s, rank: lastRank, list: scoresFor(loadScores(storage), flags.trip), debug: flags.debug, trip: flags.trip };
+  endView = { summary: s, rank: lastRank, list: scoresFor(loadScores(storage), flags.trip), debug: flags.debug, trip: flags.trip, saved: storage.persistent };
   phase = 'end'; ui.hudVisible(false); input.showTouch(false); ui.showFast(false);
   ui.renderEnd(endView); ui.show('end');
 }

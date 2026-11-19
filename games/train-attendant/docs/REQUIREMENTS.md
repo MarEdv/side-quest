@@ -68,7 +68,7 @@ Sonnet implements, Haiku looks up docs; never ask the owner questions.
 |----|-------------|--------|
 | S-1 | Points: tickets, served needs, quest rewards, calm arrivals; minus complaints, lost fares and failed quests. The HUD shows the score, the next station with its countdown, the delay and the complaints. | ✅ |
 | S-2 | End of trip screen: score, a 1–5 star rating, passengers carried, share of calm arrivals, complaints, quests done / failed / declined. | ✅ |
-| S-3 | The 5 best scores per trip length are kept on the device (localStorage, keys prefixed `train-attendant.`) and shown on the title and end screens. Storage failures never break the game. Runs with `debug` on are not recorded. | ✅ |
+| S-3 | The 5 best scores per trip length are kept on the device (localStorage, keys prefixed `train-attendant.`) and shown on the title and end screens. Storage failures never break the game; when the scores cannot be kept, the end screen says "Not saved on this device" (D35). Runs with `debug` on are not recorded. | ✅ |
 | S-4 | No fail state: a trip always reaches the last station. | 🚧 |
 | S-5 | Difficulty (flag `difficulty`: `easy`/`normal`/`hard`) scales how many passengers board, how often needs appear and how fast stress rises. | 🚧 |
 
