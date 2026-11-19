@@ -325,3 +325,9 @@ rescue stays pending because `MAKE.rescue` still refuses while a rescue quest is
 the offer is accepted only (too early: seats change for minutes before the stop). The old cancel inside `onStopStart` stays as
 a safety net. Side effect: rescues are now offered more than once on long trips, so the balance numbers of D14 may shift
 (not re-tuned here).
+
+## D28 — 2026-11-19 — The strip marks the bag's car, not its position
+The train strip drew 🧳 at the bag's exact x, which showed where to look inside the car, against Q-5 ("seen only when the
+attendant is in that car"). Now the strip outlines the whole car (dashed amber) and puts the 🧳 icon at the car's top
+centre; the bag itself is still drawn only in the camera view of that car. The goal text already names the car. Q-5 states
+this. Browser-only drawing, checked by eye in Chrome (D37).

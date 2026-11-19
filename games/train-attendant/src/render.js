@@ -331,7 +331,12 @@ export function createRenderer(canvas, strip) {
     c.font = `11px ${EMOJI}`; c.textAlign = 'center'; c.textBaseline = 'middle';
     for (const p of s.passengers) if (p.role) c.fillText(ROLE_ICON[p.role], X(pos(s, p).x), 5);
     for (const q of s.quests.active) {
-      if (q.type === 'lost' && q.stage === 'find') c.fillText('🧳', X(q.bag.x), SH - 8);
+      if (q.type === 'lost' && q.stage === 'find') { // only the bag's car is marked, never the spot (Q-5, D28)
+        const car = s.train.cars[q.bag.car];
+        c.save(); c.strokeStyle = '#ffc857'; c.lineWidth = 2; c.setLineDash([4, 3]);
+        c.strokeRect(X(car.start) + 1, 4, X(car.end) - X(car.start) - 2, SH - 8); c.restore();
+        c.fillText('🧳', (X(car.start) + X(car.end)) / 2, 5);
+      }
       if ((q.type === 'sick' && q.stage === 'fetch') || (q.type === 'connection' && q.stage === 'radio')) c.fillText(q.type === 'sick' ? '🩹' : '📻', X(s.train.cab.x), SH - 8);
     }
     // the attendant
