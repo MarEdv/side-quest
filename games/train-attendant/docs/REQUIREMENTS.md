@@ -17,7 +17,7 @@ find a lost bag, help a sick passenger.
 | PR-2 | The player is a train attendant who manages a train full of passengers. | 🚧 |
 | PR-3 | The player is given side quests during the trip, such as saving passengers from another broken-down train, handling stressed passengers and managing connections for passengers. | 🚧 |
 | PR-4 | Listed side by side with the existing games in the Side Quest Project launcher. | 🚧 |
-| TR-1 | Runs in any modern browser; tested in Chrome. | 📋 |
+| TR-1 | Runs in any modern browser; tested in Chrome. | 🚧 |
 | TR-2 | Minimal dependencies (D1: none). | ✅ |
 
 Process rules from the owner (apply to all work): implement several reasonable options behind flags or pick one; document
@@ -33,7 +33,7 @@ Sonnet implements, Haiku looks up docs; never ask the owner questions.
 | T-2 | A trip runs through a route of fictional stations (flag `trip`: `short` 4 stations, `normal` 6, `long` 8). The train travels between stations (`short` 45 s, `normal` 60 s, `long` 70 s of game time per leg) and dwells 8 s at each station. The trip ends on arrival at the last station. | 🚧 |
 | T-3 | At each station passengers whose destination it is leave and new passengers board; boarders take a free seat, or stand in a vestibule when the train is full. Standing passengers get stressed faster. | 🚧 |
 | T-4 | The train has a **delay** (seconds late), shown in the HUD. Side quests can add delay (a rescue stop); each station dwell wins back up to 5 s. Delay makes every passenger a little more stressed and decides whether a connection can be held (Q-3). | 🚧 |
-| T-5 | Outside the windows the landscape scrolls while the train moves; a platform with the station name appears at stations. | 📋 |
+| T-5 | Outside the windows the landscape scrolls while the train moves; a platform with the station name appears at stations. | ✅ |
 
 ### 3.2 Passengers
 | ID | Requirement | Status |
@@ -47,10 +47,10 @@ Sonnet implements, Haiku looks up docs; never ask the owner questions.
 ### 3.3 The attendant
 | ID | Requirement | Status |
 |----|-------------|--------|
-| A-1 | The attendant walks along the aisle through the whole train (doors between cars open automatically). The camera follows; a **train strip** at the top of the screen shows every car, the attendant and a dot per open need, so the player knows where to go. | 📋 |
-| A-2 | The action serves the most urgent passenger in reach: checks a ticket (hold 0.6 s), answers a question (hold 1.2 s), hands over a carried coffee or snack (instant) or quest item. A progress ring shows a hold. | 🚧 |
-| A-3 | The attendant carries at most one item. At the **café counter** the action opens a small picker (☕ coffee, 🥪 snack, 💧 water; or put the item back) without pausing the game. | 🚧 |
-| A-4 | The attendant can **lead** passengers: the action on a passenger who needs a seat makes them follow; the action at a row with a free seat seats the first follower there. Up to 4 followers at once. | 🚧 |
+| A-1 | The attendant walks along the aisle through the whole train (doors between cars open automatically). The camera follows; a **train strip** at the top of the screen shows every car, the attendant and a dot per open need, so the player knows where to go. | ✅ |
+| A-2 | The action serves the most urgent passenger in reach: checks a ticket (hold 0.6 s), answers a question (hold 1.2 s), hands over a carried coffee or snack (instant) or quest item. A progress ring shows a hold. | ✅ |
+| A-3 | The attendant carries at most one item. At the **café counter** the action opens a small picker (☕ coffee, 🥪 snack, 💧 water; or put the item back) without pausing the game. | ✅ |
+| A-4 | The attendant can **lead** passengers: the action on a passenger who needs a seat makes them follow; the action at a row with a free seat seats the first follower there. Up to 4 followers at once. | ✅ |
 
 ### 3.4 Side quests
 | ID | Requirement | Status |
@@ -66,33 +66,41 @@ Sonnet implements, Haiku looks up docs; never ask the owner questions.
 ### 3.5 Score and end of trip
 | ID | Requirement | Status |
 |----|-------------|--------|
-| S-1 | Points: tickets, served needs, quest rewards, calm arrivals; minus complaints, lost fares and failed quests. The HUD shows the score, the next station with its countdown, the delay and the complaints. | 🚧 |
-| S-2 | End of trip screen: score, a 1–5 star rating, passengers carried, share of calm arrivals, complaints, quests done / failed / declined. | 🚧 |
-| S-3 | The 5 best scores per trip length are kept on the device (localStorage, keys prefixed `train-attendant.`) and shown on the title and end screens. Storage failures never break the game. Runs with `debug` on are not recorded. | 🚧 |
+| S-1 | Points: tickets, served needs, quest rewards, calm arrivals; minus complaints, lost fares and failed quests. The HUD shows the score, the next station with its countdown, the delay and the complaints. | ✅ |
+| S-2 | End of trip screen: score, a 1–5 star rating, passengers carried, share of calm arrivals, complaints, quests done / failed / declined. | ✅ |
+| S-3 | The 5 best scores per trip length are kept on the device (localStorage, keys prefixed `train-attendant.`) and shown on the title and end screens. Storage failures never break the game. Runs with `debug` on are not recorded. | ✅ |
 | S-4 | No fail state: a trip always reaches the last station. | 🚧 |
 | S-5 | Difficulty (flag `difficulty`: `easy`/`normal`/`hard`) scales how many passengers board, how often needs appear and how fast stress rises. | 🚧 |
 
 ### 3.6 Controls and platforms
 | ID | Requirement | Status |
 |----|-------------|--------|
-| C-1 | Desktop: ←/→ or A/D walk, **Space** / **E** action (hold for timed actions), **1/2/3** pick at the café (0 or Backspace puts the item back), **Y**/**N** accept / decline an offer, **P** / Esc pause. | 📋 |
-| C-2 | Touch: ◀ ▶ buttons bottom left, a large action button bottom right (hold works), on-screen Accept / Decline and café buttons, a pause button. Shown automatically on touch devices (flag `touch`: auto/on/off). Multi-touch: walking and the action at the same time. | 📋 |
-| C-3 | No page scroll, zoom or text selection while playing; works in landscape and portrait (portrait shows a shorter slice of the train). Losing focus or hiding the page pauses the game. | 📋 |
+| C-1 | Desktop: ←/→ or A/D walk, **Space** / **E** action (hold for timed actions), **1/2/3** pick at the café (0 or Backspace puts the item back), **Y**/**N** accept / decline an offer, **P** / Esc pause. | ✅ |
+| C-2 | Touch: ◀ ▶ buttons bottom left, a large action button bottom right (hold works), on-screen Accept / Decline and café buttons, a pause button. Shown automatically on touch devices (flag `touch`: auto/on/off). Multi-touch: walking and the action at the same time. | 🚧 |
+| C-3 | No page scroll, zoom or text selection while playing; works in landscape and portrait (portrait shows a shorter slice of the train). Losing focus or hiding the page pauses the game. | 🚧 |
 
 ### 3.7 Presentation and platform
 | ID | Requirement | Status |
 |----|-------------|--------|
-| V-1 | Procedural Canvas 2D graphics, no image files: cars, seats, passengers coloured by stress, need bubbles (emoji), the attendant in a cap; crisp on high-DPI screens. | 📋 |
-| V-2 | Short WebAudio sounds (kit `audio.js`): served, complaint, radio offer, station chime, quest done, quest failed (flag `sound`). | 📋 |
-| V-3 | English and Swedish: EN / SV switch on the title screen, `?lang=` from the launcher, the kit's language rules (`kit/lang.js`, `kit/langdom.js`). Station names stay as they are. | 🚧 |
-| V-4 | The title screen has a "Back to games" link to `../../?lang=<current language>` (root T-5). The page shell follows the shared shape (root T-4); with `debug` on the state is on `window.__game`. | 📋 |
+| V-1 | Procedural Canvas 2D graphics, no image files: cars, seats, passengers coloured by stress, need bubbles (emoji), the attendant in a cap; crisp on high-DPI screens. | ✅ |
+| V-2 | Short WebAudio sounds (kit `audio.js`): served, complaint, radio offer, station chime, quest done, quest failed (flag `sound`). | 🚧 |
+| V-3 | English and Swedish: EN / SV switch on the title screen, `?lang=` from the launcher, the kit's language rules (`kit/lang.js`, `kit/langdom.js`). Station names stay as they are. | ✅ |
+| V-4 | The title screen has a "Back to games" link to `../../?lang=<current language>` (root T-5). The page shell follows the shared shape (root T-4); with `debug` on the state is on `window.__game`. | ✅ |
 | V-5 | Pure game logic (no DOM) in modules tested with `node --test`; the browser modules are listed in `package.json`; root conventions check passes. | ✅ |
 | V-6 | A balance bot (`tools/sim.mjs`) plays trips with several strategies (idle, sloppy, good) over many seeds; the tuning keeps idle play at 1 star and good play at 4–5 stars. | ✅ |
 
 ### 3.8 Status notes
-- **Pure logic done and unit-tested (🚧 until the browser layer is verified in Chrome):** layout, route and delay, passengers
-  (needs, stress, complaints, lead and seat), the five quests, café picker, scoring, stars, best scores, EN/SV texts. The
-  rows above that are only about the browser (A-1 camera and train strip, C-1..C-3, V-1, V-2, V-4, T-5, TR-1) stay 📋.
+- **Browser layer built (D16..D22) and driven in headless Google Chrome (D23 lists what was and was not checked).** ✅ rows
+  were seen working there: T-5 (landscape scrolls only while the train moves, platform and station sign at a dwell, the
+  broken-down train beside the line during a rescue stop), A-1 (camera, train strip), A-2 (ticket hold with the progress
+  ring, handing over a coffee), A-3 (picker with key 1 and by tapping the action button), A-4 (leading rescued passengers and
+  seating one), S-1/S-2/S-3 (HUD, end screen, a real non-debug short trip stored and listed on the title), V-1 (1280x800,
+  390x844 and 844x390 at DPR 2), V-3 (EN/SV title and HUD, back link follows the switch), V-4 (`window.__game` only with debug), C-1 (every key: ←/→, A/D, Space, E, 1/2/3/0/Backspace, Y/N, P, Esc).
+- **Still 🚧:** C-2 (walk pad, sliding and action by emulated touch events, two fingers at once; the Accept / Decline and
+  café buttons only through dispatched `pointerdown` events, no real finger, no real phone), C-3 (pause on blur and on hidden was checked with dispatched events, not a real focus loss; no
+  real iOS or Android gesture check), V-2 (sounds are called without errors but nobody listened), TR-1 (headless Chrome only).
+- Pure logic rows (P-*, T-1..T-4, Q-*, S-4, S-5) stay 🚧 as before: unit-tested and exercised in play, but not each verified
+  by hand in the browser.
 - Numbers that differ from or add to the text above are listed in `DECISIONS.md` D10..D15 (trip length, the 20 s rescue
   delay, random slips, nervous passengers have no other needs, the `seat` need, stars from score / potential).
 

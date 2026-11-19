@@ -189,3 +189,92 @@ long    hard    good      3252   0.86    4.4  1/0/2/4/13        12.3   6/20     
 - `npm run registry` rewrote `games.json`, the README table and the launcher's `docs/DECISIONS.md` (the D-22 entry) and
   `docs/ADDING-A-GAME.md` wording; these generated changes are committed with the game. The root
   `tests/conventions.test.js` lists the real games, so it now lists four.
+
+## D16 — 2026-11-19 — Browser layer: modules and the loop
+- Files: `main.js` (loop, screens, events to sounds and toasts), `render.js` (canvas), `input.js`, `ui.js` (DOM overlays),
+  `audio.js` (sound table on kit audio). Only the first four plus `kit/audio.js` and `kit/langdom.js` are in
+  `browserModules`; `audio.js` touches no browser global itself (the kit engine does), so the conventions check wants it out.
+- Fixed 1/60 s accumulator. A frame gap is cut to 0.1 s and at most 5 steps run per frame (20 with the 4x debug button);
+  a backlog is dropped, never built up. `input.read()` runs once per frame that steps, the following steps of that frame get
+  the same held keys with the edges (`actionPressed`, `pick`, `accept`, `decline`) cleared, so an edge is true for exactly
+  one step and a tap on a frame with no step is kept until the next one. `state.events` are collected after every step.
+- The end of the trip does not cut to the end screen: the state stays on screen 1.6 s (toasts, the last sound), then the
+  end screen opens. The run is recorded when the `end` event arrives (`recordRun`; debug runs return rank 0).
+- Alternative considered: stepping in `requestAnimationFrame` with a variable dt. Rejected: the logic and the balance bots
+  assume the fixed step.
+
+## D17 — 2026-11-19 — Camera, scale and the HUD header
+- Scale: pixels per metre = min(width / 13, free height / 5.9), clamped 20..52, where the free height is the canvas minus the
+  HUD header (chips + train strip, measured every frame) and 92 px of touch controls. So a phone in portrait sees about 14 m
+  of train, landscape phones about 21 m and a desktop about 25 m. Need bubbles sit outside the car walls (2.5 m from the
+  aisle) so they never hide a face; they may run under the header or the touch controls on short phones.
+- The camera follows the attendant with a light ease and is clamped 1.2 m beyond the train ends; the DPR is capped at 2.
+- The train strip is a second small canvas in the HUD header (so it flows with the chips), not drawn on the main canvas.
+- Quest list and toasts share one column under the header (no overlap); the radio card is top right, or above the controls
+  in portrait. On narrow screens the chips drop their labels (icon + value).
+
+## D18 — 2026-11-19 — The landscape, platform and rescue scene
+- The scenery scrolls with a speed that eases up over the first 4 s of a leg, down over the last 5 s, and is 0 at a dwell and
+  at a rescue stop. Layers: far fields (0.4x), trees (0.7x) and the fence, posts and masts beside the train (1x); objects come
+  from an integer hash of their cell and the seed, so they stay put and nothing needs storing.
+- The platform (bottom side, station signs every 16 m, benches, waiting people) fades in once the train has nearly stopped
+  during a dwell and fades out when it leaves. The broken-down train (top side, flashing amber lights, smoke) fades in when
+  the route phase is `stop`. The strip, not the scenery, shows where things are along the train.
+
+## D19 — 2026-11-19 — Passengers and markers on screen
+- A passenger is a bust: a round face coloured green to red by stress (hue 120 - 1.2 x stress) with a smile, flat mouth or
+  frown (stress under 35, under 70, above) on a clothes-coloured shoulder ellipse. Need bubbles: 🎫 ☕ 🥪 ❓ 💺; from stress
+  70 the bubble pulses with a red rim, from 90 it shakes. Role badges (🚨 🔁 😰 🧳 🤒) sit on the face's corner.
+- The attendant has a cap with a brim towards the facing direction, a walking bob, the carried item beside it, a dashed lead
+  line to the followers and a progress ring (on the passenger being served, or on the attendant for the radio).
+- "Reach highlight": the renderer repeats the action choice of `game.js` (`needActions` + `questActions`, same sort) and
+  shades the row of the winning action and rings its passenger. It does not call the game's private `actionsAt`; if that
+  order changes the highlight must change with it.
+
+## D20 — 2026-11-19 — Input
+- Keyboard: ←/→ and A/D walk (both at once cancel), Space / E action (edge on first key down, held while any is down),
+  1/2/3 pick, 0/Backspace put back, Y/N accept/decline, P/Esc pause. Menus record nothing except P/Esc.
+- Touch: a walk pad (◀ ▶ in one element; the side of the pad a finger is on decides, so sliding works) and an ACTION button,
+  each tracked per pointer id so walking and the action work together. Accept / Decline and the café picker buttons react on
+  `pointerdown` so they work while another finger holds the pad. Touch controls follow flag `touch`; `auto` also turns on at
+  the first `touchstart`. Held input is cleared on blur and when the page is hidden.
+- Holding the action while walking does nothing (the logic only runs timed actions when standing still); the HUD does not
+  say so. Noted for play testing.
+
+## D21 — 2026-11-19 — Texts added and the title screen
+- New EN + SV keys: `howtoTitle`, `howto1..4`, `toastAccepted`, `toastFollowers` (unused so far, kept for a "leading" toast).
+  Finished quests are named from the vars cached when they were accepted (the `questDone` / `questFailed` events carry none).
+- The title has no trip picker (flags only, as FLAGS.md says): it shows the best scores of the current `trip`.
+- The sound toggle lives in the pause screen and lasts for the session.
+
+## D22 — 2026-11-19 — Pause and focus
+- The game pauses on `window` blur and when the page becomes hidden (C-3), and on P / Esc / the ⏸ button. Resume resets held
+  input and the accumulator. P / Esc also resume from the pause screen.
+- Debug (flag `debug`): FPS + seed + speed line, a 4x speed toggle button, and `window.__game` with `state`, `phase`, `flags`,
+  `setSpeed(n)` and `steps(n, input)` (steps without rendering, for tests). Nothing is saved to the best scores.
+
+## D23 — 2026-11-19 — Verification of the browser layer
+Method: headless Google Chrome driven over CDP from throw-away Node scripts outside the repo (cache off), against
+`python3 -m http.server`. Screenshots were read by eye.
+- **Checked and working:** title in EN and SV at 1280x800, 390x844 and 844x390 (DPR 2, touch emulation); back link
+  `../../?lang=sv` becoming `?lang=en` after the switch; start; the camera and strip; walking with real key events; a ticket
+  hold with the ring (score 0 -> 10); picking a coffee at the counter with `1`, carrying it, handing it over (+14); the
+  picker also opened by an emulated touch on the ACTION button; the radio card with a live expiry bar, `Y` accepting a sick
+  passenger quest, the quest list with its deadline bar and the strip markers; lost-bag, connection and nervous quests
+  appearing in the list; a rescue stop with the broken-down train, leading two rescued passengers (follow line, 👣 chip) and
+  seating one; pause by a dispatched `blur`, by a faked hidden page, with Esc and P, the sound toggle text; all keys (A/D, E, 1/2/3/0, Backspace, Y/N; N and the Accept / Decline / café buttons also through dispatched events), `touch=off`
+  hiding the overlay, `cars=2`, `cars=4&stress=contagious` and `trip=long&difficulty=hard` for a minute without errors; two-finger touch
+  (walk right + action held), sliding from ▶ to ◀; the 4x button (a short trip ends in about 45 s real time); the end screen
+  (debug text) and "Another trip"; a real non-debug short trip (about 175 s) ending with "New best score! #1", `localStorage`
+  holding `train-attendant.scores`, and the title listing it; no console errors or warnings in any run.
+- **Test shortcuts (state edited through `window.__game`):** the coffee need was injected into one passenger because needs
+  other than the ticket only start after the ticket, minutes into a trip; the attendant was teleported to the counter in the
+  touch run. The game code paths that followed were the real ones.
+- **NOT checked:** any real phone or tablet (iOS Safari gestures, pinch, rubber-banding, safe-area insets with a notch), a real
+  window focus loss, Firefox/Safari, sound (only that nothing throws: nobody listened), a real finger on the on-screen Accept / Decline and café buttons (only dispatched `pointerdown`), `touch=on`, long or
+  contagious or 4-car trips played to the end (they only ran their first minute, no errors),
+  the `ticket` emoji legibility on other platforms (🎫 is detailed and small in its bubble), performance on slow devices
+  (headless ran 48-60 fps with software rendering).
+- Known rough edges: standing passengers in a vestibule overlap (up to 8 in 4 m); the radio card and the touch buttons can cover
+  part of the car on a short landscape phone; the debug line can sit under the café picker.
+
