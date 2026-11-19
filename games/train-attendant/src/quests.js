@@ -160,6 +160,17 @@ export function onArrive(s, k) {
   for (const q of [...s.quests.active]) if (q.deadlineStation === k) fail(s, q, q.type === 'rescue' ? 'late' : 'station');
 }
 
+// Asked when the planned rescue stop is due: it needs its accepted quest and a free seat for somebody to board.
+export const stopPossible = (s) => freeSeatCount(s) >= 1 && s.quests.active.some((x) => x.type === 'rescue' && x.stage === 'wait');
+
+// Called when the planned stop is called off (no free seat): the waiting rescue quest is cancelled, nothing stops or draws.
+export function onStopCancel(s) {
+  const q = s.quests.active.find((x) => x.type === 'rescue' && x.stage === 'wait');
+  if (!q) return;
+  s.quests.active = s.quests.active.filter((x) => x !== q);
+  cancel(s, q);
+}
+
 // Called when the rescue stop begins: the stranded passengers board through the front vestibule.
 export function onStopStart(s) {
   const q = s.quests.active.find((x) => x.type === 'rescue' && x.stage === 'wait');

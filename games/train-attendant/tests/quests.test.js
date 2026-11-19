@@ -376,6 +376,20 @@ test('rescue: with too few free seats the passenger count shrinks, with none it 
   assert.equal(t.s.quests.active.length, 0);
 });
 
+test('rescue: cancelled before the stop starts means no stop, no delay and no broken-down train (D27)', () => {
+  const { s } = rescueGame(6);
+  for (let i = 0; i < 60; i++) addP(s, { seat: i, dest: 5 });
+  s.passengers.forEach((p) => { p.nextNeed = 1e9; });
+  const ev = [];
+  for (let i = 0; i < 60 * 100; i++) { step(s, {}); ev.push(...s.events); if (ofType(s.events, 'arrive').length || s.route.phase === 'stop') break; }
+  assert.equal(s.route.phase === 'stop', false);
+  assert.equal(ofType(ev, 'stopStart').length, 0);
+  assert.equal(ofType(ev, 'stopEnd').length, 0);
+  assert.equal(ofType(ev, 'questCancelled').length, 1);
+  assert.equal(s.route.stop, null);
+  assert.ok(s.route.delay < 20);
+});
+
 test('offers: a rescue is only offered when 6-10 passengers fit, and its count is 6-10', () => {
   let seen = new Set();
   for (let seed = 1; seed < 60; seed++) {
@@ -410,4 +424,20 @@ test('nervous: no quest passenger leaves without a ticket check (seed 7, short t
     for (const e of s.events) if (e.type === 'alight' && nervous.has(e.id)) assert.equal(e.lostFare, false);
   }
   assert.ok(s.ended);
+});
+
+test('rescue: after one rescue ended another can be offered and made in the same trip (D27)', () => {
+  let most = 0;
+  for (const seed of [1, 2, 3, 4, 5, 6]) {
+    const s = createGame({ trip: 'long', quests: 'assign' }, seed);
+    let rescues = 0;
+    for (let i = 0; i < 60 * 900 && !s.ended; i++) {
+      step(s, {});
+      for (const e of s.events) if (e.type === 'stopEnd') rescues++;
+      // keep everybody seated and calm so seats free up: the test is about the route, not the play
+      if (s.route.phase === 'stop') { for (const p of s.passengers) { p.stress = 0; } }
+    }
+    most = Math.max(most, rescues);
+  }
+  assert.ok(most >= 2, `most rescues in one trip: ${most}`);
 });

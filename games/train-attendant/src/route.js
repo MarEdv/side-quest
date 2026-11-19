@@ -53,8 +53,10 @@ export function planStop(route, leg) {
 }
 
 // Advances the clock. Returns the transitions that happened, in order:
-// { type: 'depart', station } | { type: 'slip', seconds } | { type: 'stopStart' } | { type: 'stopEnd' } | { type: 'arrive', station }
-export function stepRoute(route, dt, rng, diff) {
+// { type: 'depart', station } | { type: 'slip', seconds } | { type: 'stopStart' } | { type: 'stopEnd' } | { type: 'stopCancel' }
+// | { type: 'arrive', station }. `canStop()` is asked when a planned rescue stop is due: false cancels the stop (no stop, no
+// delay) and the plan is cleared. A finished stop is cleared too, so a later rescue can be planned (D27).
+export function stepRoute(route, dt, rng, diff, canStop = () => true) {
   const out = [];
   if (route.phase === 'dwell') {
     route.timer += dt;
@@ -71,13 +73,17 @@ export function stepRoute(route, dt, rng, diff) {
   } else if (route.phase === 'stop') {
     route.stopTimer += dt;
     if (route.stopTimer >= CFG.quests.rescue.stop) {
-      route.phase = 'leg'; route.stopTimer = 0; route.stop.done = true;
+      route.phase = 'leg'; route.stopTimer = 0; route.stop = null;
       out.push({ type: 'stopEnd' });
     }
   } else {
     route.timer += dt;
     const s = route.stop;
-    if (s && !s.started && s.leg === route.at && route.timer >= route.legDur * s.at) {
+    const due = s && !s.started && s.leg === route.at && route.timer >= route.legDur * s.at;
+    if (due && !canStop()) {
+      route.stop = null;
+      out.push({ type: 'stopCancel' });
+    } else if (due) {
       s.started = true; route.phase = 'stop'; route.stopTimer = 0; route.delay += CFG.quests.rescue.delay;
       out.push({ type: 'stopStart' });
     } else if (route.timer >= route.legDur) {

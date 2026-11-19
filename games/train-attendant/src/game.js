@@ -14,7 +14,7 @@
 //   seed, flags, time, tick, ended, summary, score, stats, train, route, attendant, carried, followers, passengers,
 //   seatOwner, picker, hold, quests, events
 // state.events holds the events of the LAST step only (cleared at the start of each step); a caller that runs several
-// steps per frame must collect them after every step. Event types: station, depart, slip, stopStart, stopEnd, board,
+// steps per frame must collect them after every step. Event types: station, depart, slip, stopStart, stopEnd (a rescue stop that is no longer possible: questCancelled only), board,
 // alight, need, served, complaint, follow, seated, pickup, picker, radio, offer, offerExpired, questAccepted,
 // questDeclined, questCancelled, questProgress, questDone, questFailed, end. Every event also has `at` (state.time).
 import { CFG } from './config.js';
@@ -24,7 +24,7 @@ import { buildTrain } from './train.js';
 import { createRoute, stepRoute } from './route.js';
 import { emit, difficultyOf, setCarried } from './core.js';
 import { board, boardCount, alight, updatePassengers, moveFollowers, needActions } from './passengers.js';
-import { createQuestState, acceptOffer, declineOffer, onArrive, onStopStart, stepQuests, questActions } from './quests.js';
+import { createQuestState, acceptOffer, declineOffer, onArrive, onStopStart, onStopCancel, stopPossible, stepQuests, questActions } from './quests.js';
 import { clampX } from './train.js';
 
 export const STATE_VERSION = 1;
@@ -89,6 +89,7 @@ function handleRoute(s, transitions) {
     if (tr.type === 'depart') emit(s, { type: 'depart', station: tr.station, name: s.route.stations[tr.station] });
     else if (tr.type === 'slip') emit(s, { type: 'slip', seconds: tr.seconds });
     else if (tr.type === 'stopStart') { emit(s, { type: 'stopStart' }); onStopStart(s); }
+    else if (tr.type === 'stopCancel') onStopCancel(s);
     else if (tr.type === 'stopEnd') emit(s, { type: 'stopEnd' });
     else if (tr.type === 'arrive') {
       const k = tr.station;
@@ -157,7 +158,7 @@ export function step(s, input = {}, dt = CFG.dt) {
   }
 
   doActions(s, inp, dt);
-  handleRoute(s, stepRoute(s.route, dt, s.rng, difficultyOf(s)));
+  handleRoute(s, stepRoute(s.route, dt, s.rng, difficultyOf(s), () => stopPossible(s)));
   if (s.ended) return s;
   updatePassengers(s, dt);
   moveFollowers(s, dt);

@@ -85,8 +85,22 @@ test('a planned rescue stop halts the leg for 10 s in the middle and adds 20 s o
   const kinds = seen.map((x) => x.type);
   assert.deepEqual(kinds, ['depart', 'stopStart', 'stopEnd', 'arrive']);
   assert.equal(route.delay, 20);
-  assert.ok(route.stop.done);
+  assert.equal(route.stop, null, 'a finished stop is cleared so another can be planned');
   assert.ok(Math.abs(legTime - 45) < 0.1, `moving time ${legTime}`);
+});
+
+test('a planned stop that is no longer possible is called off: no stop, no delay, the plan is cleared', () => {
+  const rng = createRng(1), route = createRoute({ trip: 'short' }, rng);
+  planStop(route, 0);
+  const seen = [];
+  for (let i = 0; i < 100000; i++) {
+    const tr = stepRoute(route, CFG.dt, rng, NO_SLIP, () => false);
+    seen.push(...tr.map((x) => x.type));
+    assert.notEqual(route.phase, 'stop');
+    if (tr.some((x) => x.type === 'arrive')) break;
+  }
+  assert.deepEqual(seen, ['depart', 'stopCancel', 'arrive']);
+  assert.equal(route.delay, 0); assert.equal(route.stop, null);
 });
 
 test('eta counts legs, dwells and a pending stop', () => {

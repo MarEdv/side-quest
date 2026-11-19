@@ -314,3 +314,14 @@ The ⏸ button used `click`, which a browser does not deliver for a second finge
 same reason Accept / Decline and the café buttons use `pointerdown`). Now it listens for `pointerdown` like them, and keeps
 `click` so Enter / Space on the focused button still work (`pause()` ignores a second call). Browser-only, so checked in
 headless Chrome with a held walk touch (D37 lists the run), not in a unit test.
+
+## D27 — 2026-11-19 — Rescue stops: called off without a free seat, and more than one per trip
+Two bugs: a rescue cancelled at the stop (no free seat) had already stopped the train, added +20 s and drawn the
+broken-down train; and `route.stop` was never cleared, so `MAKE.rescue` returned null for the rest of the trip (one rescue at
+most). Chosen: `stepRoute` takes a `canStop()` callback and asks it when the planned stop is due; the game answers "a free
+seat and a waiting rescue quest". If not, the plan is cleared, the event `stopCancel` is raised (the game cancels the quest,
+`questCancelled`, no penalty) and nothing stops. A finished stop clears `route.stop` too (the `stopEnd` step). At most one
+rescue stays pending because `MAKE.rescue` still refuses while a rescue quest is active. Alternative: check the seats when
+the offer is accepted only (too early: seats change for minutes before the stop). The old cancel inside `onStopStart` stays as
+a safety net. Side effect: rescues are now offered more than once on long trips, so the balance numbers of D14 may shift
+(not re-tuned here).
