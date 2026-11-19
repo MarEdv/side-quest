@@ -335,3 +335,12 @@ this. Browser-only drawing, checked by eye in Chrome (D37).
 ## D29 — 2026-11-19 — README names the real bots
 `README.md` listed a fourth `hider` bot. `tools/bots.mjs` has `idle`, `sloppy` and `good` only (the pre-existing `BOT_KINDS`
 and its test). The README is corrected; no bot was added.
+
+## D30 — 2026-11-19 — Texts: Swedish wording, unused keys, follow toasts
+Swedish: "Resenärer som åkt med" (not "fraktade"), "◀ ▶ gå" and "caféknappar", "Sittplats", "Ge alla {n} räddade passagerare en
+sittplats före {station}", "Kontakta anslutningen via radio" / "Anslutningen är kontaktad" (instead of "ropa upp"), "{n} s
+försening", "vid cafédisken". All placeholders are unchanged (the i18n test checks them). Unused keys removed after grepping
+`src/` and `index.html` (dynamic keys such as `need_*`, `item_*`, `trip_*`, `q_*` stay): `tripLabel`, `difficultyLabel`,
+`stationsCount`, `hudCarrying`, `hold_*`, `offerExpires`. `toastFollow` and `toastFollowers` are now used: a passenger who
+starts following gives "{name} follows you", and with 2 or more followers "Leading {n}" instead, so leading a whole rescue
+group does not flood the 4-toast stack.
