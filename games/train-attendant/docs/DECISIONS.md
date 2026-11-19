@@ -286,21 +286,22 @@ reproduced; real-input CDP play at 1280x800, at 390x844 and at 844x390 with touc
 done and 1 declined; pause froze time; storage failure (throwing and blocked `localStorage`) did not break play or the end
 screen. PR-4 is now ✅, and S-3's failure case was seen in the browser.
 Findings (each verified) and where they were fixed, in the commits that follow:
-1. A nervous-passenger quest dropped an unchecked ticket (fare lost): D25.
-2. The pause button listened for `click` and could not be tapped while a finger held the walk pad: D26.
-3. A cancelled rescue still stopped the train (+20 s, broken-down train): D27.
-4. Only one rescue per trip because `route.stop` was never cleared: D27.
-5. The strip showed the lost bag's exact position (Q-5 says only the car): D28.
-6. README mentioned a `hider` bot that is not in the sim: D29.
-7. Swedish wording slips: D30.
-8. Rescued passengers' calm bonus was missing from the potential (stars ratio above 1): D31.
-9. Picking up the kit or the bag silently dropped a carried item: D32.
-10. Keyboard hints (Y/N, 1/2/3/0) shown on touch screens: D33.
-11. End screen "Score" label hidden on narrow screens: D33.
-12. Unused i18n keys: D34.
-13. Station names close to real places: D35.
-14. "New best score!" with unavailable storage: D36.
-15. `getBoundingClientRect` every frame: D37.
+1. A nervous-passenger quest dropped an unchecked ticket (fare lost): D25, commit ebcf7ec.
+2. The pause button listened for `click` and could not be tapped while a finger held the walk pad: D26, 0cd5455.
+3. A cancelled rescue still stopped the train (+20 s, broken-down train): D27, 13d9510.
+4. Only one rescue per trip because `route.stop` was never cleared: D27, 13d9510.
+5. The strip showed the lost bag's exact position (Q-5 says only the car): D28, ef41eb1.
+6. README mentioned a `hider` bot that is not in the sim: D29, 5c81150.
+7. Swedish wording slips: D30, a784932.
+8. Rescued passengers' calm bonus was missing from the potential (stars ratio above 1): D31, 900c443.
+9. Picking up the kit or the bag silently dropped a carried item: D32, c2603c9.
+10. Keyboard hints (Y/N, 1/2/3/0) shown on touch screens: D33, 3d49b15.
+11. End screen "Score" label hidden on narrow screens: D33, 3d49b15.
+12. Unused i18n keys (and the unused follow toasts): D30, a784932.
+13. Station names close to real places: D34, 4ee74e6.
+14. "New best score!" with unavailable storage: D35, 5a02b4d.
+15. `getBoundingClientRect` every frame: D36, 503e8c3.
+After the fixes: a headless Chrome sanity run, D37.
 
 ## D25 — 2026-11-19 — Nervous quests skip passengers with an unchecked ticket
 Accepting a nervous quest clears the passenger's `need`, so an open ticket need was lost and the fare was charged at their
@@ -382,3 +383,13 @@ score!". The rank text stays (it is true for this session's list), and a small n
 `main.js` called `getBoundingClientRect()` on the HUD head every frame (a forced layout). It is now measured by a
 `ResizeObserver` on the head (which also fires when the HUD is shown, the chips wrap or the language changes), on window
 `resize` and when a trip starts; the frame reads the cached number. Same pixel result as before; checked in Chrome (D37).
+
+## D37 — 2026-11-19 — Browser sanity run after the fixes
+Headless Chrome over CDP (throw-away scripts outside the repo), `python3 -m http.server`: no console errors or warnings in
+any run. Checked: at 390x844 touch DPR 3, one finger held on the walk pad (the attendant kept walking) while a second finger
+touched the ⏸ button: the game paused (D26); Enter on the focused ⏸ button pauses (keyboard kept); the `<kbd>` hints are
+`display: none` with the touch controls (D33); the strip showed a dashed outline round the bag's car with 🧳 at its top, not at
+the bag (D28); the end screen at 390 px shows the "Score" label (D33); a real non-debug short trip with a throwing
+`localStorage` ended with "Nytt rekord!" plus the note "Sparas inte på den här enheten (lagring ej tillgänglig)" (D35); the HUD
+head still sits correctly under the chips with the cached measurement (D36). NOT re-checked in the browser: the Swedish texts
+by eye beyond that run, a rescue or a lost bag played through, real phones.
