@@ -2,6 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import { step } from '../src/game.js';
 import { CFG } from '../src/config.js';
+import { boardRescue } from '../src/passengers.js';
 import { quiet, addP, run, press, ofType, types, DT } from './helpers.js';
 
 test('a new game boards the first station and every boarder rides to a later station', async () => {
@@ -267,4 +268,11 @@ test('a follower who is leading gets off with the rest and leaves the follower l
   run(s, {}, 0.05);
   assert.deepEqual(s.followers, []);
   assert.ok(!s.passengers.includes(p));
+});
+
+test('rescued passengers add their seat and calm points to the potential (D31)', () => {
+  const s = quiet();
+  const before = s.stats.potential;
+  boardRescue(s, 6, 1);
+  assert.equal(s.stats.potential - before, 6 * (CFG.points.seat + CFG.points.calm));
 });

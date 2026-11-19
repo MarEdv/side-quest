@@ -60,7 +60,7 @@ export function createGame(flags = DEFAULT_FLAGS, seed = null) {
 // ---- stars and the end
 
 export function starsFor(score, potential) {
-  const ratio = potential > 0 ? score / potential : 0;
+  const ratio = potential > 0 ? Math.min(1, score / potential) : 0;
   return 1 + CFG.stars.filter((x) => ratio >= x).length;
 }
 

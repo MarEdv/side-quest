@@ -90,6 +90,7 @@ test('a held action does not repeat instant actions; only the edge counts', () =
 test('stars follow score / potential; negative scores are 1 star', () => {
   assert.equal(starsFor(-500, 1000), 1);
   assert.equal(starsFor(0, 0), 1);
+  assert.equal(starsFor(5000, 1000), 5, 'a ratio above 1 is clamped');
   assert.equal(starsFor(299, 1000), 1);
   assert.equal(starsFor(300, 1000), 2);
   assert.equal(starsFor(550, 1000), 3);

@@ -344,3 +344,9 @@ försening", "vid cafédisken". All placeholders are unchanged (the i18n test ch
 `stationsCount`, `hudCarrying`, `hold_*`, `offerExpires`. `toastFollow` and `toastFollowers` are now used: a passenger who
 starts following gives "{name} follows you", and with 2 or more followers "Leading {n}" instead, so leading a whole rescue
 group does not flood the 4-toast stack.
+
+## D31 — 2026-11-19 — Rescued passengers count their calm bonus in the potential
+`boardRescue` added only the seat points to the stars potential, but a calm arrival of a rescued passenger scores the calm
+points too, so score / potential could pass 1.0. The potential now includes seat + calm for each rescued passenger, and
+`starsFor` clamps the ratio to 1 as a second guard. The potential grows a little on trips with a rescue, so the star
+cut-offs are slightly stricter there (left for the balance pass).

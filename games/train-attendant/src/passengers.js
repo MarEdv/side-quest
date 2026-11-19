@@ -79,7 +79,7 @@ export function boardRescue(s, count, minDest) {
   for (let i = 0; i < count; i++) {
     const p = create(s, { dest: s.rng.int(minDest, s.route.last), rescue: true });
     stand(s, p, order);
-    addPotential(s, CFG.points.seat);
+    addPotential(s, CFG.points.seat + CFG.points.calm); // they can arrive calm too (D31)
     p.seatCounted = true;
     out.push(p);
   }
