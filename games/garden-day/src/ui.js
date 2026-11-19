@@ -6,7 +6,7 @@ import { moveFocus, rankText, bestText, formatDate, levelBannerText, levelEndBut
 import { registerSettings } from './settingsui.js';
 import { registerInstall } from './installui.js';
 import { registerLevels } from './levelsui.js';
-import { LANGS, getLang, t, tx, summaryText, dateLocale } from './i18n.js';
+import { LANGS, getLang, backHref, t, tx, summaryText, dateLocale } from './i18n.js';
 
 export const END_GUARD_MS = 700; // end-screen buttons ignore clicks this long after the game ends (mashed WORK/Space)
 
@@ -29,7 +29,7 @@ export function createUI(ctx, root = document.body) {
   let stack = [], phase = null, endResult = null, shownAt = 0, layout = null, local = {};
 
   const current = () => (stack.length ? screens.get(stack[stack.length - 1]) : null);
-  const focusables = () => [...host.querySelectorAll('button:not([disabled]):not([hidden]), input:not([disabled]), select:not([disabled])')];
+  const focusables = () => [...host.querySelectorAll('button:not([disabled]):not([hidden]), a[href], input:not([disabled]), select:not([disabled])')];
 
   function render(focusSel) {
     const def = current();
@@ -133,7 +133,8 @@ export function createUI(ctx, root = document.body) {
         btn([h('span', {}, t('arcade')), h('small', {}, summaryText(ctx.summary()))], () => A.play()),
         btn(t('settings'), () => api.push('settings')),
         btn(t('highScores'), () => api.push('scores')),
-        installButton()),
+        installButton(),
+        h('a', { class: 'btn linkbtn', id: 'backLink', href: backHref() }, t('backToGames'))),
       h('p', { class: 'small' }, ctx.controlsText()),
       h('p', { class: 'small dim' }, t('menuNote'))),
   });

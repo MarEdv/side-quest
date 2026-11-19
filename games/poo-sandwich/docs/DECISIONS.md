@@ -174,3 +174,13 @@
     `src/main.js`, `gesturestart` and `touchmove` on the canvas prevented (iOS).
   - **Debug hook:** unchanged. This game's `window.__game = { state (getter), start }` became the name all three games use.
 - **Alternatives:** none needed for the hook; dropping `user-scalable=no` would change zoom behaviour (out of scope).
+
+## D26 — 2026-11-19 — "Back to games" link on the title card, handing the language back
+- **Chosen:** (S-12 in `docs/STREAMLINING.md` at the repo root.) `<a id="backLink" class="big secondary" href="../../">`
+  after `#startBtn` in `index.html`, text from the `back` key ("Back to games" / "Tillbaka till spelen", the wording all
+  three games share). `backHref()` in `src/i18n.js` gives `../../?lang=<current language>`; `src/main.js` sets the `href`
+  at start and in the language switch's `onChange`. The launcher already reads `?lang=` and remembers it. `style.css`
+  lets `a.big` share `button.big`'s box (plus no underline and a line height equal to the button height) in the three
+  size tiers, so the card still fits at 844x390.
+- **Alternatives:** no link and rely on the browser's back button (the old assumption A-2; it does not work in an
+  installed app or a new tab); a plain `../../` (the launcher would not follow a language chosen here).

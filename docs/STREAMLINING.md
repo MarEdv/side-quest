@@ -240,6 +240,7 @@ game; Poo Sandwich's `flags.js` is now pure. Garden Day's `config.js` keeps its 
 
 Wave 6: **S-11** is done (D-19, T-4). Garden Day's CSS is in `style.css` with identical computed styles, the head tags
 match, `window.__game` everywhere; zoom stays per game. Garden Day now verified offline.
+**S-12** is done (D-20, T-5): "Back to games" in all three games, passing the language back; A-2 retired.
 
 Priority reflects value against risk: P1 is the foundation and the two largest sources of drift; P2 is the remaining
 duplicated code and visible inconsistencies; P3 changes behaviour or needs an owner decision.

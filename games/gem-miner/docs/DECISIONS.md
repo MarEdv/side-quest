@@ -368,3 +368,12 @@
     `window.__gem` is the same object, kept for existing check scripts.
 - **Alternatives:** rename without the alias (breaks existing scripts); drop `user-scalable=no` to match Garden Day
   (changes zoom behaviour, out of scope).
+
+## D37 — 2026-11-19 — "Back to games" hands the language back to the launcher
+- **Chosen:** (S-12 in `docs/STREAMLINING.md` at the repo root.) The title-screen link `#backLink` keeps its text (`back`:
+  "Back to games" / "Tillbaka till spelen", the wording all three games now share) and its `href` becomes
+  `../../?lang=<current language>` from `backHref()` in `src/i18n.js`. `src/main.js` sets it after the first `apply()` and
+  in the language switch's `onChange`. The launcher already reads `?lang=` and remembers it, the mirror of how it opens a game.
+- **Alternatives:** a plain `../../` and rely on the launcher's own saved choice (the launcher and the game keep separate
+  language settings, so a player who switched here would land in the other language); no link and rely on the browser's
+  back button (the old assumption A-2; it does not work in an installed app or a new tab).

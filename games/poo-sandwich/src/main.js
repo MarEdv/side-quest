@@ -4,7 +4,7 @@ import { createRenderer } from './render.js';
 import { createInput } from './input.js';
 import { createStorage } from './kit/storage.js';
 import { setupLang } from './kit/langdom.js';
-import { i18n, t } from './i18n.js';
+import { i18n, t, backHref } from './i18n.js';
 import { sanitizeBest, judgeRun } from './best.js';
 
 const flags = parseFlags(location.search);
@@ -21,7 +21,9 @@ const readBest = () => sanitizeBest(storage.get('best'));
 
 // Language (F13, D21): kit/langdom.js reads ?lang= (remembered, so later visits without it keep the language) or the saved
 // choice, writes the data-i18n texts and runs the switch.
-const lang = setupLang(i18n, { storage, key: 'lang', onChange: describeFlags });
+// The "Back to games" link hands the language back to the launcher (?lang=, S-12).
+const setBackLink = () => { $('backLink').href = backHref(); };
+const lang = setupLang(i18n, { storage, key: 'lang', onChange() { setBackLink(); describeFlags(); } });
 
 let mode = 'title'; // title | playing | paused | over
 let state = createGame(flags, 1);
@@ -108,6 +110,7 @@ function frame(now) {
 
 lang.bindSwitch($('langSwitch'));
 lang.apply();
+setBackLink();
 describeFlags();
 renderer.resize();
 requestAnimationFrame(frame);

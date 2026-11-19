@@ -75,6 +75,7 @@
     .ui .row { display: flex; flex-wrap: wrap; justify-content: center; gap: 10px; }
     .ui .btn { box-sizing: border-box; min-height: 48px; min-width: 150px; padding: 0 22px; border-radius: 12px; cursor: pointer;
       font: bold 18px system-ui, -apple-system, "Segoe UI", sans-serif; color: #fff; background: #262b33; border: 2px solid #667; }
+    .ui a.btn { display: flex; align-items: center; justify-content: center; text-decoration: none; text-align: center; }
     .ui .btn.primary { background: #ffd23f; color: #14161a; border-color: #ffd23f; }
     .ui .btn:disabled { opacity: .4; cursor: default; }
     .ui .btn:focus-visible { outline: 3px solid #fff; outline-offset: 2px; }
@@ -144,7 +145,7 @@
       .ui .menu { gap: 6px; }
       .ui h1 { font-size: 36px; } .ui h2 { font-size: 22px; }
       .ui .tag { font-size: 14px; }
-      .ui .col { flex-direction: row; width: auto; margin: 2px 0; }
+      .ui .col { flex-direction: row; flex-wrap: wrap; justify-content: center; width: auto; margin: 2px 0; }
       .ui-scroll { max-height: calc(100dvh - 150px); }
       table.scores { font-size: 14px; } table.scores th, table.scores td { padding: 4px 8px; }
     }

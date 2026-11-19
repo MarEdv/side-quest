@@ -1,6 +1,6 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { LANGS, STRINGS, TEXT_SV, setLang, getLang, pickLang, normalizeLang, t, tx, summaryText, dateLocale } from '../src/i18n.js';
+import { LANGS, STRINGS, TEXT_SV, backHref, setLang, getLang, pickLang, normalizeLang, t, tx, summaryText, dateLocale } from '../src/i18n.js';
 import { LEVELS } from '../src/levels.js';
 import { QUEST_TEMPLATES, DOOR, CURB } from '../src/quests.js';
 import { END_MESSAGES } from '../src/game.js';
@@ -71,4 +71,15 @@ test('pure helpers speak the current language', () => {
     assert.equal(checkInput('maxActiveQuests', '9').error, 'Ange ett heltal från 0 till 5.');
   });
   assert.equal(checkInput('maxActiveQuests', '9').error, 'Enter a whole number from 0 to 5.');
+});
+
+test('the main menu link goes back to the launcher with the current language (S-12)', () => {
+  assert.equal(backHref('en'), '../../?lang=en');
+  assert.equal(backHref('sv'), '../../?lang=sv');
+  assert.equal(backHref('xx'), '../../?lang=en');
+  setLang('sv');
+  assert.equal(backHref(), '../../?lang=sv');
+  assert.equal(t('backToGames'), 'Tillbaka till spelen');
+  setLang('en');
+  assert.equal(t('backToGames'), 'Back to games');
 });

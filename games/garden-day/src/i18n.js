@@ -21,7 +21,7 @@ export const STRINGS = {
     noArcade: 'No Arcade scores yet. Finish a day to get on the board.',
     colLevel: 'Level', colBest: 'Best', colWon: 'Won',
     clearWarn: 'Clear all saved scores AND level progress? Every level you unlocked locks again (only Level 1 stays open). This cannot be undone.',
-    clearYes: 'Yes, clear scores and progress', cancel: 'Cancel', clearScores: 'Clear scores', back: 'Back',
+    clearYes: 'Yes, clear scores and progress', cancel: 'Cancel', clearScores: 'Clear scores', back: 'Back', backToGames: 'Back to games',
     scoresBlocked: 'Storage is blocked here: scores last only until you close the page.',
     // pause and end
     levelLine: 'Level {n}: {name}', resume: 'Resume', quitToMenu: 'Quit to menu',
@@ -76,7 +76,7 @@ export const STRINGS = {
     noArcade: 'Inga arkadpoäng än. Spela klart en dag för att komma med på listan.',
     colLevel: 'Bana', colBest: 'Bästa', colWon: 'Vunnen',
     clearWarn: 'Rensa alla sparade poäng OCH banframsteg? Alla banor du har låst upp låses igen (bara bana 1 är öppen). Det går inte att ångra.',
-    clearYes: 'Ja, rensa poäng och framsteg', cancel: 'Avbryt', clearScores: 'Rensa poäng', back: 'Tillbaka',
+    clearYes: 'Ja, rensa poäng och framsteg', cancel: 'Avbryt', clearScores: 'Rensa poäng', back: 'Tillbaka', backToGames: 'Tillbaka till spelen',
     scoresBlocked: 'Lagring är blockerad här: poängen finns bara kvar tills du stänger sidan.',
     levelLine: 'Bana {n}: {name}', resume: 'Fortsätt', quitToMenu: 'Avsluta till menyn',
     nextLevel: 'Nästa bana', retry: 'Försök igen', retryR: 'Försök igen (R)', menu: 'Meny', playAgain: 'Spela igen', playAgainR: 'Spela igen (R)',
@@ -180,6 +180,9 @@ export const TEXT_SV = {
 // t('best', { n: 5 }) (missing keys fall back to English, then to the key) come from the kit.
 export const i18n = createI18n(STRINGS);
 export const { LANGS, DEFAULT_LANG, normalizeLang, pickLang, getLang, setLang, t } = i18n;
+
+// Where the main menu's "Back to games" link goes: the launcher, which reads ?lang= and remembers it (S-12).
+export const backHref = (lang = getLang()) => `../../?lang=${normalizeLang(lang) || DEFAULT_LANG}`;
 
 // Data-table text in the current language (English text without a translation is shown as is).
 export const tx = (english, lang = getLang()) => (lang === 'sv' && english != null && TEXT_SV[english]) || english;

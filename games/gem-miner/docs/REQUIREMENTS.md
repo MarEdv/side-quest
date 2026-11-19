@@ -62,7 +62,7 @@ Sonnet implements, Haiku looks up docs; never ask the owner questions.
 | G-2 | No fail state (a relaxing game); the timer measures how fast you found the dream diamond. | ✅ verified in headless Chrome (D19) |
 | G-3 | Progress is saved on the device automatically (localStorage, keys prefixed `gem-miner.`); **Continue** resumes and **New game** starts a fresh world. Storage failures never break the game. Continue resumes the saved world with the seed, size, fog and durability it was started with; `worldSize` / `seed` in the URL apply to New game, and New game asks for a second tap when it would replace a save (D25). | ✅ verified in headless Chrome (D28): saved-game title, second-press New game, URL-mismatch note, reload + Continue. Storage comes from the shared kit since D32; saved best times, language and a save written before D32 were checked in headless Chrome after it (save and quit, Continue, reload). |
 | G-4 | The best completion times (top 5) are kept on the device and shown on the title and win screens. | ✅ verified (win on a crafted save, title list); top 5 per world size |
-| G-5 | A "Back to games" link leads to the launcher (`../../`). | ✅ verified in headless Chrome (D19) |
+| G-5 | A "Back to games" link leads to the launcher (`../../`), and its `href` is `../../?lang=<current language>` (set on load and on every language switch) so the launcher opens in the player's language. | ✅ verified in headless Chrome (D19); the `?lang=` hand-back D37 (S-12): `backHref` in `src/i18n.js`, tested in `tests/i18n.test.js` |
 | G-6 | Autosave every ~5 s, on page hide, on pause and on quit; the first save asks the browser for persistent storage (D15). Winning clears the save. | ✅ verified (reload + Continue, D19) |
 
 ### 3.5 Controls and platforms

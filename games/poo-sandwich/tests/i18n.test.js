@@ -1,7 +1,7 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
-import { LANGS, STRINGS, NAMES, pickLang, normalizeLang, getLang, setLang, t, name } from '../src/i18n.js';
+import { LANGS, STRINGS, NAMES, pickLang, normalizeLang, getLang, setLang, t, name, backHref } from '../src/i18n.js';
 import { stringProblems, missingHtmlKeys } from '../src/kit/lang.js';
 import { STATIONS, TASKS, POO_TASKS } from '../src/world.js';
 
@@ -43,4 +43,15 @@ test('t fills placeholders in the current language and falls back to English, th
   assert.equal(name('Not a task'), 'Not a task');
   assert.equal(t('resume', null, 'xx'), 'Resume');
   assert.equal(name('Get coffee', 'en'), 'Get coffee');
+});
+
+test('the back link goes to the launcher and hands the language back (S-12)', () => {
+  assert.equal(backHref('en'), '../../?lang=en');
+  assert.equal(backHref('sv'), '../../?lang=sv');
+  assert.equal(backHref('xx'), '../../?lang=en');
+  setLang('sv');
+  assert.equal(backHref(), '../../?lang=sv');
+  assert.equal(t('back'), 'Tillbaka till spelen');
+  setLang('en');
+  assert.equal(t('back'), 'Back to games');
 });

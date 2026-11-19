@@ -130,3 +130,6 @@ export const rockNames = (power, lang = getLang()) => names(lang).rocks.slice(0,
 
 // 12345 → '12,345' (en) / '12 345' (sv).
 export const num = (n, lang = getLang()) => Number(n).toLocaleString(lang === 'sv' ? 'sv-SE' : 'en');
+
+// Where the start screen's "Back to games" link goes: the launcher, which reads ?lang= and remembers it (S-12).
+export const backHref = (lang = getLang()) => `../../?lang=${normalizeLang(lang) || DEFAULT_LANG}`;

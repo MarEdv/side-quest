@@ -760,3 +760,15 @@ Cache-Control, so heuristic freshness hid some effects and showed others that Gi
 - **Alternatives:** keep the styles inline (the only game unlike the others); bump the cache to `sidequest-v2` (no gain,
   see above); add `color-scheme` (changes the look of native controls); drop `window.__state` (breaks recorded check
   scripts).
+
+### D-40 — "Back to games" link on the main menu, handing the language back (2026-11-19)
+- **Chosen:** (S-12 in `docs/STREAMLINING.md` at the repo root.) The `main` screen in `src/ui.js` ends its button column
+  with `<a class="btn linkbtn" id="backLink" href="../../?lang=<lang>">` (key `backToGames`: "Back to games" /
+  "Tillbaka till spelen", the wording all three games share; `back` stays "Back"). The `href` comes from `backHref()` in
+  `src/i18n.js` at render time, and the menu re-renders on a language switch, so it follows the language. The menu's
+  keyboard handling includes `a[href]` in its focusable list, so Tab and the arrow keys reach the link. `style.css`: `.ui a.btn` is
+  centred without underline; in short viewports `.ui .col` now wraps and centres (the link takes a second row at 844x390,
+  where the other buttons fill the first; L-1 said five buttons fit in a row, now four do).
+- **Alternatives:** no link and rely on the browser's back button (the old assumption A-2; it does not work in an
+  installed app or a new tab); a text link outside the button column (not reachable the same way and a different look);
+  a plain `../../` (the launcher would not follow a language chosen here).

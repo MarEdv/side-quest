@@ -29,6 +29,7 @@ and solving them.
 | F11 | Difficulty ramps during the day (boss throws more often, sandwiches faster). | ✅ |
 | F12 | Screens: title / how-to-play, playing, paused, game-over/win summary with restart. | ✅ |
 | F13 | English and Swedish: every player-facing text (screens, how-to, canvas HUD, map labels, task names, floating texts, aria labels) in both languages. Language from `?lang=en|sv` (the launcher passes it), else the saved choice (`poo-sandwich-lang`), else the browser language, else English; an **EN / SV** switch on the title card changes and remembers it. The game name and the debug flags line stay as they are. | ✅ D19, D21 (language rules, `?lang=`/saved-choice handling and the switch come from the repo kit); `tests/i18n.test.js`; Swedish title, play, to-do list and game-over screens, `?lang=` memory and the switch checked in headless Chrome at 1000x700, 390x844 and 844x390. |
+| F14 | The title card has a **Back to games** link (`Tillbaka till spelen`) after the Start button, styled as a secondary button. It is a normal link whose `href` is `../../?lang=<current language>`, set on load and on every language switch, so the launcher opens in the player's language. | ✅ S-12; `backHref` unit-tested in `tests/i18n.test.js`; checked in headless Chrome at 390x844 and 844x390 in Swedish (screenshots). |
 
 ### 2.2 Controls & platforms
 | ID | Requirement | Status |

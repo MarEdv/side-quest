@@ -1,7 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
-import { LANGS, STRINGS, NAMES, t, num, pickLang, normalizeLang, getLang, setLang, gemName, hatchetName, hatchetShort, hatchetTitle, rockNames } from '../src/i18n.js';
+import { LANGS, STRINGS, NAMES, t, num, pickLang, normalizeLang, getLang, setLang, gemName, hatchetName, hatchetShort, hatchetTitle, rockNames, backHref } from '../src/i18n.js';
 import { stringProblems, missingHtmlKeys } from '../src/kit/lang.js';
 import { GEMS, DREAM } from '../src/economy.js';
 import { HATCHETS } from '../src/mining.js';
@@ -84,4 +84,15 @@ test('game hints follow the current language (English by default)', (tt) => {
   };
   assert.equal(hard(), 'Too hard for your Wood hatchet');
   assert.equal(hard('sv'), 'För hårt för din träyxa');
+});
+
+test('the back link goes to the launcher and hands the language back (S-12)', () => {
+  assert.equal(backHref('en'), '../../?lang=en');
+  assert.equal(backHref('sv'), '../../?lang=sv');
+  assert.equal(backHref('xx'), '../../?lang=en');
+  setLang('sv');
+  assert.equal(backHref(), '../../?lang=sv');
+  assert.equal(t('back'), 'Tillbaka till spelen');
+  setLang('en');
+  assert.equal(t('back'), 'Back to games');
 });

@@ -11,7 +11,7 @@ import { createInput } from './input.js';
 import { createAudio } from './audio.js';
 import { createUI } from './ui.js';
 import { HATCHETS } from './mining.js';
-import { i18n, t as T, num, hatchetName } from './i18n.js';
+import { i18n, t as T, num, hatchetName, backHref } from './i18n.js';
 import { setupLang } from './kit/langdom.js';
 
 const flags = parseFlags(location.search);
@@ -38,12 +38,14 @@ const ui = createUI({
 
 // Language (P-5, D31): ?lang= from the launcher, else the saved choice, else the browser's; a ?lang= is remembered.
 // The kit applies the page's data-i18n* texts; a switch on the title screen redraws it, focus kept on the pressed button.
+const setBackLink = () => { document.getElementById('backLink').href = backHref(); };
 const lang = setupLang(i18n, {
   storage, key: 'lang',
-  onChange(l) { ui.resetHud(); showTitle(titleNote, `lang-${l}`); },
+  onChange(l) { setBackLink(); ui.resetHud(); showTitle(titleNote, `lang-${l}`); },
 });
 lang.bindSwitch(document.getElementById('langSwitch'));
 lang.apply();
+setBackLink();
 
 const isTouch = () => input.touchActive();
 const controlsText = () => T(isTouch() ? 'controlsTouch' : 'controlsKeys');

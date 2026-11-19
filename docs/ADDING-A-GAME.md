@@ -97,4 +97,6 @@ Then move anything that must live at the repo root (CI workflows, `.gitignore` e
 - **Service workers**: register with a relative URL (`register('sw.js')`) so the scope stays inside the game folder, and use
   a cache name unique to the game. Never register a worker at the site root (the root `sw.js` is reserved, D-2).
 - **localStorage** is shared by every game on the origin: prefix your keys with the game's slug.
-- A link back to the launcher is `../../`.
+- **Back to games:** the start screen has a link to `../../?lang=<the game's current language>` ("Back to games" /
+  "Tillbaka till spelen"), updated when the player switches language: the mirror of the launcher's `?lang=` hand-off.
+  The three games build it with a `backHref()` in their `src/i18n.js`.

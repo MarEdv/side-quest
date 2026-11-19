@@ -360,3 +360,24 @@
 - **Who did what:** an Opus subagent made the change; Fable compared styles and checked hooks and offline.
 - **Alternatives:** move the CSS and tidy it (reorders and merges are where a byte-for-byte move stops being provably
   identical); one viewport for all (changes zoom behaviour on phones).
+
+### D-20 — Every game links back to the launcher, in its own language; A-2 retired (2026-11-19)
+- **Chosen:** S-12 of `docs/STREAMLINING.md`. Garden Day and Poo Sandwich got the "Back to games" link Gem Miner already
+  had; in all three it goes to `../../?lang=<current language>` and follows the EN/SV switch, so the launcher opens in
+  the language the player was using (the launcher remembers a `?lang=`, D-13). Same wording in all three. T-5.
+- **A-2 retired:** "games don't need a link back to the launcher; browser back works" no longer holds once the launcher
+  is installed as an app (D-6): an installed app may have no back button, and opening a game from a home-screen shortcut
+  leaves nothing to go back to.
+- **Layout:** Garden Day's main menu gained a sixth item; on short landscape phones its menu now wraps the link onto a
+  second row (its D-40). Fable compared computed styles of every Garden Day screen before and after: only the main menu
+  changed; Settings, High scores, Levels, a running day and the pause dock are identical.
+- **Seen while checking:** a headless Chrome profile reused across runs served a cached old `i18n.js` for two games, so
+  the first browser check showed the old link. The checks now disable the HTTP cache. This only concerns how the
+  checks are run; players never had the stale file (the result after disabling the cache is the real one).
+- **Who did what:** a Sonnet subagent added the link; Fable checked layout, keyboard and language in headless Chrome.
+- **Alternatives:** a plain `../../` (the launcher would open in its own saved language, which may differ from the one
+  the player just chose); keep relying on browser back (A-2).
+
+| ID | Date | Assumption |
+|----|------|------------|
+| A-2 | 2026-11-19 | Retired by D-20: every game now links back to the launcher. |

@@ -18,6 +18,7 @@ export const STRINGS = {
     controlsTap: 'Tap or click where you want the worker to walk.',
     controlsAuto: 'Keyboard: WASD / arrows to move, P or Esc to pause. Mouse: click to walk. Touch: drag on the left half as a joystick.',
     start: 'Start work day',
+    back: 'Back to games',
     best: 'Best score: {n}',
     language: 'Language',
     paused: '⏸ Paused',
@@ -63,6 +64,7 @@ export const STRINGS = {
     controlsTap: 'Tryck eller klicka där du vill att den anställda ska gå.',
     controlsAuto: 'Tangentbord: WASD / piltangenterna för att gå, P eller Esc för paus. Mus: klicka för att gå. Pekskärm: dra på vänstra halvan som en joystick.',
     start: 'Börja arbetsdagen',
+    back: 'Tillbaka till spelen',
     best: 'Bästa poäng: {n}',
     language: 'Språk',
     paused: '⏸ Pausat',
@@ -128,3 +130,6 @@ export const i18n = createI18n(STRINGS);
 export const { LANGS, DEFAULT_LANG, normalizeLang, pickLang, getLang, setLang, t } = i18n;
 
 export const name = (english, lang = getLang()) => NAMES[lang]?.[english] ?? english;
+
+// Where the start screen's "Back to games" link goes: the launcher, which reads ?lang= and remembers it (S-12).
+export const backHref = (lang = getLang()) => `../../?lang=${normalizeLang(lang) || DEFAULT_LANG}`;
