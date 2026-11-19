@@ -331,3 +331,7 @@ The train strip drew 🧳 at the bag's exact x, which showed where to look insid
 attendant is in that car"). Now the strip outlines the whole car (dashed amber) and puts the 🧳 icon at the car's top
 centre; the bag itself is still drawn only in the camera view of that car. The goal text already names the car. Q-5 states
 this. Browser-only drawing, checked by eye in Chrome (D37).
+
+## D29 — 2026-11-19 — README names the real bots
+`README.md` listed a fourth `hider` bot. `tools/bots.mjs` has `idle`, `sloppy` and `good` only (the pre-existing `BOT_KINDS`
+and its test). The README is corrected; no bot was added.

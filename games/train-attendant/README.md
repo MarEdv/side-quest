@@ -27,7 +27,7 @@ saved to the best scores).
 ```sh
 npm start        # at the repo root: http://localhost:8000/games/train-attendant/ (or here, then http://localhost:8000/)
 npm test         # in this folder: node --test tests/*.test.js, no dependencies
-node tools/sim.mjs   # balance bots (idle / sloppy / good / hider) over many seeds
+node tools/sim.mjs   # balance bots (idle / sloppy / good) over many seeds
 ```
 The pure logic (`src/game.js` and the modules it uses) is deterministic for a seed and tested in Node; the browser layer is
 `src/main.js` (loop and screens), `render.js` (canvas), `input.js`, `ui.js` (DOM overlays) and `audio.js`.
