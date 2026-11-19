@@ -433,3 +433,117 @@ long    easy    good      2865   1.00    5.0  0/0/0/0/20         0.2  16/20     
 long    normal  good      3516   0.99    5.0  0/0/0/0/20         1.0  14/20      114    100  12.6     0.0   0.0  9.6     2.8  12.6   253    36.2    12.7     35
 long    hard    good      3801   0.96    5.0  0/0/0/1/19         3.5   5/20      131     99  12.6     0.1   0.0 10.0     3.4  15.8   248    38.6    11.7     32
 ```
+
+## D39 — 2026-11-19 — Re-tuned pacing and balance: needs from the first minute, a complaint ends a need, star cut-offs
+Supersedes the numbers of D14 (and the star cut-offs of D11).
+- **Goal:** steady, varied work from the first minute (other needs soon after the ticket check, several café trips even
+  on a short trip, no stretch of more than ~10 s with nothing to do on normal after the first 20 s) and a difficulty that
+  really rises: the good bot (D38) about 5 / 4 / 3-4 stars on easy / normal / hard with a few complaints on normal,
+  sloppy about 3 / 2-3 / 1-2, idle 1 everywhere.
+- **Mechanics (all numbers in `config.js`):**
+  - `difficulty.*.firstNeed`: the first coffee / snack / question comes `firstNeed` s after the ticket check (or after a
+    rescued passenger, who has no ticket, is seated); later ones after `need` s as before (×`needScale` on long trips).
+  - `needs.giveUp`: a complaint ends a coffee, snack or question need (its points are lost; the `complaint` event says
+    `need` and `gaveUp`); a ticket or seat need stays. P-3 changed. Without it, once a player fell behind every open
+    need complained again every ~20 s (stress back to 60, the need still open): the spiral of D14 turned a slightly slow
+    trip into a deep negative score, and no tuning could place a sloppy player between "fine" and "−0.3".
+  - `carScale`: the boarding shares are for 3 cars and are multiplied by (3 / cars)^0.5 (2 cars ×1.22, 4 cars ×0.87).
+    One attendant serves the whole train; with linear scaling 2 cars had long idle stretches and 4 cars swamped
+    everybody.
+- **Numbers (before → after):** easy board .16 → .12, first .30 → .25, firstNeed 15-60, need 220-380 → 120-200, stress
+  ×.75 → ×.5; normal board .22 → .14, first .40 → .28, firstNeed 12-55, need 150-250 → 80-130, stress ×1 → ×.85; hard
+  board .26 → .19, first .45 → .35, firstNeed 10-45, need 150-250 → 60-110, stress ×1.25 → ×1; stress rate ticket .9 →
+  1.2 (an unchecked ticket now matters before the passenger gets off), seat 1.4 → 1.0; afterComplaint 60 → 45; rescue
+  6-10 → 4-8 passengers at stress 60 → 45 (a failed rescue of 8-10 standing passengers was the main spiral starter for the
+  sloppy bot); stars [.30 .55 .75 .90] → [.10 .35 .80 .95]. Points, quest rewards and penalties, trip lengths, walking
+  speed and holds are unchanged.
+- **Why fewer boarders:** every passenger now asks for something within a minute and then every 1-2 minutes, so the work
+  per passenger is about three times what it was; at the old boarding rates even the planner got 14 complaints on normal
+  and the sloppy bot −0.65. A normal 3-car trip now carries ~56 passengers instead of ~86 (15-27 aboard at a time).
+- **Why these star cut-offs:** the planner throws away little at any load it can handle (ratio .92-.95 on normal), while
+  the sloppy bot is limited by its throughput (a 0.3-1.6 s pause before every job, about 15 jobs a minute, when tickets
+  alone come at about that rate on a short normal trip), so its ratio drops quickly as the load rises. 5 stars now means
+  close to flawless (≥ .95), 4 stars ≥ .80, and the lower cut-offs spread the sloppy and struggling trips (.10 / .35)
+  instead of putting them all at 1 star. Idle play is always negative (−0.7 to −4.6), so it stays at 1 star.
+- **Tried and dropped:** only slower stress (sloppy stayed at ~.44 with no complaints: its loss is throughput, lost fares
+  and needs, not stress); `firstNeed` 20-60 on normal (the first-leg idle stretch after the opening ticket burst stayed at
+  ~15-18 s; 12-55 halves it); stress ×.75-.9 on normal (the sloppy bot hardly moves, the good bot only gets fewer
+  complaints); `carScale` .7 (2 cars too easy for the good bot: 5.0 on normal); a higher café stress rate.
+- **Result** (`node tools/sim.mjs --seeds 20`, 3 cars, `quests=offer`, `stress=solo`), before (D14 numbers and the old
+  greedy bot; idle was 1.0 everywhere):
+
+```
+trip    diff    bot     score  ratio  stars  dist(1-5)    complaints  clean  carried  calm%  done  failed  decl  min  need/m  café   1st  gapMax  gapAvg  idle%
+short   easy    good       949   1.00    5.0  0/0/0/0/20         0.0  20/20       39     99   2.6     0.0   0.0  2.8     0.0   0.0   167    23.4    14.2     35
+short   easy    sloppy     667   0.74    3.5   1/2/7/7/3         0.8  16/20       38     93   0.9     0.1   1.1  2.8     0.0   0.0   165    12.9    11.1     14
+short   normal  good      1229   0.98    4.9  0/0/0/2/18         0.0  20/20       54    100   2.5     0.0   0.0  2.9     0.2   0.2   169    19.9    10.5     25
+short   normal  sloppy     767   0.66    3.1  1/1/12/6/0         1.5  16/20       52     88   0.7     0.1   1.5  2.8     0.1   0.2   167     3.8     2.9      3
+short   hard    good      1350   0.98    5.0  0/0/0/1/19         0.0  20/20       61     98   2.9     0.0   0.0  3.0     0.2   0.2   177    22.0    12.9     23
+short   hard    sloppy     742   0.57    2.6   4/3/9/4/0         1.8  14/20       58     80   0.8     0.5   1.5  3.0     0.1   0.1   177     3.6     3.5      2
+normal  easy    good      1836   0.98    4.9  0/0/1/0/19         0.1  19/20       65     99   6.8     0.1   0.0  6.0     0.8   1.6   270    31.4    14.2     36
+normal  easy    sloppy    1278   0.73    3.6  1/0/5/14/0         1.3  17/20       60     96   3.0     0.1   2.8  5.9     0.5   1.5   268    27.7    15.2     23
+normal  normal  good      2010   0.82    4.2  0/2/3/4/11         3.3  10/20       86     86   6.6     0.3   0.0  6.1     3.3   8.7   173    25.8    13.3     16
+normal  normal  sloppy    1159   0.51    2.5  3/5/11/1/0         7.6   6/20       83     77   2.5     0.8   2.9  6.0     2.8   7.8   178    10.5     8.8      4
+normal  hard    good      2200   0.82    4.2  1/1/2/5/11         6.5   9/20       96     86   7.2     0.2   0.0  6.3     3.8  10.5   177    22.4    10.6     15
+normal  hard    sloppy     527   0.22    1.6  9/11/0/0/0        27.9   1/20       92     68   2.5     1.0   3.0  6.3     3.1   8.9   181     6.5     5.6      3
+long    easy    good      2806   0.97    4.8  0/0/1/1/18         0.9  15/20       92     99  11.8     0.3   0.0  9.6     0.7   3.8   370    41.1    15.0     40
+long    easy    sloppy    1975   0.77    3.5  0/0/9/11/0         0.6  13/20       82    100   4.8     0.1   5.3  9.4     0.6   2.8   384    41.3    18.9     33
+long    normal  good      2911   0.84    4.2  1/1/3/3/12         8.0   8/20      114     91  11.3     0.5   0.0  9.7     2.7  11.4   253    33.3    14.7     21
+long    normal  sloppy    1831   0.55    2.8  1/6/10/3/0        12.2   2/20      110     84   4.5     1.1   5.3  9.6     2.4  10.6   258    23.4    13.0      9
+long    hard    good      2382   0.62    3.3   4/3/3/3/7        32.1   3/20      131     84  11.6     0.8   0.0 10.0     3.2  14.3   255    31.0    14.2     16
+long    hard    sloppy     601   0.17    1.5  12/6/2/0/0        55.5   0/20      126     77   3.6     1.4   5.9 10.0     2.9  13.2   263    26.4    17.0      7
+```
+After:
+```
+trip    diff    bot     score  ratio  stars  dist(1-5)    complaints  clean  carried  calm%  done  failed  decl  min  need/m  café   1st  gapMax  gapAvg  idle%
+short   easy    idle      -512  -0.69    1.0  20/0/0/0/0         3.0   0/20       29      6   0.0     0.0   2.0  2.7     0.0   0.0   163     0.0     0.0      0
+short   easy    sloppy     516   0.56    3.0  0/0/20/0/0         0.2  16/20       30     81   0.8     0.3   1.1  2.8     5.2   6.7    35     1.0     0.6      1
+short   easy    good      1021   0.95    4.7  0/0/0/7/13         0.0  20/20       31     99   2.3     0.1   0.0  2.8     8.6  10.7    29     9.0     4.9     15
+short   normal  idle     -1127  -1.35    1.0  20/0/0/0/0        20.9   0/20       33      0   0.0     0.0   2.0  2.8     0.0   0.0   169     0.0     0.0      0
+short   normal  sloppy     428   0.42    2.6  2/3/15/0/0         1.3  13/20       34     65   0.6     0.4   1.1  2.8     6.6   7.8    28     0.1     0.1      0
+short   normal  good      1162   0.91    4.3  0/0/2/10/8         0.1  17/20       36     97   2.5     0.3   0.0  2.9    11.2  14.3    24     5.3     3.4      6
+short   hard    idle     -1972  -1.86    1.0  20/0/0/0/0        44.1   0/20       43      0   0.0     0.0   2.5  3.1     0.0   0.0   184     0.0     0.0      0
+short   hard    sloppy      41   0.03    1.4  11/9/0/0/0        10.2   2/20       44     38   0.7     0.8   1.2  3.1     8.7  12.2    25     0.0     0.0      0
+short   hard    good      1369   0.85    3.9  0/0/2/18/0         1.0   8/20       45     90   2.6     0.1   0.0  2.9    16.6  22.0    21     0.8     0.7      1
+normal  easy    idle     -1400  -1.04    1.0  20/0/0/0/0        24.9   0/20       44      0   0.0     0.0   5.2  5.7     0.0   0.0   345     0.0     0.0      0
+normal  easy    sloppy     996   0.52    2.9  1/0/19/0/0         0.7  15/20       48     76   1.9     1.1   3.0  5.9     6.5  16.6    35     0.3     0.2      0
+normal  easy    good      2184   0.97    4.9  0/0/0/2/18         0.0  20/20       50    100   7.0     0.1   0.0  6.0     9.8  24.6    29    10.9     5.1     11
+normal  normal  idle     -3178  -2.11    1.0  20/0/0/0/0        80.7   0/20       51      0   0.0     0.0   5.5  5.9     0.0   0.0   356     0.0     0.0      0
+normal  normal  sloppy     589   0.27    2.3   4/7/9/0/0        12.3   1/20       54     55   1.9     1.5   3.0  6.1     8.5  22.4    29     0.5     0.5      0
+normal  normal  good      2450   0.93    4.3  0/0/0/15/5         1.0   7/20       56     94   7.0     0.1   0.0  6.0    13.7  37.4    24     5.7     3.8      3
+normal  hard    idle     -5962  -3.28    1.0  20/0/0/0/0       165.4   0/20       67      0   0.0     0.0   5.8  6.2     0.0   0.0   373     0.0     0.0      0
+normal  hard    sloppy    -809  -0.30    1.1  19/1/0/0/0        52.8   0/20       71     38   1.1     2.3   2.9  6.3    11.6  31.6    25     0.0     0.0      0
+normal  hard    good      2688   0.79    3.4  0/0/12/8/0         7.3   2/20       73     80   6.8     0.8   0.0  6.3    19.0  54.8    20     0.4     0.3      0
+long    easy    idle     -2919  -1.43    1.0  20/0/0/0/0        68.4   0/20       58      0   0.0     0.0   9.1  9.3     0.0   0.0   559     0.0     0.0      0
+long    easy    sloppy    1515   0.52    2.9  1/1/18/0/0         2.9   8/20       64     76   3.5     1.3   5.2  9.4     6.1  26.1    32     1.4     1.1      0
+long    easy    good      3385   0.97    4.8  0/0/0/4/16         0.1  19/20       70     99  12.1     0.2   0.0  9.7     9.0  40.6    28    14.7     5.8     13
+long    normal  idle     -6624  -2.98    1.0  20/0/0/0/0       187.0   0/20       68      0   0.0     0.0   9.3  9.4     0.0   0.0   564     0.0     0.0      0
+long    normal  sloppy     717   0.24    2.1  3/11/6/0/0        26.1   0/20       71     59   3.0     1.9   5.0  9.5     8.0  35.5    28     0.1     0.1      0
+long    normal  good      3725   0.95    4.5  0/0/0/9/11         1.1  10/20       77     96  12.1     0.3   0.0  9.7    12.3  52.5    24     9.3     4.8      5
+long    hard    idle    -12367  -4.62    1.0  20/0/0/0/0       367.0   0/20       90      0   0.0     0.0   9.6  9.8     0.0   0.0   589     0.0     0.0      0
+long    hard    sloppy   -1708  -0.41    1.0  20/0/0/0/0       108.8   0/20       97     50   2.6     2.5   5.4 10.0    11.8  52.5    22     0.0     0.0      0
+long    hard    good      4141   0.80    3.5  0/0/11/9/0        14.2   0/20      104     84  11.9     0.8   0.0 10.2    18.2  83.7    20     1.2     0.8      0
+```
+- **Reading it:** idle 1 star everywhere. Good: 4.7-4.9 on easy, 4.3-4.5 on normal with ~1 complaint (7-17 of 20 trips
+  clean), 3.4-3.9 on hard with 1-14 complaints; it does 2.3-2.6 / 7 / 12 quests on short / normal / long trips and fails
+  0.1-0.8, and quests are about a quarter of its score (0.23-0.32 on normal trips, 0.13-0.26 on short ones, seeds 1-6). Sloppy: 2.9-3.0 on
+  easy, 2.1-2.6 on normal, 1.0-1.4 on hard; it does 0.6-3.5 quests and fails 0.3-2.5. Pace: 9-10 non-ticket needs a
+  minute on easy, 11-14 on normal, 16-19 on hard (before: 0-3.8); the first at 20-29 s (before 165-384 s); 11-22 café needs
+  on a short trip for the good bot, 7-12 for the sloppy one (before 0-0.2); for the good bot the longest stretch with no open work is 5-6 s on short and normal trips
+  and 9 s on long ones (before 20-41 s, idle 15-40% of the trip), 9-15 s on easy, under 1.2 s on hard.
+- **Options** (12 seeds, normal-length trips; good / sloppy stars, good complaints):
+  `cars=2` easy 5.0 / 3.0, normal 4.8 / 3.0 (0.1), hard 4.4 / 2.1 (0.8), the longest idle stretch 12-17 s on easy and
+  normal (fewer passengers); `cars=4` easy 4.4 / 2.3, normal 4.0 / 1.3 (2.6), hard 3.0 / 1.0 (19.7), on long hard 2.8 (37
+  complaints): harder, as D13 intends, still playable for a skilled player; `stress=contagious` normal 4.3 / 1.6, hard
+  3.2 / 1.0: harder for a slow player, whose stress spreads through the car; `quests=assign` normal 4.4 / 1.8, hard
+  3.4 / 1.0: the sloppy bot skips half its quest jobs, so forced quests fail more often.
+- **Guarded by** `tests/balance.test.js` (seeds 1-6): idle 1 star; mean stars per bot and difficulty on short trips within
+  ranges, rising with skill and falling with difficulty; good on a normal trip 3.8-4.6 stars with at least one complaint
+  and at most 6 per trip, ≥ 5 quests done and ≤ 1 failed, hard clearly harder; quest points 15-40% of the score; the first
+  non-ticket need within 60 s, ≥ 10 a minute, the longest idle stretch ≤ 16 s (mean ≤ 10 s); a short trip has ≥ 20
+  non-ticket needs and ≥ 8 café needs for the good bot (≥ 12 non-ticket needs for the sloppy one); cars 2 / 4,
+  contagious and assign stay above a floor for the good bot.
+- **Open:** the train is emptier than before (about a third full in the middle of a trip; full trains with standing
+  passengers are rare now, so the seat-leading mechanic is mostly used for rescues); the sloppy bot is bimodal near its
+  capacity (4 of 20 normal trips under .10, D39 table); 4 cars on hard stays rough for everyone; a human on a phone may react more
+  slowly than the good bot's 0.5 s.

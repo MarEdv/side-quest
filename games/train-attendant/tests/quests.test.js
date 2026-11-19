@@ -305,7 +305,7 @@ function rescueGame(n = 7) {
   return { s, q: s.quests.active[0] };
 }
 
-test('rescue: the train stops mid-leg for 10 s (+20 s delay), 6-10 passengers board at the front', () => {
+test('rescue: the train stops mid-leg for 10 s (+20 s delay), the stranded passengers board at the front', () => {
   const { s, q } = rescueGame(7);
   assert.equal(q.stage, 'wait'); assert.equal(q.deadlineStation, 1);
   assert.equal(s.route.stop.leg, 0);
@@ -318,7 +318,7 @@ test('rescue: the train stops mid-leg for 10 s (+20 s delay), 6-10 passengers bo
   assert.equal(q.stage, 'seat');
   for (const id of q.pids) {
     const p = s.passengers.find((x) => x.id === id);
-    assert.equal(p.stress >= 60, true);
+    assert.equal(p.stress >= CFG.quests.rescue.stress, true);
     assert.equal(p.noTicket, true); assert.equal(p.ticket, true);
     assert.equal(p.seat, null);
     assert.ok(p.x > 28 && p.x < 56, `stands in the front car: ${p.x}`);
@@ -351,7 +351,7 @@ test('rescue: leading everyone to a seat completes it and calms them', () => {
   assert.equal(done, true);
   assert.equal(s.stats.questsDone, 1);
   assert.ok(s.score >= sc + CFG.quests.rescue.reward);
-  for (const id of q.pids) assert.ok(s.passengers.find((x) => x.id === id).stress < 60);
+  for (const id of q.pids) assert.ok(s.passengers.find((x) => x.id === id).stress < CFG.quests.rescue.stress);
 });
 
 test('rescue: not everyone seated before the next station fails it', () => {
@@ -390,14 +390,15 @@ test('rescue: cancelled before the stop starts means no stop, no delay and no br
   assert.ok(s.route.delay < 20);
 });
 
-test('offers: a rescue is only offered when 6-10 passengers fit, and its count is 6-10', () => {
+test('offers: a rescue is only offered when its passengers fit, and its count is in the configured range', () => {
+  const [lo, hi] = CFG.quests.rescue.count;
   let seen = new Set();
   for (let seed = 1; seed < 60; seed++) {
     const s = riding({}, seed);
     s.quests.timer = 0.01;
     const ev = run(s, {}, 0.1);
     const o = s.quests.offer;
-    if (o && o.type === 'rescue') { assert.ok(o.vars.n >= 6 && o.vars.n <= 10); seen.add(o.vars.n); }
+    if (o && o.type === 'rescue') { assert.ok(o.vars.n >= lo && o.vars.n <= hi); seen.add(o.vars.n); }
   }
   assert.ok(seen.size >= 3);
 });

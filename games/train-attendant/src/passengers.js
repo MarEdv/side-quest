@@ -64,10 +64,11 @@ export function board(s, count, at) {
   return count;
 }
 
-// How many board at station `at`, from the difficulty and the number of seats.
+// How many board at station `at`, from the difficulty and the number of seats. One attendant serves every car, so the
+// share shrinks with more cars and grows with fewer: (3 / cars) ^ carScale (D39).
 export function boardCount(s, at) {
   const d = difficultyOf(s);
-  const share = at === 0 ? d.first : d.board;
+  const share = (at === 0 ? d.first : d.board) * (3 / s.train.carCount) ** CFG.carScale;
   const [lo, hi] = CFG.boardJitter;
   return Math.max(1, Math.round(s.train.seats.length * share * s.rng.range(lo, hi)));
 }
@@ -103,12 +104,18 @@ export function alight(s, k) {
 
 // ---- needs, stress, complaints
 
-// Seconds until a calm passenger's next need: the difficulty's range, scaled by the trip length.
-const needGap = (s) => s.rng.range(...difficultyOf(s).need) * (CFG.trips[s.flags.trip] || CFG.trips.normal).needScale;
+// Seconds until a calm passenger's next need (D39). The first one after the ticket check, or after being seated (a rescued
+// passenger has no ticket to check), comes soon: the difficulty's `firstNeed` range. Later ones come after its `need` range,
+// scaled by the trip length.
+export function needGap(s, first = false) {
+  const d = difficultyOf(s);
+  if (first) return s.rng.range(...d.firstNeed);
+  return s.rng.range(...d.need) * (CFG.trips[s.flags.trip] || CFG.trips.normal).needScale;
+}
 
-export function clearNeed(s, p) {
+export function clearNeed(s, p, served = null) {
   p.need = null;
-  p.nextNeed = needGap(s);
+  p.nextNeed = needGap(s, served === 'ticket');
 }
 
 function drawNeed(s) {
@@ -155,7 +162,11 @@ export function updatePassengers(s, dt) {
     if (p.stress >= ST.complaintAt) {
       p.stress = ST.afterComplaint; p.complaints++; s.stats.complaints++;
       addScore(s, CFG.points.complaint);
-      emit(s, { type: 'complaint', id: p.id, name: p.name });
+      // A coffee, snack or question the passenger complained about is given up (D39): the points are lost, no spiral of
+      // complaints about the same need. A ticket or a seat stays.
+      const gaveUp = CFG.needs.giveUp.includes(p.need);
+      emit(s, { type: 'complaint', id: p.id, name: p.name, need: p.need, gaveUp });
+      if (gaveUp) clearNeed(s, p);
     }
   }
 }
@@ -179,7 +190,7 @@ function serve(s, p, need) {
   addScore(s, pts); s.stats.served++;
   p.stress = Math.max(0, p.stress - CFG.stress.relief);
   if (need === 'ticket') p.ticket = true;
-  clearNeed(s, p);
+  clearNeed(s, p, need);
   emit(s, { type: 'served', id: p.id, name: p.name, need, points: pts });
 }
 
@@ -196,7 +207,7 @@ export function seatFirstFollower(s, row) {
   if (!p) return false;
   s.followers.shift();
   seatPassenger(s, p, seatId);
-  p.need = null; p.nextNeed = needGap(s);
+  p.need = null; p.nextNeed = needGap(s, true);
   p.stress = Math.max(0, p.stress - CFG.stress.seatRelief);
   addScore(s, CFG.points.seat);
   emit(s, { type: 'seated', id: p.id, name: p.name, seat: seatId, points: CFG.points.seat });

@@ -39,24 +39,26 @@ export const CFG = freeze({
   delayStressCap: 90,
 
   // Per difficulty (S-5). board = share of the seats that board at each station, first = at the first station,
-  // need = seconds between a calm passenger's needs, stress = multiplier on how fast stress rises,
+  // firstNeed = seconds from the ticket check (or being seated, for a rescued passenger) to the first other need,
+  // need = seconds between a calm passenger's later needs, stress = multiplier on how fast stress rises,
   // slipChance / slipMax = a leg may take up to slipMax seconds longer (adds to the delay).
   difficulty: {
-    easy: { board: 0.16, first: 0.3, need: [220, 380], stress: 0.75, slipChance: 0.2, slipMax: 10 },
-    normal: { board: 0.22, first: 0.4, need: [150, 250], stress: 1, slipChance: 0.3, slipMax: 15 },
-    hard: { board: 0.26, first: 0.45, need: [150, 250], stress: 1.25, slipChance: 0.4, slipMax: 25 },
+    easy: { board: 0.12, first: 0.25, firstNeed: [15, 60], need: [120, 200], stress: 0.5, slipChance: 0.2, slipMax: 10 },
+    normal: { board: 0.14, first: 0.28, firstNeed: [12, 55], need: [80, 130], stress: 0.85, slipChance: 0.3, slipMax: 15 },
+    hard: { board: 0.19, first: 0.35, firstNeed: [10, 45], need: [60, 110], stress: 1, slipChance: 0.4, slipMax: 25 },
   },
   boardJitter: [0.85, 1.15],
+  carScale: 0.5,         // the boarding shares are for 3 cars; they are multiplied by (3 / cars) ^ carScale
 
   stress: {
     start: [0, 15],      // a boarder's stress
-    rate: { ticket: 0.9, coffee: 1.7, snack: 1.6, question: 2.0, seat: 1.4 }, // per second while the need is unmet
+    rate: { ticket: 1.2, coffee: 1.7, snack: 1.6, question: 2.0, seat: 1.0 }, // per second while the need is unmet
     standing: 1.5,       // rising stress is multiplied by this for standing passengers
     standIdle: 0.3,      // standing without a need still raises stress
     calmDecay: 1.0,      // seated and no need: stress falls this fast
     relief: 25,          // stress removed when a need is met
     seatRelief: 15,
-    complaintAt: 100, afterComplaint: 60,
+    complaintAt: 100, afterComplaint: 45,
     contagious: { above: 70, range: 4, rate: 0.5 }, // flag stress=contagious: per source, per second
     calmBelow: 30,       // leaves "calm" under this
   },
@@ -64,6 +66,7 @@ export const CFG = freeze({
   needs: {
     weights: { coffee: 0.25, snack: 0.2, question: 0.55 },
     ticketDelay: [1, 5], // seconds after boarding until the ticket bubble shows
+    giveUp: ['coffee', 'snack', 'question'], // a complaint ends these needs (the points are lost); tickets and seats stay
   },
 
   points: {
@@ -72,14 +75,15 @@ export const CFG = freeze({
   },
 
   // Stars: score / potential (everything that was on offer: needs, calm arrivals, offered quests).
-  stars: [0.3, 0.55, 0.75, 0.9], // ratios for 2, 3, 4, 5 stars; below the first is 1 star
+  // 5 stars is close to flawless play (D39).
+  stars: [0.1, 0.35, 0.8, 0.95], // ratios for 2, 3, 4, 5 stars; below the first is 1 star
 
   quests: {
     mode: { offer: 'offer', assign: 'assign' },
     offerEvery: [30, 45], offerExpire: 15, maxActive: 2, retryAfter: 5,
     weights: { rescue: 1, connection: 1, nervous: 1, lost: 1, sick: 1 },
     calmInvolved: 30,    // stress taken off passengers involved in a completed quest
-    rescue: { count: [6, 10], stop: 10, delay: 20, stress: 60, stopAt: 0.5, thisLegBefore: 0.4, spareSeats: 2, reward: 150, penalty: -80 },
+    rescue: { count: [4, 8], stop: 10, delay: 20, stress: 45, stopAt: 0.5, thisLegBefore: 0.4, spareSeats: 2, reward: 150, penalty: -80 },
     connection: { ahead: [1, 3], holdLimit: 45, minEta: 25, reward: 100, rebookedShare: 0.5, penalty: -50 },
     nervous: { stress: 80, riseMult: 3, idleRise: 0.3, talks: 3, gap: 6, talkRelief: 15, minEta: 30, reward: 80, penalty: -50 },
     lost: { minEta: 40, reward: 90, penalty: -50 },

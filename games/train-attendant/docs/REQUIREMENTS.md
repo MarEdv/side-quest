@@ -39,8 +39,8 @@ Sonnet implements, Haiku looks up docs; never ask the owner questions.
 | ID | Requirement | Status |
 |----|-------------|--------|
 | P-1 | Each passenger has a seat (or a standing spot), a destination station, a **stress** level 0–100 shown by colour (green → amber → red), and at most one **need** shown as a bubble icon. | 🚧 |
-| P-2 | Needs: 🎫 **ticket** (every boarder, once, soon after boarding), ☕ **coffee** and 🥪 **snack** (bring the item from the café counter), ❓ **question** (answer by holding the action). An unmet need raises stress; meeting it lowers stress and scores points. | 🚧 |
-| P-3 | A passenger whose stress reaches 100 files a **complaint** (score penalty, shown in the HUD); their stress drops back to 60 and the need stays. | 🚧 |
+| P-2 | Needs: 🎫 **ticket** (every boarder, once, soon after boarding), ☕ **coffee** and 🥪 **snack** (bring the item from the café counter), ❓ **question** (answer by holding the action). An unmet need raises stress; meeting it lowers stress and scores points. The first coffee / snack / question comes soon after the ticket check (or after a rescued passenger is seated): 15–60 s on easy, 12–55 s on normal, 10–45 s on hard; later ones 120–200 / 80–130 / 60–110 s apart (×1.5 on `long` trips), so there is steady work from the first minute (D39). | 🚧 |
+| P-3 | A passenger whose stress reaches 100 files a **complaint** (score penalty, shown in the HUD); their stress drops back to 45. A ticket or seat need stays; a coffee, snack or question is given up (its points are lost). (Changed in D39: stress used to drop to 60 and every need stayed, so one late need could complain again every ~20 s.) | 🚧 |
 | P-4 | Stress model (flag `stress`): `solo` (default, each passenger on their own) or `contagious` (very stressed passengers raise the stress of their neighbours in the same car). | 🚧 |
 | P-5 | A passenger who leaves the train calm (stress under 30) scores a small bonus; one who leaves with an unchecked ticket loses the fare. | 🚧 |
 
@@ -56,7 +56,7 @@ Sonnet implements, Haiku looks up docs; never ask the owner questions.
 | ID | Requirement | Status |
 |----|-------------|--------|
 | Q-1 | The train manager radios a side-quest **offer** every 30–45 s of travel (seeded). Flag `quests`: `offer` (default; Accept / Decline, an ignored offer expires after 15 s) or `assign` (every offer is accepted automatically). At most 2 quests are active at once; no offer arrives while 2 are active. Active quests are listed in the HUD with their goal and deadline. | 🚧 |
-| Q-2 | **Rescue** 🚨: a train has broken down ahead. If accepted, the train stops beside it in the middle of the next leg for 10 s (+20 s delay); 6–10 stranded passengers (stress 60) board through the front vestibule. Goal: lead every rescued passenger to a seat before the next station. They have no ticket to check. If no seat is free when the stop is due it is called off (no stop, no delay, the quest is cancelled); a trip can hold several rescues, one at a time (D27). | 🚧 |
+| Q-2 | **Rescue** 🚨: a train has broken down ahead. If accepted, the train stops beside it in the middle of the next leg for 10 s (+20 s delay); 4–8 stranded passengers (stress 45) board through the front vestibule. Goal: lead every rescued passenger to a seat before the next station. They have no ticket to check. If no seat is free when the stop is due it is called off (no stop, no delay, the quest is cancelled); a trip can hold several rescues, one at a time (D27). | 🚧 |
 | Q-3 | **Connection** 🔁: a named passenger must catch a connection at a station 1–3 stops ahead. Goal, before that station: radio the connection from the **cab** (hold 1.5 s) and then tell the passenger the platform (action). If the train is more than 45 s late when you radio, the connection is gone and the passenger is rebooked (half reward). | 🚧 |
 | Q-4 | **Nervous passenger** 😰: a named passenger panics (stress 80, rising 3× as fast). Goal: talk to them 3 times (hold 1.5 s each, at least 6 s apart) before their stress reaches 100 or they reach their station (never chosen while their ticket is unchecked, D25); bringing them 💧 water counts as one talk. | 🚧 |
 | Q-5 | **Lost bag** 🧳: a named passenger lost a bag somewhere on the train. The bag lies in a random spot of a random car; it is seen (and can be picked up) only when the attendant is in that car. The train strip marks that car with an outline and a 🧳 at its top, never the bag's position; the goal text names the car. Goal: pick it up and hand it over before the owner's station. | 🚧 |
@@ -70,7 +70,7 @@ Sonnet implements, Haiku looks up docs; never ask the owner questions.
 | S-2 | End of trip screen: score, a 1–5 star rating, passengers carried, share of calm arrivals, complaints, quests done / failed / declined. | ✅ |
 | S-3 | The 5 best scores per trip length are kept on the device (localStorage, keys prefixed `train-attendant.`) and shown on the title and end screens. Storage failures never break the game; when the scores cannot be kept, the end screen says "Not saved on this device" (D35). Runs with `debug` on are not recorded. | ✅ |
 | S-4 | No fail state: a trip always reaches the last station. | 🚧 |
-| S-5 | Difficulty (flag `difficulty`: `easy`/`normal`/`hard`) scales how many passengers board, how often needs appear and how fast stress rises. | 🚧 |
+| S-5 | Difficulty (flag `difficulty`: `easy`/`normal`/`hard`) scales how many passengers board, how soon and how often needs appear and how fast stress rises (numbers in `DECISIONS.md` D39). The boarding share is for 3 cars; with 2 or 4 cars it is multiplied by (3 / cars)^0.5, as one attendant serves the whole train. | 🚧 |
 
 ### 3.6 Controls and platforms
 | ID | Requirement | Status |
@@ -87,7 +87,7 @@ Sonnet implements, Haiku looks up docs; never ask the owner questions.
 | V-3 | English and Swedish: EN / SV switch on the title screen, `?lang=` from the launcher, the kit's language rules (`kit/lang.js`, `kit/langdom.js`). Station names stay as they are. | ✅ |
 | V-4 | The title screen has a "Back to games" link to `../../?lang=<current language>` (root T-5). The page shell follows the shared shape (root T-4); with `debug` on the state is on `window.__game`. | ✅ |
 | V-5 | Pure game logic (no DOM) in modules tested with `node --test`; the browser modules are listed in `package.json`; root conventions check passes. | ✅ |
-| V-6 | A balance bot (`tools/sim.mjs`) plays trips with several strategies (idle, sloppy, good) over many seeds; the tuning keeps idle play at 1 star and good play at 4–5 stars. | ✅ |
+| V-6 | A balance bot (`tools/sim.mjs`) plays trips with several strategies (idle, sloppy, good) over many seeds; the tuning keeps idle play at 1 star and good play at 4–5 stars. Since D38 / D39 the good bot plans a few jobs ahead like a skilled player and the targets are: idle 1 star everywhere; good about 5 on easy, 4 on normal (with a few complaints), 3–4 on hard; sloppy about 3 / 2–3 / 1–2. The sim also measures the pace (non-ticket needs per minute, idle stretches); `tests/balance.test.js` guards stars, complaints, quests and pace on fixed seeds. | ✅ |
 
 ### 3.8 Status notes
 - **Browser layer built (D16..D22) and driven in headless Google Chrome (D23 lists what was and was not checked).** ✅ rows
@@ -105,7 +105,8 @@ Sonnet implements, Haiku looks up docs; never ask the owner questions.
 - Pure logic rows (P-*, T-1..T-4, Q-*, S-4, S-5) stay 🚧 as before: unit-tested and exercised in play, but not each verified
   by hand in the browser.
 - Numbers that differ from or add to the text above are listed in `DECISIONS.md` D10..D15 (trip length, the 20 s rescue
-  delay, random slips, nervous passengers have no other needs, the `seat` need, stars from score / potential).
+  delay, random slips, nervous passengers have no other needs, the `seat` need, stars from score / potential); the current
+  balance numbers (boarding, need gaps, stress, star cut-offs) are in D39, which supersedes those of D11 and D14.
 
 ## 4. Out of scope (for now)
 - Offline play / service worker and install as an app (same as Gem Miner and Poo Sandwich; root `docs/STREAMLINING.md` S-17).

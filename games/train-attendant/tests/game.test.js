@@ -91,11 +91,10 @@ test('stars follow score / potential; negative scores are 1 star', () => {
   assert.equal(starsFor(-500, 1000), 1);
   assert.equal(starsFor(0, 0), 1);
   assert.equal(starsFor(5000, 1000), 5, 'a ratio above 1 is clamped');
-  assert.equal(starsFor(299, 1000), 1);
-  assert.equal(starsFor(300, 1000), 2);
-  assert.equal(starsFor(550, 1000), 3);
-  assert.equal(starsFor(750, 1000), 4);
-  assert.equal(starsFor(900, 1000), 5);
+  CFG.stars.forEach((cut, i) => { // the cut-offs in config.js give 2..5 stars
+    assert.equal(starsFor(Math.round(cut * 1000) - 1, 1000), i + 1);
+    assert.equal(starsFor(Math.round(cut * 1000), 1000), i + 2);
+  });
   assert.equal(starsFor(2000, 1000), 5);
 });
 

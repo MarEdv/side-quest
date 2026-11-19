@@ -79,7 +79,7 @@ function planner(P, offers) {
     const fixed = (...legs) => (_, carried) => ({ legs, carried });
     const passengerJob = (p, need, key, route, value, lost) => {
       const r = rate(p, need);
-      const giveUp = (CFG.needs.giveUp || []).includes(need); // a complaint ends the need: once, and its points are gone
+      const giveUp = CFG.needs.giveUp.includes(need); // a complaint ends the need: once, and its points are gone
       const j = { key, value, lost, pen: -CFG.points.complaint, bad: (CFG.stress.complaintAt - p.stress) / r, every: giveUp ? 0 : after / r, giveUp, gone: Infinity, next, pLeave, route };
       if (P.knowDest) { j.gone = eta(s.route, p.dest); j.pLeave = 0; }
       out.push(j);
