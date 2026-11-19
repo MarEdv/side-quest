@@ -5,8 +5,8 @@ import { CFG } from './config.js';
 
 // Fictional names, one list for both languages (A-1).
 export const STATION_NAMES = Object.freeze([
-  'Alderby', 'Birchfield', 'Cinderton', 'Dunmere', 'Eastholm', 'Fernwick', 'Grimsby Cross', 'Hollowell', 'Ironbridge',
-  'Juniper Hill', 'Kettleton', 'Larkspur', 'Mossgate', 'Northcombe', 'Oakhurst', 'Pebbleford',
+  'Alderwick', 'Birchmere', 'Cinderlow', 'Dunmere', 'Eastholm', 'Fernlow', 'Gullcross', 'Hollowfen', 'Ironwater',
+  'Junebrook', 'Kettlebrae', 'Larkmoor', 'Mossgate', 'Northwend', 'Oakenholt', 'Pebbleford',
 ]);
 
 // Picks `n` distinct names in a seeded order.

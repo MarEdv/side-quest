@@ -364,3 +364,10 @@ The `<kbd>` hints (Y / N, 1 / 2 / 3 / 0) on the Accept / Decline and café butto
 (`body.touch`, the class `showTouch` already sets). The end screen's "Score" label reused `.lbl`, which narrow screens
 hide (a chip rule, max-width 560 px); it has its own class `endlbl` now and is always visible. CSS only; checked at 390 px in
 Chrome (D37).
+
+## D34 — 2026-11-19 — Clearly fictional station names
+"Grimsby Cross" and "Ironbridge" are real places, and others on the list (Birchfield, Hollowell, Oakhurst, Larkspur, Juniper
+Hill, Northcombe, Kettleton, Alderby, Cinderton, Fernwick) are close to real towns or villages. The whole list was replaced by
+invented compounds: Alderwick, Birchmere, Cinderlow, Dunmere, Eastholm, Fernlow, Gullcross, Hollowfen, Ironwater, Junebrook,
+Kettlebrae, Larkmoor, Mossgate, Northwend, Oakenholt, Pebbleford. I know of no station or town with these names, but cannot
+check a map: if one turns out to be real, swap it in `src/route.js`. A-1 ("fictional names") is unchanged.
