@@ -278,3 +278,26 @@ Method: headless Google Chrome driven over CDP from throw-away Node scripts outs
 - Known rough edges: standing passengers in a vestibule overlap (up to 8 in 4 m); the radio card and the touch buttons can cover
   part of the car on a short landscape phone; the debug line can sit under the café picker.
 
+
+## D24 — 2026-11-19 — Verification by Opus (2026-11-19)
+An Opus verifier checked the finished game in a second round. Done and green: root `npm test`; the sim result of D14
+reproduced; real-input CDP play at 1280x800, at 390x844 and at 844x390 with touch at DPR 3, served at the root and under the
+`/side-quest/` prefix; the launcher card in EN and SV (opens the game with `?lang=`); a keys-only normal trip with 6 quests
+done and 1 declined; pause froze time; storage failure (throwing and blocked `localStorage`) did not break play or the end
+screen. PR-4 is now ✅, and S-3's failure case was seen in the browser.
+Findings (each verified) and where they were fixed, in the commits that follow:
+1. A nervous-passenger quest dropped an unchecked ticket (fare lost): D25.
+2. The pause button listened for `click` and could not be tapped while a finger held the walk pad: D26.
+3. A cancelled rescue still stopped the train (+20 s, broken-down train): D27.
+4. Only one rescue per trip because `route.stop` was never cleared: D27.
+5. The strip showed the lost bag's exact position (Q-5 says only the car): D28.
+6. README mentioned a `hider` bot that is not in the sim: D29.
+7. Swedish wording slips: D30.
+8. Rescued passengers' calm bonus was missing from the potential (stars ratio above 1): D31.
+9. Picking up the kit or the bag silently dropped a carried item: D32.
+10. Keyboard hints (Y/N, 1/2/3/0) shown on touch screens: D33.
+11. End screen "Score" label hidden on narrow screens: D33.
+12. Unused i18n keys: D34.
+13. Station names close to real places: D35.
+14. "New best score!" with unavailable storage: D36.
+15. `getBoundingClientRect` every frame: D37.

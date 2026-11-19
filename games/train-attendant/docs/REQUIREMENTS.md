@@ -16,7 +16,7 @@ find a lost bag, help a sick passenger.
 | PR-1 | Game called **"Train Attendant"**, one player. | 🚧 |
 | PR-2 | The player is a train attendant who manages a train full of passengers. | 🚧 |
 | PR-3 | The player is given side quests during the trip, such as saving passengers from another broken-down train, handling stressed passengers and managing connections for passengers. | 🚧 |
-| PR-4 | Listed side by side with the existing games in the Side Quest Project launcher. | 🚧 |
+| PR-4 | Listed side by side with the existing games in the Side Quest Project launcher. | ✅ |
 | TR-1 | Runs in any modern browser; tested in Chrome. | 🚧 |
 | TR-2 | Minimal dependencies (D1: none). | ✅ |
 
@@ -99,6 +99,9 @@ Sonnet implements, Haiku looks up docs; never ask the owner questions.
 - **Still 🚧:** C-2 (walk pad, sliding and action by emulated touch events, two fingers at once; the Accept / Decline and
   café buttons only through dispatched `pointerdown` events, no real finger, no real phone), C-3 (pause on blur and on hidden was checked with dispatched events, not a real focus loss; no
   real iOS or Android gesture check), V-2 (sounds are called without errors but nobody listened), TR-1 (headless Chrome only).
+- **Verified by Opus (D24, 2026-11-19):** PR-4 (the 4th launcher card in EN and SV, at the root and under `/side-quest/`,
+  opens the game with `?lang=`), S-3 storage failure (headless Chrome with a throwing and with a blocked `localStorage`: the
+  game plays and the end screen shows).
 - Pure logic rows (P-*, T-1..T-4, Q-*, S-4, S-5) stay 🚧 as before: unit-tested and exercised in play, but not each verified
   by hand in the browser.
 - Numbers that differ from or add to the text above are listed in `DECISIONS.md` D10..D15 (trip length, the 20 s rescue
