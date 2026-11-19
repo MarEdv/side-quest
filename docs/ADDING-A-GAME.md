@@ -42,7 +42,9 @@ A game is a folder `games/<slug>/` (lower-case kebab-case, it becomes the URL) c
 
   `browserModules` lists the files under `src/` that touch the browser (DOM, `window`, storage, audio). Every other
   module in `src/` must be DOM-free so it can be tested in Node; `tests/conventions.test.js` at the root checks both
-  directions, along with the relative-URL and import rules above.
+  directions, along with the relative-URL and import rules above. It also expects `tests/i18n.test.js` to run the
+  kit's `stringProblems(STRINGS)` (plus `missingHtmlKeys(html, STRINGS)` if the page uses `data-i18n`), and `catch {`
+  rather than an unused `catch (e)`.
 
 Recommended: the game's own `README.md`, `CLAUDE.md` (copy the skeleton of an existing game's) and `docs/`.
 

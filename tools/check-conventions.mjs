@@ -215,6 +215,49 @@ export function checkPurity(srcDir, browserModules, label) {
   return problems;
 }
 
+// ---------------------------------------------------------------- F: catch style, i18n tests
+
+// `catch (x) { ... }` where the block never mentions x: write `catch {`. Comments and strings do not count as a mention.
+export function findUnusedCatchBindings(name, text) {
+  const code = stripCode(text, { strings: false }), hits = [];
+  for (const m of code.matchAll(/\bcatch\s*\(\s*([\w$]+)\s*\)\s*\{/g)) {
+    let depth = 1, i = m.index + m[0].length;
+    const start = i;
+    for (; i < code.length && depth; i++) { if (code[i] === '{') depth++; else if (code[i] === '}') depth--; }
+    const id = m[1].replace(/\$/g, '\\$');
+    if (!new RegExp(String.raw`(?<![\w$])${id}(?![\w$])`).test(code.slice(start, i))) {
+      hits.push(`${name}:${lineOf(code, m.index)}: catch (${m[1]}) never uses ${m[1]}; write \`catch {\``);
+    }
+  }
+  return hits;
+}
+
+// The optional catch binding when the error is not used. dir is a part's folder; subdirs are the folders in it to read
+// ('' for all of dir).
+export function checkCatchStyle(dir, subdirs, label = dir) {
+  const problems = [];
+  for (const sub of subdirs) {
+    for (const f of listFiles(join(dir, sub), ['.js', '.mjs'])) {
+      problems.push(...findUnusedCatchBindings(`${label}/${sub ? sub + '/' : ''}${f}`, read(join(dir, sub, f))));
+    }
+  }
+  return problems;
+}
+
+// A part's i18n test runs the kit's checks: stringProblems(), and missingHtmlKeys() when index.html has data-i18n keys.
+export function checkI18nTest(dir, label = dir) {
+  const file = join(dir, 'tests', 'i18n.test.js');
+  if (!existsSync(file)) return [`${label}/tests/i18n.test.js is missing`];
+  const test = stripCode(read(file), { strings: false });
+  const html = existsSync(join(dir, 'index.html')) ? read(join(dir, 'index.html')) : '';
+  const problems = [];
+  if (!/\bstringProblems\s*\(/.test(test)) problems.push(`${label}/tests/i18n.test.js must call stringProblems( from kit/lang.js`);
+  if (html.includes('data-i18n') && !/\bmissingHtmlKeys\s*\(/.test(test)) {
+    problems.push(`${label}/tests/i18n.test.js must call missingHtmlKeys( (index.html has data-i18n keys)`);
+  }
+  return problems;
+}
+
 // ---------------------------------------------------------------- everything
 
 export function gameSlugs(root = ROOT) {
@@ -230,6 +273,8 @@ export function checkGame(root, slug) {
     ...checkImports(dir, label),
     ...checkPackage(pkg, label),
     ...checkPurity(join(dir, 'src'), pkg?.browserModules ?? null, label),
+    ...checkCatchStyle(dir, [''], label),
+    ...checkI18nTest(dir, label),
   ];
 }
 
@@ -251,11 +296,15 @@ export function checkKitModules(kitDir, label = 'kit') {
 
 export const LAUNCHER_BROWSER_MODULES = ['launcher.js'];
 export function checkLauncher(root = ROOT) {
-  return checkPurity(join(root, 'src'), LAUNCHER_BROWSER_MODULES, 'launcher');
+  return [
+    ...checkPurity(join(root, 'src'), LAUNCHER_BROWSER_MODULES, 'launcher'),
+    ...checkCatchStyle(root, ['src', 'tools', 'tests'], 'launcher'),
+    ...checkI18nTest(root, 'launcher'),
+  ];
 }
 
 export function checkConventions(root = ROOT) {
-  return [...gameSlugs(root).flatMap((slug) => checkGame(root, slug)), ...checkLauncher(root), ...checkKitModules(join(root, 'kit'))];
+  return [...gameSlugs(root).flatMap((slug) => checkGame(root, slug)), ...checkLauncher(root), ...checkKitModules(join(root, 'kit')), ...checkCatchStyle(join(root, 'kit'), [''], 'kit')];
 }
 
 if (process.argv[1] === fileURLToPath(import.meta.url)) {

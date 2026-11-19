@@ -12,7 +12,7 @@ let statusKey = 'loading';
 
 // Reading window.localStorage can itself throw (blocked storage): the language then just isn't remembered.
 let backend = null;
-try { backend = window.localStorage; } catch (_) { /* not remembered */ }
+try { backend = window.localStorage; } catch { /* not remembered */ }
 const storage = createStorage(backend, 'launcher.');
 
 function el(tag, props = {}, ...children) {
@@ -57,7 +57,7 @@ async function main() {
     games = sortGames(await res.json());
     list.replaceChildren(...games.map(card));
     setStatus(games.length ? '' : 'empty');
-  } catch (e) {
+  } catch {
     setStatus('error');
   }
 }
@@ -96,7 +96,7 @@ function setupInstall() {
       try {
         await prompt.prompt();
         if ((await prompt.userChoice).outcome === 'accepted') installed = true;
-      } catch (_) { /* the browser refused to show it: treat as dismissed */ }
+      } catch { /* the browser refused to show it: treat as dismissed */ }
       refresh();
     } else if (kind() === 'ios-instructions') {
       ios.hidden = false;

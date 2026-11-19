@@ -24,7 +24,7 @@ export function createInput(canvas, { mode, toWorld, onPause }) {
   function onPointerDown(e) {
     if (e.target !== canvas) return;
     e.preventDefault();
-    try { canvas.setPointerCapture(e.pointerId); } catch (_) { /* ignore */ }
+    try { canvas.setPointerCapture(e.pointerId); } catch { /* ignore */ }
     if (useJoystick(e)) {
       if (joy.active || e.clientX > window.innerWidth * 0.5) return;
       Object.assign(joy, { active: true, id: e.pointerId, bx: e.clientX, by: e.clientY, sx: e.clientX, sy: e.clientY, dx: 0, dy: 0 });

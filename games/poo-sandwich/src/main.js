@@ -15,7 +15,7 @@ const renderer = createRenderer(canvas);
 // Everything this game stores goes through the kit's storage under `poo-sandwich-`: `best` and `lang` (D21, D22). It never
 // throws; when storage is blocked the values last for the session. Reading window.localStorage can itself throw.
 let backend = null;
-try { backend = window.localStorage; } catch (_) { /* not remembered */ }
+try { backend = window.localStorage; } catch { /* not remembered */ }
 const storage = createStorage(backend, 'poo-sandwich-');
 const readBest = () => sanitizeBest(storage.get('best'));
 

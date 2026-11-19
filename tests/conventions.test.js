@@ -6,6 +6,7 @@ import { join, dirname } from 'node:path';
 import {
   stripCode, findAbsoluteUrls, findImports, checkRelativeUrls, checkImports, checkPackage,
   browserGlobalsIn, checkPurity, gameSlugs, checkGame, checkLauncher, checkKitModules, checkConventions,
+  findUnusedCatchBindings, checkCatchStyle, checkI18nTest,
 } from '../tools/check-conventions.mjs';
 import { ROOT } from '../tools/build-registry.mjs';
 
@@ -225,4 +226,71 @@ test('checkKitModules flags a missing label and a label the code contradicts', (
   assert.match(problems.join('\n'), /kit\/nolabel\.js: the first line must start with/);
   assert.match(problems.join('\n'), /kit\/liar\.js says Pure but touches the browser \(window\)/);
   assert.match(problems.join('\n'), /kit\/shy\.js says Browser but uses no browser global/);
+});
+
+// ---- catch style and i18n tests
+
+test('findUnusedCatchBindings flags a binding the block never uses', () => {
+  const hits = findUnusedCatchBindings('a.js', 'try { x(); } catch (_) { /* ignore */ }\ntry { y(); } catch (e) { if (ok) { z(); } }');
+  assert.equal(hits.length, 2);
+  assert.match(hits[0], /^a\.js:1: catch \(_\) never uses _; write `catch \{`/);
+  assert.match(hits[1], /^a\.js:2: catch \(e\)/);
+});
+
+test('findUnusedCatchBindings accepts used bindings and bare catch; comments and strings do not count as use', () => {
+  assert.deepEqual(findUnusedCatchBindings('a.js', 'try {} catch { }\ntry {} catch (e) { log(e.message); }\ntry {} catch (err) { if (a) { throw err; } }'), []);
+  assert.deepEqual(findUnusedCatchBindings('a.js', 'try {} catch ($) { f($); }'), []);
+  assert.equal(findUnusedCatchBindings('a.js', "try {} catch (e) { /* e */ log('e'); }").length, 1);
+  assert.equal(findUnusedCatchBindings('a.js', 'try {} catch (e) { const el = 1; } const e2 = e;').length, 1);
+});
+
+test('checkCatchStyle reads the named folders of a part', (t) => {
+  const root = fixture(t, {
+    'src/a.js': 'try {} catch (_) {}',
+    'tools/b.mjs': 'try {} catch (e) { throw e; }',
+    'other/c.js': 'try {} catch (_) {}',
+  });
+  const problems = checkCatchStyle(root, ['src', 'tools'], 'p');
+  assert.equal(problems.length, 1);
+  assert.match(problems[0], /^p\/src\/a\.js:1: catch \(_\)/);
+  assert.equal(checkCatchStyle(root, [''], 'p').length, 2);
+});
+
+test('checkI18nTest wants stringProblems( and, with data-i18n keys, missingHtmlKeys(', (t) => {
+  const ok = fixture(t, { 'index.html': '<p data-i18n="a"></p>', 'tests/i18n.test.js': 'stringProblems(S); missingHtmlKeys(h, S);' });
+  assert.deepEqual(checkI18nTest(ok, 'g'), []);
+  const noHtml = fixture(t, { 'index.html': '<p></p>', 'tests/i18n.test.js': 'stringProblems(S);' });
+  assert.deepEqual(checkI18nTest(noHtml, 'g'), []);
+  const bad = fixture(t, {
+    'index.html': '<p data-i18n="a"></p>',
+    'tests/i18n.test.js': '// stringProblems(S) and missingHtmlKeys(h, S)\nconst s = "stringProblems(";',
+  });
+  const problems = checkI18nTest(bad, 'g').join('\n');
+  assert.match(problems, /g\/tests\/i18n\.test\.js must call stringProblems\(/);
+  assert.match(problems, /g\/tests\/i18n\.test\.js must call missingHtmlKeys\(/);
+  const onlyStrings = fixture(t, { 'index.html': '<p data-i18n="a"></p>', 'tests/i18n.test.js': 'stringProblems(S);' });
+  assert.match(checkI18nTest(onlyStrings, 'g').join('\n'), /missingHtmlKeys/);
+  assert.match(checkI18nTest(fixture(t, { 'index.html': '' }), 'g')[0], /g\/tests\/i18n\.test\.js is missing/);
+});
+
+test('checkGame and checkLauncher run the catch and i18n checks', (t) => {
+  const root = fixture(t, {
+    'games/g/package.json': JSON.stringify({ ...GOOD_PKG, browserModules: [] }),
+    'games/g/src/a.js': 'export const f = () => { try { return 1; } catch (_) { return 0; } };',
+    'games/g/tests/i18n.test.js': '// nothing',
+    'src/launcher.js': 'try { window.x(); } catch (_) {}',
+    'tools/t.mjs': 'try {} catch (_) {}',
+    'tests/i18n.test.js': '// nothing',
+  });
+  const game = checkGame(root, 'g').join('\n');
+  assert.match(game, /games\/g\/src\/a\.js:1: catch \(_\)/);
+  assert.match(game, /games\/g\/tests\/i18n\.test\.js must call stringProblems\(/);
+  const launcher = checkLauncher(root).join('\n');
+  assert.match(launcher, /launcher\/src\/launcher\.js:1: catch \(_\)/);
+  assert.match(launcher, /launcher\/tools\/t\.mjs:1: catch \(_\)/);
+  assert.match(launcher, /launcher\/tests\/i18n\.test\.js must call stringProblems\(/);
+});
+
+test('the real kit uses the bare catch where the error is unused', () => {
+  assert.deepEqual(checkCatchStyle(join(ROOT, 'kit'), [''], 'kit'), []);
 });

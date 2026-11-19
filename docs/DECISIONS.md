@@ -381,3 +381,16 @@
 | ID | Date | Assumption |
 |----|------|------------|
 | A-2 | 2026-11-19 | Retired by D-20: every game now links back to the launcher. |
+
+### D-21 — Style pass: one catch style, the same i18n checks everywhere, both enforced (2026-11-19)
+- **Chosen:** S-15 of `docs/STREAMLINING.md`. An unused catch binding is written `catch {` everywhere (four `catch (_)`
+  and one unused `catch (e)` changed, in the launcher and Poo Sandwich; bindings that are used stay). The root
+  conventions check now fails on an unused binding in any part or in `kit/`, and on a part's `tests/i18n.test.js` that
+  does not run the kit's `stringProblems` (and `missingHtmlKeys` when its page has `data-i18n` keys). T-3.
+- **Already done by earlier waves:** the standard test script (D-10) and the kit's i18n checks in every part (D-13), so
+  this task only had to make them enforced.
+- **Checked:** each new check was seen to fail on a planted violation in the real repo (by the Sonnet subagent that made
+  the change, and again by Fable for an unused binding in the launcher). No behaviour change.
+- **Alternatives:** a linter (a dependency); leave style to review (it is what let the two styles exist).
+
+Wave 6 (S-11, S-12, S-15) is done, which completes every P1 and P2 task in `docs/STREAMLINING.md`.

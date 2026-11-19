@@ -184,3 +184,9 @@
   size tiers, so the card still fits at 844x390.
 - **Alternatives:** no link and rely on the browser's back button (the old assumption A-2; it does not work in an
   installed app or a new tab); a plain `../../` (the launcher would not follow a language chosen here).
+
+## D27 — 2026-11-19 — `catch {` when the error is not used
+- **Chosen:** (S-15 in `docs/STREAMLINING.md` at the repo root.) The two `catch (_)` in `src/main.js` and `src/input.js` became
+  `catch`, the style the other games use. Code style only; no behaviour change. The root conventions check now reports any
+  `catch (x)` whose block never mentions `x`.
+- **Alternatives:** keep `catch (_)` (rejected: two styles across the repo for no reason).
