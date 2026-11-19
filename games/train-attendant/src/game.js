@@ -15,7 +15,7 @@
 //   seatOwner, picker, hold, quests, events
 // state.events holds the events of the LAST step only (cleared at the start of each step); a caller that runs several
 // steps per frame must collect them after every step. Event types: station, depart, slip, stopStart, stopEnd (a rescue stop that is no longer possible: questCancelled only), board,
-// alight, need, served, complaint, follow, seated, pickup, picker, radio, offer, offerExpired, questAccepted,
+// alight, need, served, complaint, follow, seated, pickup, handsFull (a quest item refused: hands not empty), picker, radio, offer, offerExpired, questAccepted,
 // questDeclined, questCancelled, questProgress, questDone, questFailed, end. Every event also has `at` (state.time).
 import { CFG } from './config.js';
 import { DEFAULT_FLAGS } from './flags.js';

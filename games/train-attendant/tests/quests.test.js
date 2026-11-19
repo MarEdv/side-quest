@@ -441,3 +441,33 @@ test('rescue: after one rescue ended another can be offered and made in the same
   }
   assert.ok(most >= 2, `most rescues in one trip: ${most}`);
 });
+
+test('hands full: the kit and the bag are refused while something else is carried (D32)', () => {
+  const { s, q } = sickGame();
+  s.carried = 'coffee';
+  s.attendant.x = s.train.cab.x;
+  const ev = press(s);
+  assert.equal(ofType(ev, 'handsFull').length, 1);
+  assert.equal(s.carried, 'coffee'); assert.equal(q.stage, 'fetch');
+  s.carried = null;
+  const ev2 = press(s);
+  assert.equal(ofType(ev2, 'handsFull').length, 0);
+  assert.equal(s.carried, 'kit'); assert.equal(q.stage, 'deliver');
+
+  const t = riding();
+  const p = addP(t, { seat: 0, dest: 4, name: 'Lisa' });
+  offerOf(t, 'lost'); Object.assign(t.quests.offer, { pid: p.id, vars: { name: 'Lisa', car: 1 }, bag: { x: 7.3, car: 0 } });
+  accept(t);
+  t.attendant.x = 7.3; t.carried = 'water';
+  assert.equal(ofType(press(t), 'handsFull').length, 1);
+  assert.equal(t.carried, 'water'); assert.equal(t.quests.active[0].stage, 'find');
+});
+
+test('hands full: handing over the carried coffee still beats the refused pickup', () => {
+  const { s } = sickGame();
+  const p2 = addP(s, { seat: 1, dest: 4, need: 'coffee', x: s.train.cab.x });
+  p2.x = s.train.cab.x; s.attendant.x = s.train.cab.x; s.carried = 'coffee';
+  const ev = press(s);
+  assert.equal(ofType(ev, 'handsFull').length, 0);
+  assert.equal(ofType(ev, 'served').length, 1);
+});

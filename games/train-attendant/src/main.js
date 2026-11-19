@@ -120,6 +120,7 @@ function collect(events) {
       case 'seated': audio.play('seated'); ui.toast(t('toastSeated', { name: ev.name }), 'good'); break;
       case 'follow': audio.play('pickup'); ui.toast(state.followers.length > 1 ? t('toastFollowers', { n: state.followers.length }) : t('toastFollow', { name: ev.name }), 'info'); break;
       case 'pickup': audio.play('pickup'); ui.toast(t(ev.item === 'bag' ? 'toastBagFound' : 'toastPicked', { item: t(`item_${ev.item}`) }), 'info'); break;
+      case 'handsFull': ui.toast(t('toastHandsFull'), 'bad'); break;
       case 'radio': ui.toast(t('toastRadioed'), 'good'); break;
       case 'offer': audio.play('offer'); ui.toast(t('toastOffer'), 'info'); break;
       case 'offerExpired': ui.toast(t('toastExpired'), 'info'); break;

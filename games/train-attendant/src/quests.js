@@ -226,6 +226,9 @@ function progress(s, q) { emit(s, { type: 'questProgress', id: q.id, qtype: q.ty
 // Candidate actions, in the shape passengers.js gives (see game.js).
 export function questActions(s, ax) {
   const out = [], A = CFG.attendant, cab = s.train.cab;
+  // Picking up the kit or the bag with something already in hand is refused, not swapped (D32). With full hands that
+  // action has the lowest priority, so handing over what is carried still comes first.
+  const full = () => { if (!s.carried) return false; emit(s, { type: 'handsFull', item: s.carried }); return true; };
   for (const q of s.quests.active) {
     const p = q.pid ? byId(s, q.pid) : null;
     if (q.type === 'connection' && q.stage === 'radio') {
@@ -247,13 +250,13 @@ export function questActions(s, ax) {
       if (s.time >= q.nextTalk) out.push({ key: `talk:${q.id}`, kind: 'hold', x: p.x, reach: A.reach, dur: CFG.hold.talk, prio: 40, stress: p.stress, pid: p.id, run: talk });
       if (s.time >= q.nextTalk && s.carried === 'water') out.push({ key: `water:${q.id}`, kind: 'press', x: p.x, reach: A.reach, prio: 45, stress: p.stress, pid: p.id, run: () => { setCarried(s, null); talk(); } });
     } else if (q.type === 'lost' && q.stage === 'find' && carAt(s.train, ax).index === q.bag.car) {
-      out.push({ key: `bag:${q.id}`, kind: 'press', x: q.bag.x, reach: A.reach, prio: 40, stress: 0, pid: null,
-        run: () => { setCarried(s, 'bag'); setStage(q, 'give'); emit(s, { type: 'pickup', item: 'bag' }); progress(s, q); } });
+      out.push({ key: `bag:${q.id}`, kind: 'press', x: q.bag.x, reach: A.reach, prio: s.carried ? 5 : 40, stress: 0, pid: null,
+        run: () => { if (full()) return; setCarried(s, 'bag'); setStage(q, 'give'); emit(s, { type: 'pickup', item: 'bag' }); progress(s, q); } });
     } else if (q.type === 'lost' && q.stage === 'give' && s.carried === 'bag' && p) {
       out.push({ key: `bagback:${q.id}`, kind: 'press', x: p.x, reach: A.reach, prio: 40, stress: 0, pid: p.id, run: () => { setCarried(s, null); complete(s, q); } });
     } else if (q.type === 'sick' && q.stage === 'fetch') {
-      out.push({ key: `kit:${q.id}`, kind: 'press', x: cab.x, reach: cab.reach, prio: 40, stress: 0, pid: null,
-        run: () => { setCarried(s, 'kit'); setStage(q, 'deliver'); emit(s, { type: 'pickup', item: 'kit' }); progress(s, q); } });
+      out.push({ key: `kit:${q.id}`, kind: 'press', x: cab.x, reach: cab.reach, prio: s.carried ? 5 : 40, stress: 0, pid: null,
+        run: () => { if (full()) return; setCarried(s, 'kit'); setStage(q, 'deliver'); emit(s, { type: 'pickup', item: 'kit' }); progress(s, q); } });
     } else if (q.type === 'sick' && q.stage === 'deliver' && s.carried === 'kit' && p) {
       out.push({ key: `kitgive:${q.id}`, kind: 'press', x: p.x, reach: A.reach, prio: 40, stress: 0, pid: p.id, run: () => { setCarried(s, null); complete(s, q); } });
     }

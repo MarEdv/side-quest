@@ -350,3 +350,11 @@ group does not flood the 4-toast stack.
 points too, so score / potential could pass 1.0. The potential now includes seat + calm for each rescued passenger, and
 `starsFor` clamps the ratio to 1 as a second guard. The potential grows a little on trips with a rescue, so the star
 cut-offs are slightly stricter there (left for the balance pass).
+
+## D32 — 2026-11-19 — A full hand refuses the kit and the bag
+Taking the kit or the bag silently dropped a carried coffee / snack / water (the carried item was overwritten). Alternatives:
+swap (the old item vanishes or must be placed somewhere: no floor items exist), or refuse. Chosen: refuse. The pickup action
+still shows up, with the lowest priority (5), so handing over the carried item to a passenger next to it wins; when it is the
+action that fires it emits `handsFull` (EN "Hands full: put it back at the café first", SV "Händerna är fulla: lägg tillbaka
+det i caféet först") and nothing changes. The picker's "Put back" still empties the hand (a carried kit or bag goes back to
+its fetch stage, as before). Tests in `tests/quests.test.js`.

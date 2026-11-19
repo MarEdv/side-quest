@@ -49,7 +49,7 @@ Sonnet implements, Haiku looks up docs; never ask the owner questions.
 |----|-------------|--------|
 | A-1 | The attendant walks along the aisle through the whole train (doors between cars open automatically). The camera follows; a **train strip** at the top of the screen shows every car, the attendant and a dot per open need, so the player knows where to go. | ✅ |
 | A-2 | The action serves the most urgent passenger in reach: checks a ticket (hold 0.6 s), answers a question (hold 1.2 s), hands over a carried coffee or snack (instant) or quest item. A progress ring shows a hold. | ✅ |
-| A-3 | The attendant carries at most one item. At the **café counter** the action opens a small picker (☕ coffee, 🥪 snack, 💧 water; or put the item back) without pausing the game. | ✅ |
+| A-3 | The attendant carries at most one item. At the **café counter** the action opens a small picker (☕ coffee, 🥪 snack, 💧 water; or put the item back) without pausing the game. Picking up the first-aid kit or the lost bag with something already in hand is refused with a "Hands full" toast (D32). | ✅ |
 | A-4 | The attendant can **lead** passengers: the action on a passenger who needs a seat makes them follow; the action at a row with a free seat seats the first follower there. Up to 4 followers at once. | ✅ |
 
 ### 3.4 Side quests

@@ -36,7 +36,7 @@ export const STRINGS = {
     toastAlight: '{n} passengers got off', toastSlip: 'Signal fault: {n} s late', toastStop: 'Stopped beside the broken-down train',
     toastSeated: '{name} sat down', toastFollow: '{name} follows you', toastOffer: 'Radio call from the train manager',
     toastExpired: 'The offer expired', toastDeclined: 'Declined', toastCancelled: 'The quest is no longer possible',
-    toastPicked: 'Picked up: {item}', toastBagFound: 'Found the bag!', toastRadioed: 'Connection radioed',
+    toastHandsFull: 'Hands full: put it back at the café first', toastPicked: 'Picked up: {item}', toastBagFound: 'Found the bag!', toastRadioed: 'Connection radioed',
     // quests: offer (radio text), goal (HUD line), done, failed
     q_rescue_title: 'Rescue', q_rescue_offer: 'A train has broken down ahead. Pick up its {n} passengers on the way to {station}?',
     q_rescue_goal: 'Seat all {n} rescued passengers before {station}',
@@ -97,7 +97,7 @@ export const STRINGS = {
     toastAlight: '{n} passagerare klev av', toastSlip: 'Signalfel: {n} s försening', toastStop: 'Stannade vid det havererade tåget',
     toastSeated: '{name} satte sig', toastFollow: '{name} följer dig', toastOffer: 'Radioanrop från tågchefen',
     toastExpired: 'Erbjudandet gick ut', toastDeclined: 'Avböjt', toastCancelled: 'Uppdraget går inte längre att göra',
-    toastPicked: 'Plockade upp: {item}', toastBagFound: 'Hittade väskan!', toastRadioed: 'Anslutningen är kontaktad',
+    toastHandsFull: 'Händerna är fulla: lägg tillbaka det i caféet först', toastPicked: 'Plockade upp: {item}', toastBagFound: 'Hittade väskan!', toastRadioed: 'Anslutningen är kontaktad',
     q_rescue_title: 'Räddning', q_rescue_offer: 'Ett tåg har gått sönder längre fram. Hämta dess {n} passagerare på vägen till {station}?',
     q_rescue_goal: 'Ge alla {n} räddade passagerare en sittplats före {station}',
     q_rescue_wait: 'Vänta på stoppet vid det havererade tåget',
