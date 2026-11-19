@@ -103,9 +103,12 @@ export function alight(s, k) {
 
 // ---- needs, stress, complaints
 
+// Seconds until a calm passenger's next need: the difficulty's range, scaled by the trip length.
+const needGap = (s) => s.rng.range(...difficultyOf(s).need) * (CFG.trips[s.flags.trip] || CFG.trips.normal).needScale;
+
 export function clearNeed(s, p) {
   p.need = null;
-  p.nextNeed = s.rng.range(...difficultyOf(s).need);
+  p.nextNeed = needGap(s);
 }
 
 function drawNeed(s) {
@@ -193,7 +196,7 @@ export function seatFirstFollower(s, row) {
   if (!p) return false;
   s.followers.shift();
   seatPassenger(s, p, seatId);
-  p.need = null; p.nextNeed = s.rng.range(...difficultyOf(s).need);
+  p.need = null; p.nextNeed = needGap(s);
   p.stress = Math.max(0, p.stress - CFG.stress.seatRelief);
   addScore(s, CFG.points.seat);
   emit(s, { type: 'seated', id: p.id, name: p.name, seat: seatId, points: CFG.points.seat });

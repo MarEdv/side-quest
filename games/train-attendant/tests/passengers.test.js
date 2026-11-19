@@ -84,7 +84,7 @@ test('contagious stress spreads to neighbours in the same car, solo does not', (
     return { near, far, other };
   };
   const c = mk('contagious'), solo = mk('solo');
-  assert.ok(c.near.stress > 10, 'near');
+  assert.ok(c.near.stress > solo.near.stress + 0.3, 'near');
   assert.ok(c.far.stress <= 10);
   assert.ok(c.other.stress <= 10);
   assert.ok(solo.near.stress <= 10);
@@ -165,7 +165,7 @@ test('a passenger gets a new random need after being served', () => {
   s.attendant.x = p.x;
   run(s, { action: true }, 0.7);
   assert.equal(p.need, null);
-  assert.ok(p.nextNeed >= 55 - 0.5 && p.nextNeed <= 100);
+  assert.ok(p.nextNeed >= CFG.difficulty.normal.need[0] - 0.5 && p.nextNeed <= CFG.difficulty.normal.need[1]);
   p.nextNeed = 0.01;
   run(s, {}, 0.1);
   assert.ok(['coffee', 'snack', 'question'].includes(p.need), p.need);
@@ -210,8 +210,8 @@ test('lead and seat: the action on a standing passenger makes them follow, at a 
   assert.deepEqual(s.followers, [p.id]);
   assert.equal(ofType(ev, 'follow').length, 1);
   // walk to row 0 (x = 3): the follower trails behind
-  run(s, { right: true }, 0.4);
-  assert.ok(Math.abs(s.attendant.x - 3) < 0.05, `${s.attendant.x}`);
+  run(s, { right: true }, 2 / CFG.attendant.speed);
+  assert.ok(Math.abs(s.attendant.x - 3) < 0.1, `${s.attendant.x}`);
   run(s, {}, 1);
   assert.ok(Math.abs(p.x - (s.attendant.x - CFG.attendant.followGap)) < 0.05);
   // follower is still standing: no free-row press on a vestibule

@@ -18,7 +18,7 @@ export const CFG = freeze({
   },
 
   attendant: {
-    speed: 5,          // m/s
+    speed: 7,          // m/s
     reach: 1.1,        // how far from a passenger / the counter / a bag the action works
     rowReach: 1.0,     // how close to a row's x the attendant must be to seat a follower
     followSpeed: 6.5,  // followers catch up a little faster than the attendant walks
@@ -29,9 +29,9 @@ export const CFG = freeze({
   hold: { ticket: 0.6, question: 1.2, radio: 1.5, talk: 1.5 },
 
   trips: {
-    short: { stations: 4, leg: 45 },
-    normal: { stations: 6, leg: 60 },
-    long: { stations: 8, leg: 70 },
+    short: { stations: 4, leg: 45, needScale: 1 },
+    normal: { stations: 6, leg: 60, needScale: 1 },
+    long: { stations: 8, leg: 70, needScale: 1.5 }, // longer trips give passengers longer between needs: slips compound
   },
   dwell: 8,            // seconds at every station
   dwellRecover: 5,     // delay won back at each departure, at most
@@ -42,27 +42,27 @@ export const CFG = freeze({
   // need = seconds between a calm passenger's needs, stress = multiplier on how fast stress rises,
   // slipChance / slipMax = a leg may take up to slipMax seconds longer (adds to the delay).
   difficulty: {
-    easy: { board: 0.28, first: 0.4, need: [70, 130], stress: 0.75, slipChance: 0.2, slipMax: 10 },
-    normal: { board: 0.34, first: 0.5, need: [55, 100], stress: 1, slipChance: 0.3, slipMax: 15 },
-    hard: { board: 0.42, first: 0.6, need: [40, 80], stress: 1.3, slipChance: 0.4, slipMax: 25 },
+    easy: { board: 0.16, first: 0.3, need: [220, 380], stress: 0.75, slipChance: 0.2, slipMax: 10 },
+    normal: { board: 0.22, first: 0.4, need: [150, 250], stress: 1, slipChance: 0.3, slipMax: 15 },
+    hard: { board: 0.26, first: 0.45, need: [150, 250], stress: 1.25, slipChance: 0.4, slipMax: 25 },
   },
   boardJitter: [0.85, 1.15],
 
   stress: {
     start: [0, 15],      // a boarder's stress
-    rate: { ticket: 1.0, coffee: 2.0, snack: 1.8, question: 2.4, seat: 1.6 }, // per second while the need is unmet
+    rate: { ticket: 0.9, coffee: 1.7, snack: 1.6, question: 2.0, seat: 1.4 }, // per second while the need is unmet
     standing: 1.5,       // rising stress is multiplied by this for standing passengers
     standIdle: 0.3,      // standing without a need still raises stress
     calmDecay: 1.0,      // seated and no need: stress falls this fast
     relief: 25,          // stress removed when a need is met
     seatRelief: 15,
     complaintAt: 100, afterComplaint: 60,
-    contagious: { above: 70, range: 4, rate: 1.2 }, // flag stress=contagious: per source, per second
+    contagious: { above: 70, range: 4, rate: 0.5 }, // flag stress=contagious: per source, per second
     calmBelow: 30,       // leaves "calm" under this
   },
 
   needs: {
-    weights: { coffee: 0.35, snack: 0.3, question: 0.35 },
+    weights: { coffee: 0.25, snack: 0.2, question: 0.55 },
     ticketDelay: [1, 5], // seconds after boarding until the ticket bubble shows
   },
 
