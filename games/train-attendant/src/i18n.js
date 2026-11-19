@@ -66,6 +66,13 @@ export const STRINGS = {
     endCalm: 'Calm arrivals', endComplaints: 'Complaints', endQuestsDone: 'Quests done', endQuestsFailed: 'Quests failed',
     endQuestsDeclined: 'Quests declined', endTime: 'Trip time', newBest: 'New best score! You are #{rank} on the {trip} list.',
     debugRun: 'Debug run: not saved to the best scores.',
+    // title: how to play, toasts added by the browser layer
+    howtoTitle: 'How to play',
+    howto1: 'Walk the aisle to passengers with a bubble above them: 🎫 ticket, ❓ question, ☕ 🥪 drink or snack, 💺 seat.',
+    howto2: 'Hold the action next to a passenger to check a ticket or answer a question.',
+    howto3: 'Fetch coffee and snacks at the café counter in the middle car, then hand them over. Lead standing passengers to a free seat.',
+    howto4: 'Accept the radio quests that suit you and keep an eye on the clock. The calmer the train, the more stars.',
+    toastAccepted: 'Quest accepted: {quest}', toastFollowers: 'Leading {n}',
   },
   sv: {
     canvas: 'Spelvy för Tågvärd', language: 'Språk',
@@ -120,6 +127,12 @@ export const STRINGS = {
     endCalm: 'Lugna ankomster', endComplaints: 'Klagomål', endQuestsDone: 'Uppdrag klarade', endQuestsFailed: 'Uppdrag misslyckade',
     endQuestsDeclined: 'Uppdrag avböjda', endTime: 'Restid', newBest: 'Nytt rekord! Du är nummer {rank} på listan för {trip}.',
     debugRun: 'Felsökningsläge: sparas inte bland bästa poäng.',
+    howtoTitle: 'Så spelar du',
+    howto1: 'Gå längs gången till passagerare med en pratbubbla: 🎫 biljett, ❓ fråga, ☕ 🥪 dryck eller mellanmål, 💺 plats.',
+    howto2: 'Håll in handlingen bredvid en passagerare för att kontrollera biljetten eller svara på en fråga.',
+    howto3: 'Hämta kaffe och mellanmål i cafédisken i mittenvagnen och lämna över dem. Led stående passagerare till en ledig plats.',
+    howto4: 'Ta emot de radiouppdrag som passar dig och håll koll på klockan. Ju lugnare tåg, desto fler stjärnor.',
+    toastAccepted: 'Uppdrag antaget: {quest}', toastFollowers: 'Leder {n}',
   },
 };
 

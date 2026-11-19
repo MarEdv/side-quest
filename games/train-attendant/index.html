@@ -10,8 +10,57 @@
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
-  <!-- Placeholder shell: the browser layer replaces this page. -->
   <canvas id="game" aria-label="Train Attendant game view" data-i18n-aria="canvas"></canvas>
+
+  <div id="hud" hidden>
+    <div id="hudHead">
+      <div id="hudTop">
+        <span class="chip" id="hudScore"></span>
+        <span class="chip" id="hudNext"></span>
+        <span class="chip" id="hudDelay"></span>
+        <span class="chip" id="hudComplaints"></span>
+        <span class="chip" id="hudCarry"></span>
+        <span class="chip" id="hudLead" hidden></span>
+      </div>
+      <canvas id="strip" aria-hidden="true"></canvas>
+    </div>
+    <div id="hudBtns">
+      <button class="icon-btn" id="fastBtn" type="button" hidden>4×</button>
+      <button class="icon-btn" id="pauseBtn" type="button" aria-label="Pause (P)" data-i18n-aria="pauseBtn" data-i18n-title="pauseBtn">⏸</button>
+    </div>
+    <div id="stack">
+      <ul id="quests" aria-label="Quests" data-i18n-aria="hudQuests"></ul>
+      <div id="toasts" role="status" aria-live="polite"></div>
+    </div>
+    <div id="offer" hidden role="alertdialog" aria-labelledby="offerTitle">
+      <div id="offerTitle" class="offer-title">📻 <span data-i18n="radioTitle">Radio: train manager</span></div>
+      <p id="offerText"></p>
+      <div class="offer-bar"><i id="offerBar"></i></div>
+      <div class="offer-btns">
+        <button type="button" id="acceptBtn" class="ok"><span data-i18n="accept">Accept</span> <kbd>Y</kbd></button>
+        <button type="button" id="declineBtn" class="no"><span data-i18n="decline">Decline</span> <kbd>N</kbd></button>
+      </div>
+    </div>
+    <div id="picker" hidden role="group" aria-labelledby="pickerTitle">
+      <div id="pickerTitle" class="picker-title" data-i18n="pickerTitle">Café counter</div>
+      <div class="picker-btns">
+        <button type="button" data-pick="coffee"><span data-i18n="pickCoffee">☕ Coffee</span> <kbd>1</kbd></button>
+        <button type="button" data-pick="snack"><span data-i18n="pickSnack">🥪 Snack</span> <kbd>2</kbd></button>
+        <button type="button" data-pick="water"><span data-i18n="pickWater">💧 Water</span> <kbd>3</kbd></button>
+        <button type="button" data-pick="none" class="muted"><span data-i18n="pickNone">Put back</span> <kbd>0</kbd></button>
+      </div>
+    </div>
+    <div id="debugLine"></div>
+  </div>
+
+  <div id="touch" hidden>
+    <div id="walkpad" aria-hidden="true">
+      <button type="button" data-d="left" tabindex="-1" aria-label="Left" data-i18n-aria="left">◀</button>
+      <button type="button" data-d="right" tabindex="-1" aria-label="Right" data-i18n-aria="right">▶</button>
+    </div>
+    <button type="button" id="actionBtn" tabindex="-1" data-i18n="action">Action</button>
+  </div>
+
   <section id="title" class="screen">
     <div class="card">
       <div id="langSwitch" class="lang" role="group" aria-label="Language" data-i18n-aria="language">
@@ -20,9 +69,50 @@
       </div>
       <h1>🚆 Train Attendant</h1>
       <p class="tag" data-i18n="tagline">Keep the passengers calm from the first station to the last.</p>
-      <a class="big secondary linkbtn" id="backLink" href="../../" data-i18n="back">Back to games</a>
+      <h3 data-i18n="howtoTitle">How to play</h3>
+      <ul class="howto">
+        <li data-i18n="howto1"></li>
+        <li data-i18n="howto2"></li>
+        <li data-i18n="howto3"></li>
+        <li data-i18n="howto4"></li>
+      </ul>
+      <div class="menu">
+        <button class="big" id="startBtn" type="button" data-i18n="start">Start the trip</button>
+        <a class="big secondary linkbtn" id="backLink" href="../../" data-i18n="back">Back to games</a>
+      </div>
+      <div id="bestScores"></div>
+      <p id="controlsHelp" class="small"></p>
+      <p id="flagsLine" class="small"></p>
     </div>
   </section>
+
+  <section id="pause" class="screen" hidden role="dialog" aria-modal="true" aria-labelledby="pauseTitle">
+    <div class="card">
+      <h2 id="pauseTitle" data-i18n="paused">⏸ Paused</h2>
+      <div class="menu">
+        <button class="big" id="resumeBtn" type="button" data-i18n="resume">Resume</button>
+        <button class="big secondary" id="soundBtn" type="button">Sound: on</button>
+        <button class="big secondary" id="quitBtn" type="button" data-i18n="quit">Quit to title</button>
+      </div>
+    </div>
+  </section>
+
+  <section id="end" class="screen" hidden role="dialog" aria-modal="true" aria-labelledby="endTitle">
+    <div class="card">
+      <h2 id="endTitle" data-i18n="endTitle">End of the line</h2>
+      <p class="endscore"><span class="lbl" data-i18n="endScore">Score</span> <b id="endScore"></b></p>
+      <p class="stars" id="endStars" aria-hidden="true"></p>
+      <p class="small" id="endStarsText"></p>
+      <div class="stats" id="endStats"></div>
+      <p class="best" id="endRank"></p>
+      <div id="endBest"></div>
+      <div class="menu row2">
+        <button class="big" id="againBtn" type="button" data-i18n="again">Another trip</button>
+        <button class="big secondary" id="endTitleBtn" type="button" data-i18n="title">Title</button>
+      </div>
+    </div>
+  </section>
+
   <script type="module" src="src/main.js"></script>
 </body>
 </html>

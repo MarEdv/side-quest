@@ -10,7 +10,6 @@
   },
   "kit": ["audio.js", "flags.js", "lang.js", "langdom.js", "rng.js", "storage.js"],
   "browserModules": [
-    "audio.js",
     "input.js",
     "kit/audio.js",
     "kit/langdom.js",

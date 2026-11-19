@@ -1,8 +1,105 @@
-/* Placeholder styles: the browser layer replaces this file. */
-:root { --bg: #14202b; --panel: #1d2f3f; --text: #eef3f7; --accent: #ffc857; }
-html, body { margin: 0; height: 100%; background: var(--bg); color: var(--text); font-family: system-ui, sans-serif; }
+:root {
+  --bg: #14202b; --panel: #1d2f3f; --panel2: #27405a; --text: #eef3f7; --muted: #9fb2c3; --accent: #ffc857; --accent-ink: #261c04;
+  --good: #5ed39a; --bad: #ff6b6b; --glass: rgba(13, 22, 31, .82);
+  --safe-t: env(safe-area-inset-top); --safe-r: env(safe-area-inset-right); --safe-b: env(safe-area-inset-bottom); --safe-l: env(safe-area-inset-left);
+}
+* { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+html, body {
+  margin: 0; width: 100%; height: 100%; overflow: hidden; background: var(--bg); color: var(--text);
+  font-family: system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+  touch-action: none; overscroll-behavior: none; -webkit-user-select: none; user-select: none; -webkit-touch-callout: none;
+}
+body { position: fixed; inset: 0; }
+canvas#game { position: fixed; left: 0; top: 0; width: 100%; height: 100%; display: block; touch-action: none; }
 [hidden] { display: none !important; }
-.screen { position: fixed; inset: 0; display: grid; place-items: center; }
-.card { background: var(--panel); padding: 20px 24px; border-radius: 16px; text-align: center; }
-.lang button { font: inherit; }
-.linkbtn { color: var(--accent); }
+button { font: inherit; color: inherit; touch-action: manipulation; }
+kbd { font: 700 11px ui-monospace, monospace; background: rgba(255, 255, 255, .18); border-radius: 5px; padding: 1px 5px; margin-left: 4px; }
+
+/* HUD: a header (chips + the train strip) over the canvas, the quest list, offer card, picker and toasts */
+#hud { position: fixed; inset: 0; pointer-events: none; z-index: 3; }
+#hudHead { position: absolute; left: calc(8px + var(--safe-l)); right: calc(104px + var(--safe-r)); top: calc(6px + var(--safe-t)); }
+#hudTop { display: flex; flex-wrap: wrap; gap: 5px; }
+.chip { background: var(--glass); border-radius: 999px; padding: 4px 10px; font-size: 13px; font-weight: 700; white-space: nowrap; }
+.chip.bad { color: var(--bad); } .chip.good { color: var(--good); }
+#strip { display: block; width: 100%; height: 30px; margin-top: 6px; border-radius: 8px; background: var(--glass); }
+#hudBtns { position: absolute; right: calc(8px + var(--safe-r)); top: calc(6px + var(--safe-t)); display: flex; gap: 6px; pointer-events: auto; }
+.icon-btn { min-width: 44px; height: 44px; border: 0; border-radius: 12px; background: rgba(39, 64, 90, .92); font-size: 20px; font-weight: 800; cursor: pointer; }
+.icon-btn.on { background: var(--accent); color: var(--accent-ink); }
+
+#stack { position: absolute; left: calc(8px + var(--safe-l)); top: calc(var(--head-b, 86px) + 6px); width: min(320px, 56vw); display: flex; flex-direction: column; gap: 6px; }
+#quests { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 4px; }
+#quests li { background: var(--glass); border-left: 4px solid var(--accent); border-radius: 8px; padding: 4px 8px; font-size: 12px; line-height: 1.3; }
+#quests b { display: block; font-size: 12px; color: var(--accent); }
+#quests small { display: block; color: var(--muted); }
+#quests i { display: block; height: 3px; margin-top: 3px; border-radius: 2px; background: var(--accent); }
+
+#offer { position: absolute; right: calc(8px + var(--safe-r)); top: calc(var(--head-b, 86px) + 6px); width: min(310px, 46vw); background: var(--panel); border: 2px solid var(--accent); border-radius: 14px; padding: 8px 10px; box-shadow: 0 8px 28px rgba(0, 0, 0, .5); pointer-events: auto; }
+.offer-title { font-weight: 800; font-size: 13px; color: var(--accent); }
+#offer p { margin: 4px 0 6px; font-size: 14px; line-height: 1.3; }
+.offer-bar { height: 5px; border-radius: 3px; background: rgba(255, 255, 255, .15); overflow: hidden; }
+.offer-bar i { display: block; height: 100%; width: 100%; background: var(--accent); }
+.offer-btns { display: flex; gap: 8px; margin-top: 8px; }
+.offer-btns button, .picker-btns button { flex: 1; min-height: 44px; border: 0; border-radius: 10px; font-weight: 800; font-size: 15px; cursor: pointer; background: var(--panel2); }
+.offer-btns .ok { background: var(--good); color: #052a17; } .offer-btns .no { background: #5b2a30; }
+.offer-btns .ok kbd { background: rgba(0, 0, 0, .2); }
+
+#picker { position: absolute; left: 50%; transform: translateX(-50%); bottom: calc(18px + var(--safe-b)); background: var(--panel); border: 2px solid var(--accent); border-radius: 14px; padding: 8px 10px; pointer-events: auto; box-shadow: 0 8px 28px rgba(0, 0, 0, .5); }
+.picker-title { font-weight: 800; font-size: 12px; color: var(--accent); margin-bottom: 6px; text-align: center; }
+.picker-btns { display: flex; gap: 6px; }
+.picker-btns button { min-width: 78px; padding: 0 8px; white-space: nowrap; font-size: 14px; }
+.picker-btns .muted { background: transparent; border: 1px solid var(--muted); }
+body.touch #picker { bottom: calc(112px + var(--safe-b)); }
+
+#toasts { display: flex; flex-direction: column; align-items: flex-start; gap: 4px; }
+.toast { background: var(--glass); padding: 5px 14px; border-radius: 12px; font-weight: 700; font-size: 14px; text-align: center; animation: toast-in .2s ease-out; transition: opacity .4s; }
+.toast.out { opacity: 0; }
+.toast.good { border: 1px solid var(--good); } .toast.bad { border: 1px solid var(--bad); } .toast.info { border: 1px solid var(--panel2); }
+@keyframes toast-in { from { opacity: 0; transform: translateY(-6px); } to { opacity: 1; transform: none; } }
+#debugLine { position: absolute; left: 50%; transform: translateX(-50%); bottom: calc(4px + var(--safe-b)); font: 12px ui-monospace, monospace; color: #9f9; background: rgba(0, 0, 0, .6); padding: 2px 6px; border-radius: 6px; }
+#debugLine:empty { display: none; }
+
+/* Touch controls */
+#touch { position: fixed; inset: 0; pointer-events: none; z-index: 4; }
+#walkpad { position: absolute; left: calc(14px + var(--safe-l)); bottom: calc(16px + var(--safe-b)); display: flex; gap: 10px; pointer-events: auto; touch-action: none; }
+#walkpad button { width: 84px; height: 84px; border: 2px solid rgba(255, 255, 255, .75); border-radius: 20px; background: rgba(13, 22, 31, .66); color: #fff; font-size: 32px; text-shadow: 0 1px 2px #000; box-shadow: 0 2px 8px rgba(0, 0, 0, .55); touch-action: none; pointer-events: none; }
+#walkpad button.on { background: rgba(255, 200, 87, .95); color: var(--accent-ink); border-color: #fff; text-shadow: none; }
+#actionBtn { position: absolute; right: calc(16px + var(--safe-r)); bottom: calc(16px + var(--safe-b)); width: 112px; height: 112px; border-radius: 50%; border: 3px solid #fff; background: rgba(255, 200, 87, .88); color: var(--accent-ink); font-weight: 900; font-size: 17px; text-transform: uppercase; pointer-events: auto; touch-action: none; box-shadow: 0 2px 10px rgba(0, 0, 0, .55); }
+#actionBtn.on { background: #fff; transform: scale(.95); }
+@media (max-height: 460px) { #walkpad button { width: 68px; height: 68px; font-size: 26px; } #actionBtn { width: 92px; height: 92px; font-size: 14px; } body.touch #picker { bottom: calc(10px + var(--safe-b)); } }
+
+/* Screens */
+.screen { position: fixed; inset: 0; display: flex; align-items: safe center; z-index: 10; background: rgba(8, 14, 20, .84); overflow-y: auto; touch-action: pan-y; padding: calc(12px + var(--safe-t)) calc(12px + var(--safe-r)) calc(12px + var(--safe-b)) calc(12px + var(--safe-l)); }
+#title { background: radial-gradient(ellipse at 50% 20%, #2c4a66 0%, #14202b 75%); }
+.card { background: var(--panel); border-radius: 18px; padding: 18px 22px; width: min(480px, 100%); box-shadow: 0 12px 40px rgba(0, 0, 0, .55); text-align: center; margin: auto; }
+h1 { margin: 0 0 6px; font-size: clamp(28px, 7vw, 38px); }
+h2 { margin: 0 0 8px; font-size: clamp(24px, 6vw, 32px); }
+h3 { margin: 12px 0 6px; font-size: 13px; text-transform: uppercase; letter-spacing: .08em; color: var(--muted); text-align: left; }
+p { margin: 8px 0; line-height: 1.4; }
+.tag { color: var(--muted); } .small { color: var(--muted); font-size: 13px; } .best { color: var(--accent); font-weight: 700; }
+.howto { margin: 0; padding-left: 20px; text-align: left; font-size: 14px; line-height: 1.4; color: #d4e0ea; } .howto li { margin: 3px 0; }
+.menu { display: flex; flex-direction: column; gap: 10px; margin-top: 12px; }
+.menu.row2 { flex-direction: row; } .menu.row2 .big { flex: 1; font-size: 16px; }
+button.big, a.big { display: block; width: 100%; min-height: 50px; padding: 0 14px; border: 0; border-radius: 14px; background: var(--accent); color: var(--accent-ink); font: 800 18px system-ui, sans-serif; cursor: pointer; text-decoration: none; line-height: 50px; text-align: center; }
+button.big.secondary, a.big.secondary { background: var(--panel2); color: var(--text); }
+.lang { display: flex; width: max-content; margin: -8px -10px 4px auto; border-radius: 10px; overflow: hidden; }
+.lang button { min-width: 44px; min-height: 36px; border: 0; background: var(--panel2); color: var(--muted); font-weight: 700; font-size: 13px; cursor: pointer; }
+.lang button[aria-pressed="true"] { background: #3b5f84; color: var(--text); }
+button:focus-visible, a:focus-visible { outline: 3px solid #fff; outline-offset: 2px; }
+.scores { list-style: none; padding: 0; margin: 4px 0; text-align: left; counter-reset: s; }
+.scores li { counter-increment: s; padding: 5px 10px; background: var(--panel2); border-radius: 8px; margin: 3px 0; font-size: 14px; }
+.scores li::before { content: counter(s) '. '; color: var(--muted); }
+.scores li.me { outline: 2px solid var(--accent); }
+.endscore { font-size: 16px; margin: 4px 0 0; } .endscore b { font-size: 40px; color: var(--accent); margin-left: 8px; }
+.stars { font-size: 34px; letter-spacing: 4px; margin: 0; color: var(--accent); }
+.stats { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; margin: 8px 0; }
+.stats div { background: var(--panel2); border-radius: 10px; padding: 6px; font-size: 12px; color: var(--muted); } .stats b { display: block; font-size: 20px; color: var(--text); }
+@media (max-height: 460px) { .card { padding: 12px 16px; } .howto { font-size: 13px; } .menu { margin-top: 8px; } }
+@media (max-width: 560px) { .lbl { display: none; } .chip { padding: 4px 9px; } }
+/* Portrait phones: the offer card sits above the touch controls, full width */
+@media (max-width: 560px) and (orientation: portrait) { #offer { top: auto; bottom: calc(150px + var(--safe-b)); left: calc(8px + var(--safe-l)); right: calc(8px + var(--safe-r)); width: auto; } body.touch #picker { bottom: calc(150px + var(--safe-b)); } }
+/* Short landscape phones: quests and toasts on the left, a compact offer card on the right */
+@media (max-height: 460px) {
+  #stack { width: 36vw; } #quests li { font-size: 11px; padding: 3px 6px; } .toast { font-size: 12px; padding: 3px 10px; }
+  #offer { width: 36vw; padding: 6px 8px; } .offer-title { display: none; } #offer p { font-size: 12px; margin: 0 0 4px; }
+  .offer-btns { margin-top: 5px; } .offer-btns button { min-height: 36px; font-size: 13px; }
+}
