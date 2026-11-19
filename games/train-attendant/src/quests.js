@@ -48,7 +48,8 @@ const MAKE = {
     return { vars: { name: p.name, station: s.route.stations[p.dest], platform: s.rng.int(1, 9) }, pid: p.id, reward: Q.connection.reward, penalty: Q.connection.penalty };
   },
   nervous(s) {
-    const p = choose(s, candidates(s, Q.nervous.minEta));
+    // Not someone whose ticket is unchecked: the quest clears their need, and the fare would be lost (D24).
+    const p = choose(s, candidates(s, Q.nervous.minEta).filter((x) => x.ticket));
     if (!p) return null;
     return { vars: { name: p.name, done: 0, n: Q.nervous.talks }, pid: p.id, reward: Q.nervous.reward, penalty: Q.nervous.penalty };
   },

@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { step } from '../src/game.js';
+import { step, createGame } from '../src/game.js';
 import { CFG } from '../src/config.js';
 import { questKey, doneKey } from '../src/quests.js';
 import { STRINGS } from '../src/i18n.js';
@@ -386,4 +386,28 @@ test('offers: a rescue is only offered when 6-10 passengers fit, and its count i
     if (o && o.type === 'rescue') { assert.ok(o.vars.n >= 6 && o.vars.n <= 10); seen.add(o.vars.n); }
   }
   assert.ok(seen.size >= 3);
+});
+
+test('nervous: never offered to a passenger whose ticket is unchecked, so no fare is lost (D24)', () => {
+  const s = riding({}, 7);
+  addP(s, { seat: 0, dest: 4, ticket: false, need: 'ticket' });
+  const b = addP(s, { seat: 1, dest: 4, ticket: true });
+  const seen = new Set();
+  for (let i = 0; i < 300; i++) {
+    s.quests.offer = null; s.quests.timer = 0; step(s, {});
+    const o = s.quests.offer;
+    if (o && o.type === 'nervous') { assert.equal(o.pid, b.id); seen.add(o.pid); }
+  }
+  assert.equal(seen.size, 1);
+});
+
+test('nervous: no quest passenger leaves without a ticket check (seed 7, short trip, quests assigned)', () => {
+  const s = createGame({ trip: 'short', quests: 'assign' }, 7);
+  const nervous = new Set();
+  for (let i = 0; i < 60 * 500 && !s.ended; i++) {
+    step(s, {});
+    for (const p of s.passengers) if (p.role === 'nervous') { assert.equal(p.ticket, true); nervous.add(p.id); }
+    for (const e of s.events) if (e.type === 'alight' && nervous.has(e.id)) assert.equal(e.lostFare, false);
+  }
+  assert.ok(s.ended);
 });

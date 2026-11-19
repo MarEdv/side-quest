@@ -301,3 +301,10 @@ Findings (each verified) and where they were fixed, in the commits that follow:
 13. Station names close to real places: D35.
 14. "New best score!" with unavailable storage: D36.
 15. `getBoundingClientRect` every frame: D37.
+
+## D25 — 2026-11-19 — Nervous quests skip passengers with an unchecked ticket
+Accepting a nervous quest clears the passenger's `need`, so an open ticket need was lost and the fare was charged at their
+station even if the quest was done. Alternatives: restore the need after the quest (more state, and the passenger would
+sit with the need cleared for minutes); pick only passengers whose ticket is checked. Chosen: the second (candidates need
+`p.ticket`), as it is one line and a pure filter; nervous quests simply come a little later to a freshly boarded passenger.
+Tested in `tests/quests.test.js` (offers only to the checked passenger; a seed-7 short trip with quests assigned).
