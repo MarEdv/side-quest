@@ -16,10 +16,10 @@ function pngSize(p) {
   return { w: b.readUInt32BE(16), h: b.readUInt32BE(20) };
 }
 
-test('sw.js precache list = index, manifest, every src/*.js, every src/kit/*.js and every icon', () => {
+test('sw.js precache list = index, style.css, manifest, every src/*.js, every src/kit/*.js and every icon', () => {
   const sw = read('sw.js').toString();
   const list = JSON.parse(/const PRECACHE = (\[[\s\S]*?\]);/.exec(sw)[1].replace(/'/g, '"').replace(/,\s*\]/, ']'));
-  const expected = ['./', 'index.html', 'manifest.webmanifest',
+  const expected = ['./', 'index.html', 'style.css', 'manifest.webmanifest',
     ...readdirSync(join(root, 'icons')).filter((f) => f.endsWith('.png')).map((f) => `icons/${f}`),
     ...readdirSync(join(root, 'src')).filter((f) => f.endsWith('.js')).map((f) => `src/${f}`),
     ...readdirSync(join(root, 'src', 'kit')).filter((f) => f.endsWith('.js')).map((f) => `src/kit/${f}`)];
@@ -68,8 +68,14 @@ test('manifest: required fields, relative paths, icons exist and match their dec
 });
 
 test('a full-page menu hides the controls hint and the rotate chip behind it (intro over an end screen, Settings over pause, D-28)', () => {
-  const html = read('index.html').toString();
-  const rule = html.split('\n').find((l) => l.includes('.ui[data-kind="page"]:not([hidden])') && l.includes('#hint') && l.includes('#rotate'));
+  const css = read('style.css').toString();
+  const rule = css.split('\n').find((l) => l.includes('.ui[data-kind="page"]:not([hidden])') && l.includes('#hint') && l.includes('#rotate'));
   assert.ok(rule, 'rule present');
   assert.match(rule, /visibility:\s*hidden\s*!important/); // must beat main.js's inline style.visibility
+});
+
+test('index.html links style.css (relative) and keeps no inline <style> (D-39)', () => {
+  const html = read('index.html').toString();
+  assert.match(html, /<link rel="stylesheet" href="style\.css">/);
+  assert.ok(!/<style[\s>]/.test(html), 'no inline <style>');
 });

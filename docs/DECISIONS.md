@@ -336,3 +336,27 @@
   point to it, and their `CLAUDE.md` rule 3 says so.
 - **Who did what:** an Opus subagent wrote the parser, the golden tests and the change; Fable reviewed, ran the golden
   tests against the old parsers and checked old and new names in headless Chrome.
+
+### D-19 — One page shell: CSS in style.css, the same head tags, window.__game (2026-11-19)
+- **Chosen:** S-11 of `docs/STREAMLINING.md`. T-4.
+  - Garden Day's 178 lines of inline CSS moved byte for byte to `games/garden-day/style.css`, linked where the
+    `<style>` was, so the cascade is unchanged. Its service worker precaches it; the cache name stays (its D-39 explains
+    why a bump would not close any gap the network-first worker leaves).
+  - The three games' `<head>` has the same tags in the same order; the two that had no description got their
+    `game.json` one. No `color-scheme`: the games use fixed dark colours, and declaring it would restyle the controls the
+    browser draws (scrollbars, checkboxes, select pop-ups).
+  - With `debug` on, every game exposes `window.__game` with a `state` getter. Garden Day keeps `window.__state` and Gem
+    Miner `window.__gem` as the same hook under the old names, because their decision logs and check scripts use them.
+- **Kept per game, on purpose:** zoom. Gem Miner and Poo Sandwich add `user-scalable=no` to the viewport; Garden Day
+  does not, and stops accidental zoom with `touch-action` and gesture handlers while its touch controls are shown (its
+  D-19 / M-6). Changing either would change how the game feels on a phone; that is a design question, not an
+  alignment. Favicons stay too (Garden Day has real icons, the others an emoji).
+- **Checked:** Fable recorded the computed style and box of every element on nine Garden Day screens (menu, Settings,
+  High scores, Levels, a running day, the pause dock) at 1280x800, a 390x844 phone in portrait and landscape, and in
+  Swedish, on a clean copy of the previous commit and on this one: identical (a repeat capture of the old code was
+  identical too, so the method is stable). The debug hooks exist only with `debug` on. Offline, Garden Day reloads
+  entirely from its worker, including the stylesheet and every kit copy; this also closes the offline check left open
+  since D-13.
+- **Who did what:** an Opus subagent made the change; Fable compared styles and checked hooks and offline.
+- **Alternatives:** move the CSS and tidy it (reorders and merges are where a byte-for-byte move stops being provably
+  identical); one viewport for all (changes zoom behaviour on phones).

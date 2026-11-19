@@ -76,4 +76,4 @@ Run in this folder; it runs Node's built-in test runner (`node --test tests/*.te
 ## Layout
 
 `src/` game code (`config`, `rng`, `geometry`, `world`, `chores`, `quests`, `wife`, `game` are pure logic;
-`levels`, `settings`, `touchmath`, `storage`, `scores`, `uimodel`, `installmodel` are pure too; `main`, `render`, `input`, `touch`, `audio`, `ui`, `levelsui`, `settingsui`, `installui`, `install` touch the browser) · `sw.js` service worker · `icons/` + `tools/make-icons.mjs` · `tools/level-balance.mjs` + `tools/level-bot.mjs` · `tests/` · `docs/` (requirements, decisions, flags).
+`levels`, `settings`, `touchmath`, `storage`, `scores`, `uimodel`, `installmodel` are pure too; `main`, `render`, `input`, `touch`, `audio`, `ui`, `levelsui`, `settingsui`, `installui`, `install` touch the browser) · `index.html` + `style.css` page and styles · `sw.js` service worker · `icons/` + `tools/make-icons.mjs` · `tools/level-balance.mjs` + `tools/level-bot.mjs` · `tests/` · `docs/` (requirements, decisions, flags).

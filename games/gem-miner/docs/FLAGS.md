@@ -21,7 +21,7 @@ flags and invalid values are ignored (the default applies). **Any new flag must 
 | `touch` | enum | `auto` | Touch controls: `auto` (on touch devices), `on`, `off`. |
 | `touchScheme` | enum | `dpad` | Touch control style: `dpad` (on-screen D-pad) or `joystick` (floating joystick). |
 | `sound` | bool | `true` | Sound effects. |
-| `debug` | bool | `false` | Show tile coordinates and FPS, reveal the map, start with coins; runs with debug on are not autosaved and not saved to the best times. |
+| `debug` | bool | `false` | Show tile coordinates and FPS, reveal the map, start with coins; runs with debug on are not autosaved and not saved to the best times. Also exposes `window.__game` (`state`, `cam`, `renderer`) for scripted testing; `window.__gem` is the same object under its old name (D36). |
 
 **Aliases** (old names, so old links keep working; when both are given, a valid value under the new name wins):
 

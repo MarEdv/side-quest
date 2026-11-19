@@ -18,8 +18,9 @@
 8. Don't ask the owner questions — make a reasonable assumption and log it.
 
 ## Layout
-- `index.html` – entry; `sw.js` – service worker; `manifest.webmanifest` + `icons/` – installable app; `tools/` –
-  scripts; `src/` – game code; `tests/` – `node --test` unit tests; `docs/` – requirements, decisions, flags.
+- `index.html` – entry; `style.css` – styles; `sw.js` – service worker; `manifest.webmanifest` + `icons/` – installable
+  app; `tools/` – scripts; `src/` – game code; `tests/` – `node --test` unit tests; `docs/` – requirements, decisions,
+  flags.
 - Modules that may touch the browser are listed in `package.json` (`"browserModules"`); every other module in `src/`
   stays DOM-free so it can be tested in Node (the root `tests/conventions.test.js` checks this).
 - Player-facing text goes through `src/i18n.js` (English and Swedish, D-31): `t(key)` for UI strings, `tx(english)` for

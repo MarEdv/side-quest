@@ -354,3 +354,17 @@
   `tools/sim.mjs` prints the same output before and after.
 - **Alternatives:** keep the hand-written parser (a third flag parser with its own rules); adopt Garden Day's case-folding
   and last-wins duplicates too (would change what some existing links give, so not done without the owner).
+
+## D36 — 2026-11-19 — Shared head-tag set; debug hook `window.__game`
+- **Chosen:** part of the repo-wide alignment (`docs/STREAMLINING.md` S-11 at the repo root).
+  - **Head tags:** the same set and order in all three games: `charset`, `viewport`, `<title>`, `<meta name="description">`
+    (new; the English `game.json` description), `theme-color` (moved after the title), the icon link, the stylesheet. No
+    `color-scheme`: the colours are fixed CSS variables with no `prefers-color-scheme` rule, and declaring `dark` would
+    change how the browser draws scrollbars and native controls. The emoji favicon stays (no icon files). The viewport
+    keeps `user-scalable=no`; zoom is also blocked by `touch-action: none` on html/body, the canvas, the d-pad and the
+    stick, `touch-action: manipulation` on buttons, and `gesturestart/change/end` plus `touchmove` (outside `.screen`)
+    prevented in `src/input.js`.
+  - **Debug hook:** with `debug` on, `window.__game = { state (getter), cam, renderer }`, the name all three games use;
+    `window.__gem` is the same object, kept for existing check scripts.
+- **Alternatives:** rename without the alias (breaks existing scripts); drop `user-scalable=no` to match Garden Day
+  (changes zoom behaviour, out of scope).

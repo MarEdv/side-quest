@@ -238,6 +238,9 @@ tools (D-15 says why). The wave runs its tasks one at a time: they all edit Gard
 **S-10** is done (D-18, K-10): one flag parser, shared names with aliases for the old ones, `docs/FLAGS.md` in every
 game; Poo Sandwich's `flags.js` is now pure. Garden Day's `config.js` keeps its name (D-18 says why). Wave 5 is done.
 
+Wave 6: **S-11** is done (D-19, T-4). Garden Day's CSS is in `style.css` with identical computed styles, the head tags
+match, `window.__game` everywhere; zoom stays per game. Garden Day now verified offline.
+
 Priority reflects value against risk: P1 is the foundation and the two largest sources of drift; P2 is the remaining
 duplicated code and visible inconsistencies; P3 changes behaviour or needs an owner decision.
 

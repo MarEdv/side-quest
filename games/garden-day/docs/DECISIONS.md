@@ -727,3 +727,36 @@ Cache-Control, so heuristic freshness hid some effects and showed others that Gi
   `tools/level-balance.mjs 15` prints the same output before and after. FLAGS.md now lists all boolean spellings
   (`on/off/yes/no` were always accepted but not documented).
 - **Alternative:** keep this game's parser and give the other two a copy (three parsers drifting apart again).
+
+### D-39 — Styles in `style.css`, the shared head-tag set, `window.__game` (2026-11-19)
+- **Chosen:** part of the repo-wide alignment (`docs/STREAMLINING.md` S-11 at the repo root).
+  - **Styles:** the inline `<style>` block moved, byte for byte and in the same order, to `style.css`, linked with
+    `<link rel="stylesheet" href="style.css">` at the same place in `<head>` (after the icon links), so the cascade is the
+    same. The other two games already did this. Styles that `src/main.js`, `src/touch.js` and `src/ui.js` set on elements
+    at run time (canvas position and size, hint / rotate chip placement and visibility, panel and pause-button offsets, the
+    stick transform) stay in the code; they are layout, not styling. The D-28 check in `tests/pwa.test.js` now reads
+    `style.css`, and a new test checks that `index.html` links it and has no inline `<style>`.
+  - **Service worker:** `style.css` joins `PRECACHE` (the test's expected list too). **Cache name not bumped**
+    (`sidequest-v1`): an installed copy still running the old worker gets the new `index.html` only online, and the same
+    network-first handler then fetches `style.css` from the network and stores it (D-25, D-26). `sw.js` itself changed, so
+    the browser installs the new worker on that visit; its install `addAll` (atomic, `cache: 'reload'`) writes the new
+    `index.html` and `style.css` into the cache together, so an offline launch after that has both. A new `index.html`
+    cannot reach the page offline (offline only the cached copy is served, and the cache holds the old self-styled
+    `index.html` until a successful online visit). The one gap, a connection dropped between the page and its stylesheet
+    on the very first online load, also exists with a bumped name (the old worker would serve that load either way) and
+    closes when the new worker's install finishes. A bump would only drop the old entries, which network-first never
+    serves while online.
+  - **Head tags:** the same set and order in all three games: `charset`, `viewport`, `<title>`, `<meta name="description">`
+    (new; the English `game.json` description), `theme-color`, then this game's install tags (Apple / mobile-web-app
+    metas, manifest, apple-touch-icon), the icon link, the stylesheet. No `color-scheme`: the colours are fixed (dark, no
+    `prefers-color-scheme` rule), and declaring `dark` would change how the browser draws the parts it styles itself (the
+    Settings checkboxes and select pop-ups, number spinners, scrollbars), so the page would not look the same. Viewport
+    unchanged (zoom not locked in the meta): accidental zoom is stopped by `touch-action: none` on html/body, the canvas
+    and the touch overlay, `touch-action: manipulation` on menus (no double-tap zoom), and, while touch controls are
+    shown, `gesturestart/change/end` and `touchmove` prevented in `src/touch.js` for iOS Safari (D-19, M-6).
+  - **Debug hook:** with `debug` on, `window.__game = { state }` (a getter), the name all three games use, next to
+    `window.__state` (the state object itself), kept because earlier decisions (D-22, D-24 and the browser checks they record) and older check scripts use it. Both are set and
+    deleted together, also when debug is toggled in Settings (D-24, one `setDebugHook` in `src/main.js`).
+- **Alternatives:** keep the styles inline (the only game unlike the others); bump the cache to `sidequest-v2` (no gain,
+  see above); add `color-scheme` (changes the look of native controls); drop `window.__state` (breaks recorded check
+  scripts).

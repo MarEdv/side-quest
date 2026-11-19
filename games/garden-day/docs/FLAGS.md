@@ -35,6 +35,6 @@ given twice, the last valid value wins. Unknown flags are ignored. **Any new fla
 | `showVisionCone` | bool | `true` | Draw the wife's vision cone. |
 | `sound` | bool | `true` | WebAudio blips. |
 | `seed` | int | `random` | RNG seed for reproducible runs. |
-| `debug` | bool | `false` | Show hitboxes, FPS, state overlay. Days played with `debug=1` are not recorded as high scores (the end screen says so, D-22). |
+| `debug` | bool | `false` | Show hitboxes, FPS, state overlay. Days played with `debug=1` are not recorded as high scores (the end screen says so, D-22). While on, exposes `window.__game` (`state`) for scripted testing, and `window.__state` (the state object, older name); both go away when debug is switched off (D-24, D-39). |
 | `touch` | enum | `auto` | Touch controls: `auto` (on touch devices / after first touch), `on`, `off`. |
 | `touchScheme` | enum | `joystick` | `joystick`: floating virtual stick (left) + action button (right). `tap`: tap/drag to walk to a point, hold on a task to work. |

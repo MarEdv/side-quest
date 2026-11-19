@@ -53,7 +53,18 @@ let resolved = resolveFlags(DEFAULT_FLAGS, saved, location.search);
 const flags = { ...resolved.flags };
 const audio = createAudio(flags.sound);
 const state = createGame(flags);
-if (flags.debug) window.__state = state; // inspection hook for browser self-checks
+// Inspection hooks for browser self-checks, only while debug is on (D-24): `window.__game.state` is the name every game
+// uses (D-39); `window.__state` (the state object itself) stays for older check scripts.
+function setDebugHook(on) {
+  if (on) {
+    window.__state = state;
+    window.__game = { get state() { return state; } };
+  } else {
+    delete window.__state;
+    delete window.__game;
+  }
+}
+setDebugHook(flags.debug);
 
 const dayInProgress = () => state.phase === 'playing' || state.phase === 'paused';
 // What is being played: null = Arcade (gameplay flags from Settings), or a level {id, index, name} whose own gameplay flags
@@ -69,8 +80,7 @@ function applyControl() {
   Object.assign(flags, controlOf(resolved.flags));
   audio.setEnabled(flags.sound);
   touch.setOptions({ mode: flags.touch, scheme: flags.touchScheme });
-  if (flags.debug) window.__state = state;
-  else delete window.__state; // the inspection hook only exists while debug is on (D-24)
+  setDebugHook(flags.debug); // the inspection hooks only exist while debug is on (D-24)
 }
 function setSetting(key, value) {
   saved = withSetting(saved, key, value, DEFAULT_FLAGS);

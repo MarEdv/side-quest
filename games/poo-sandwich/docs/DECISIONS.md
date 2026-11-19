@@ -163,3 +163,14 @@
   repeated name only the first occurrence counts, as before (kit options `exactEnums`, `firstWins`).
 - **Alternatives:** keep the hand-written parser (a third flag parser with its own rules); also rename `controls` (rejected:
   not the same concept, see above).
+
+## D25 — 2026-11-19 — Shared head-tag set; debug hook name already `window.__game`
+- **Chosen:** part of the repo-wide alignment (`docs/STREAMLINING.md` S-11 at the repo root).
+  - **Head tags:** the same set and order in all three games: `charset`, `viewport`, `<title>`, `<meta name="description">`
+    (new; the English `game.json` description), `theme-color` (moved after the title), the icon link, the stylesheet. No
+    `color-scheme`: the colours are fixed CSS variables with no `prefers-color-scheme` rule, and declaring `dark` would
+    change how the browser draws scrollbars and native controls. The emoji favicon stays (no icon files). The viewport
+    keeps `user-scalable=no`; zoom is also blocked by `touch-action: none` on html/body and the canvas and, in
+    `src/main.js`, `gesturestart` and `touchmove` on the canvas prevented (iOS).
+  - **Debug hook:** unchanged. This game's `window.__game = { state (getter), start }` became the name all three games use.
+- **Alternatives:** none needed for the hook; dropping `user-scalable=no` would change zoom behaviour (out of scope).

@@ -1,0 +1,178 @@
+    html, body {
+      margin: 0; width: 100%; height: 100%; height: 100dvh; background: #14161a; color: #9aa;
+      font: 13px system-ui, sans-serif; overflow: hidden; position: fixed; inset: 0;
+      overscroll-behavior: none; touch-action: none;
+      -webkit-user-select: none; user-select: none; -webkit-touch-callout: none; -webkit-tap-highlight-color: transparent;
+      padding: env(safe-area-inset-top, 0px) env(safe-area-inset-right, 0px) env(safe-area-inset-bottom, 0px) env(safe-area-inset-left, 0px);
+      box-sizing: border-box;
+    }
+    #game { position: absolute; display: block; background: #000; box-shadow: 0 0 30px #000a; touch-action: none; }
+    #hint { position: absolute; left: 0; right: 0; text-align: center; height: 18px; line-height: 18px; white-space: nowrap; overflow: hidden; }
+    #probe { position: absolute; visibility: hidden; pointer-events: none; width: 0; height: 0;
+      padding: env(safe-area-inset-top, 0px) env(safe-area-inset-right, 0px) env(safe-area-inset-bottom, 0px) env(safe-area-inset-left, 0px); }
+
+    /* Touch overlay (src/touch.js): full viewport above the canvas. */
+    .tc { position: fixed; inset: 0; z-index: 10; touch-action: none; display: block; }
+    .tc > * { display: none; position: absolute; pointer-events: none; }
+    .tc.on > .tc-pause, .tc.on[data-scheme="joystick"][data-phase="playing"] > .tc-action { display: flex; }
+    .tc-pause { display: none; }
+    .tc:not([data-phase="playing"]):not([data-phase="paused"]) > .tc-pause { display: none !important; }
+    .tc-pause {
+      pointer-events: auto !important; top: calc(env(safe-area-inset-top, 0px) + 6px); right: calc(env(safe-area-inset-right, 0px) + 6px);
+      width: 44px; height: 44px; border-radius: 12px; align-items: center; justify-content: center;
+      background: rgba(10,14,20,.55); border: 2px solid rgba(255,255,255,.55); color: #fff; font: bold 20px system-ui, sans-serif;
+    }
+    .tc-action {
+      pointer-events: auto !important; right: calc(env(safe-area-inset-right, 0px) + 28px); bottom: calc(env(safe-area-inset-bottom, 0px) + 28px);
+      width: 90px; height: 90px; border-radius: 50%; align-items: center; justify-content: center;
+      background: rgba(255,210,63,.30); border: 3px solid rgba(255,255,255,.6); color: #fff; font: bold 16px system-ui, sans-serif;
+    }
+    .tc-action.down { background: rgba(255,210,63,.65); }
+    .tc.on[data-scheme="joystick"][data-phase="playing"] > .tc-idle {
+      display: block; left: calc(env(safe-area-inset-left, 0px) + 40px); bottom: calc(env(safe-area-inset-bottom, 0px) + 36px);
+      width: 100px; height: 100px; border-radius: 50%; border: 2px dashed rgba(255,255,255,.25);
+    }
+    .tc.steer > .tc-idle { display: none !important; }
+    .tc > .tc-base { left: 0; top: 0; margin: -60px 0 0 -60px; width: 120px; height: 120px; border-radius: 50%;
+      background: rgba(255,255,255,.12); border: 2px solid rgba(255,255,255,.4); }
+    .tc.on > .tc-base.show { display: block; }
+    .tc-knob { position: absolute; left: 34px; top: 34px; width: 52px; height: 52px; border-radius: 50%; background: rgba(255,255,255,.55); }
+    .tc > .tc-marker { left: 0; top: 0; margin: -20px 0 0 -20px; width: 40px; height: 40px; border-radius: 50%; border: 3px solid rgba(255,255,255,.7); }
+    .tc.on > .tc-marker.show { display: block; }
+    .tc-marker.work { border-color: #ffd23f; background: rgba(255,210,63,.3); }
+
+    /* Rotate hint (portrait, touch only) */
+    #rotate { position: absolute; left: 50%; transform: translateX(-50%); z-index: 20; display: none; align-items: center; gap: 10px;
+      background: rgba(10,14,20,.85); color: #ffe9a8; border: 1px solid #556; border-radius: 10px; padding: 8px 12px; white-space: nowrap; }
+    /* Only the X takes touches: taps on the text fall through to the overlay (start / restart / steer), D-19. */
+    #rotate { pointer-events: none; }
+    #rotate button { all: unset; cursor: pointer; padding: 10px 12px; margin: -8px -10px -8px 0; color: #fff; font-weight: bold; pointer-events: auto; touch-action: none; }
+
+    /* Menus (src/ui.js): DOM overlay above the canvas and the touch controls. Page screens (main menu, scores) dim the
+       garden and take all pointer events; dock screens (pause, end) only the panel does, so a tap elsewhere still
+       resumes / restarts through the touch overlay. */
+    .tc[data-phase="title"] { display: none; }
+    .ui { position: fixed; inset: 0; z-index: 30; box-sizing: border-box; display: flex; align-items: center; justify-content: center;
+      padding: calc(env(safe-area-inset-top, 0px) + 8px) calc(env(safe-area-inset-right, 0px) + 12px) calc(env(safe-area-inset-bottom, 0px) + 8px) calc(env(safe-area-inset-left, 0px) + 12px);
+      color: #cde; font: 16px system-ui, -apple-system, "Segoe UI", sans-serif; touch-action: manipulation; }
+    .ui[hidden] { display: none; }
+    .ui[data-kind="page"] { background: rgba(10,14,20,.78); }
+    /* A full-page menu (Settings, level intro...) pushed over the pause or end screen: the controls hint and the rotate chip
+       would show through the dimmed backdrop and collide with the page text in portrait (D-28). */
+    body:has(.ui[data-kind="page"]:not([hidden])) #hint, body:has(.ui[data-kind="page"]:not([hidden])) #rotate { visibility: hidden !important; }
+    .ui[data-kind="dock"] { display: block; pointer-events: none; }
+    .ui-panel { pointer-events: auto; box-sizing: border-box; max-width: 100%; max-height: 100%; }
+    .ui[data-kind="dock"] .ui-panel { position: absolute; left: 50%; transform: translateX(-50%); width: max-content; max-width: calc(100% - 24px); }
+    .ui .menu, .ui .endp { display: flex; flex-direction: column; align-items: center; gap: 10px; text-align: center; }
+    .ui h1 { margin: 0; color: #ffd23f; font-size: clamp(34px, 9vw, 64px); letter-spacing: .04em; line-height: 1.05; }
+    .ui h2 { margin: 0; color: #ffd23f; font-size: 28px; }
+    .ui p { margin: 0; }
+    .ui .tag { color: #fff; font-size: 17px; max-width: 34em; }
+    .ui .small { font-size: 13px; color: #cde; max-width: 40em; }
+    .ui .dim { color: #8a9; }
+    .ui .warn { color: #ffb08a; font-size: 17px; }
+    .ui .col { display: flex; flex-direction: column; gap: 10px; width: min(280px, 100%); margin: 6px 0; }
+    .ui .row { display: flex; flex-wrap: wrap; justify-content: center; gap: 10px; }
+    .ui .btn { box-sizing: border-box; min-height: 48px; min-width: 150px; padding: 0 22px; border-radius: 12px; cursor: pointer;
+      font: bold 18px system-ui, -apple-system, "Segoe UI", sans-serif; color: #fff; background: #262b33; border: 2px solid #667; }
+    .ui .btn.primary { background: #ffd23f; color: #14161a; border-color: #ffd23f; }
+    .ui .btn:disabled { opacity: .4; cursor: default; }
+    .ui .btn:focus-visible { outline: 3px solid #fff; outline-offset: 2px; }
+    .ui .btn:active:not(:disabled) { filter: brightness(1.2); }
+    /* EN / SV switch on the main menu (P-6) */
+    .ui .lang { display: flex; border-radius: 10px; overflow: hidden; border: 2px solid #667; }
+    .ui .lang button { all: unset; box-sizing: border-box; min-width: 48px; min-height: 36px; display: flex; align-items: center; justify-content: center;
+      font: bold 14px system-ui, -apple-system, "Segoe UI", sans-serif; color: #aab; background: #1d2128; cursor: pointer; }
+    .ui .lang button[aria-pressed="true"] { background: #ffd23f; color: #14161a; }
+    .ui .lang button:focus-visible { outline: 3px solid #fff; outline-offset: -3px; }
+    .ui .banner { font-size: 20px; font-weight: bold; color: #fff; text-shadow: 0 1px 4px #000; }
+    .ui .banner.hi { color: #ffd23f; }
+    .ui .endp { gap: 8px; }
+    .ui[data-kind="dock"] .btn { background-color: #262b33; }
+    .ui[data-kind="dock"] .btn.primary { background-color: #ffd23f; }
+    .ui-scroll { overflow-y: auto; max-height: calc(100dvh - 210px); min-height: 60px; touch-action: pan-y; overscroll-behavior: contain; width: min(560px, 100%);
+      border: 1px solid #445; border-radius: 10px; background: rgba(10,14,20,.6); -webkit-overflow-scrolling: touch; }
+    table.scores { border-collapse: collapse; width: 100%; font-size: 16px; }
+    table.scores th { position: sticky; top: 0; background: #1d2128; color: #ffd23f; text-align: left; font-size: 13px; }
+    table.scores th, table.scores td { padding: 7px 10px; white-space: nowrap; }
+    table.scores td { border-top: 1px solid #333a44; text-align: left; }
+    table.scores td.num { font-weight: bold; color: #fff; }
+
+    /* Settings screen (src/settingsui.js) */
+    .ui [hidden] { display: none !important; }
+    .ui .settings { width: min(600px, 100%); }
+    .ui .sscroll { width: 100%; text-align: left; padding: 4px 12px 10px; box-sizing: border-box; max-height: calc(100dvh - 190px); }
+    .ui .sgroup { border: 0; margin: 10px 0 0; padding: 0; min-width: 0; }
+    .ui .sgroup legend { color: #ffd23f; font-weight: bold; font-size: 18px; padding: 0; border-bottom: 1px solid #445; width: 100%; margin-bottom: 4px; }
+    .ui .sgnote { margin: 2px 0 6px; }
+    .ui .srow { padding: 8px 0; border-top: 1px solid #2b313a; display: flex; flex-direction: column; gap: 4px; }
+    .ui .sgnote + .srow { border-top: 0; }
+    .ui .srow > label, .ui .tlabel { color: #fff; font-weight: bold; font-size: 16px; }
+    .ui .tlabel { display: flex; align-items: center; justify-content: space-between; gap: 12px; min-height: 44px; cursor: pointer; }
+    .ui .stog { width: 28px; height: 28px; flex: none; accent-color: #ffd23f; cursor: pointer; margin: 0 6px; }
+    .ui .sctl { box-sizing: border-box; min-height: 44px; width: 100%; padding: 0 10px; border-radius: 10px; border: 2px solid #667; background: #1d2128; color: #fff; font: 16px system-ui, -apple-system, "Segoe UI", sans-serif; }
+    .ui .sctl[aria-invalid="true"] { border-color: #ff8a65; }
+    .ui .sctl:focus-visible, .ui .stog:focus-visible { outline: 3px solid #fff; outline-offset: 2px; }
+    .ui .shelp { font-size: 13px; color: #aab; }
+    .ui .snote { font-size: 13px; color: #ffd23f; min-height: 0; }
+    .ui .snote:empty { display: none; }
+    .ui .snote.lock { color: #9fd3ff; }
+    .ui .snote.bad { color: #ff8a65; }
+    .ui .srow.off .tlabel, .ui .srow.off > label { opacity: .6; }
+    .ui .sctl:disabled, .ui .stog:disabled { opacity: .5; cursor: not-allowed; }
+    .ui .sconfirm { display: flex; flex-direction: column; align-items: center; gap: 8px; }
+
+    /* Install screens (src/installui.js) */
+    .ui .steps { text-align: left; margin: 0; padding: 0 0 0 1.4em; max-width: 30em; display: flex; flex-direction: column; gap: 12px; font-size: 17px; line-height: 1.4; color: #fff; }
+    .ui .sicon { display: inline-flex; align-items: center; gap: 4px; vertical-align: middle; padding: 2px 8px; border-radius: 8px; background: #262b33; border: 1px solid #667; color: #9fd3ff; }
+    .ui .shareicon { display: block; }
+    .ui .invite { display: flex; flex-direction: column; align-items: center; gap: 6px; border-top: 1px solid #445; padding-top: 8px; margin-top: 2px; }
+    .ui .invite .btn { min-width: 0; min-height: 44px; padding: 0 14px; font-size: 15px; }
+    .ui .invite .row { gap: 8px; }
+    /* Short (landscape phone) viewports: the end panel must not cover the stats, so the invitation joins the one button row. */
+    @media (max-height: 500px) {
+      .ui .steps { font-size: 15px; gap: 6px; }
+      .ui .endp:has(.invite) { flex-direction: row; flex-wrap: wrap; justify-content: center; align-items: center; gap: 4px 8px; max-width: 100%; }
+      .ui .endp:has(.invite) > .banner { flex: 0 0 100%; }
+      .ui .endp:has(.invite) > .row, .ui .endp .invite, .ui .endp .invite > .row { display: contents; }
+      .ui .endp .invite { border: 0; padding: 0; margin: 0; }
+      .ui .endp .invite > p { display: none; }
+      .ui .endp:has(.invite) .btn { min-width: 0; min-height: 44px; padding: 0 14px; font-size: 16px; }
+    }
+    @media (max-height: 500px) { .ui .sscroll { max-height: calc(100dvh - 120px); } }
+    @media (max-height: 500px) {
+      .ui .menu { gap: 6px; }
+      .ui h1 { font-size: 36px; } .ui h2 { font-size: 22px; }
+      .ui .tag { font-size: 14px; }
+      .ui .col { flex-direction: row; width: auto; margin: 2px 0; }
+      .ui-scroll { max-height: calc(100dvh - 150px); }
+      table.scores { font-size: 14px; } table.scores th, table.scores td { padding: 4px 8px; }
+    }
+    @media (max-width: 480px) { table.scores { font-size: 14px; } table.scores th, table.scores td { padding: 6px 5px; } table.scores td:nth-child(5) { white-space: normal; overflow-wrap: anywhere; font-size: 12px; } }
+
+    /* Levels (src/levelsui.js) */
+    .ui .levels { width: min(760px, 100%); }
+    .ui .lscroll { width: 100%; max-height: calc(100dvh - 150px); border: 0; background: none; }
+    .ui .lgrid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; padding: 2px; }
+    .ui .lcard { all: unset; box-sizing: border-box; display: flex; flex-direction: column; gap: 6px; text-align: left; min-height: 48px; padding: 12px 14px;
+      border-radius: 12px; border: 2px solid #667; background: #262b33; color: #fff; cursor: pointer; }
+    .ui .lcard:focus-visible { outline: 3px solid #fff; outline-offset: 2px; }
+    .ui .lcard:active:not(:disabled) { filter: brightness(1.2); }
+    .ui .lcard.won { border-color: #5ed26a; }
+    .ui .lcard.locked { opacity: .55; cursor: default; border-style: dashed; }
+    .ui .lhead { display: flex; justify-content: space-between; align-items: baseline; gap: 8px; }
+    .ui .lname { font-weight: bold; font-size: 18px; color: #ffd23f; }
+    .ui .lbadge { font-size: 13px; font-weight: bold; white-space: nowrap; }
+    .ui .lbadge.won { color: #7fe08a; } .ui .lbadge.lock { color: #cde; }
+    .ui .lbrief { font-size: 14px; line-height: 1.35; color: #dde; }
+    .ui .lbest { font-size: 13px; color: #9fd3ff; }
+    .ui .intro { max-width: 34em; }
+    .ui .btn small { display: block; font-size: 12px; font-weight: normal; opacity: .8; }
+    .ui .col { flex-wrap: wrap; }
+    .ui .menu .warn { max-width: 30em; }
+    /* Short (landscape phone) viewports: the HUD already names the level, and a taller dock panel would cover the stats. */
+    @media (max-height: 500px) { .ui .lvlname { display: none; } }
+    .ui .shead { margin: 10px 10px 2px; text-align: left; color: #ffd23f; font-size: 16px; }
+    .ui .spad { padding: 6px 10px 10px; text-align: left; }
+    @media (max-width: 600px) { .ui .lgrid { grid-template-columns: minmax(0, 1fr); } }
+    @media (max-height: 500px) { .ui .lscroll { max-height: calc(100dvh - 110px); } .ui .lcard { padding: 8px 12px; gap: 3px; } .ui .lbrief { font-size: 13px; } }

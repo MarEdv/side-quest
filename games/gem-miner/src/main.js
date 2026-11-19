@@ -220,6 +220,7 @@ function onResize() {
 }
 input.onTouchChange(() => { if (state) ui.touchVisible(isTouch()); });
 renderer.resize();
-if (flags.debug) window.__gem = { get state() { return state; }, cam, renderer };
+// Inspection hook for scripted browser checks (D36): `window.__game` in every game; `window.__gem` is the old name, kept.
+if (flags.debug) window.__game = window.__gem = { get state() { return state; }, cam, renderer };
 showTitle();
 requestAnimationFrame(frame);
