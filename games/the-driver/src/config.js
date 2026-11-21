@@ -92,7 +92,7 @@ export const CFG = freeze({
     palette: ['#c0392b', '#2980b9', '#27ae60', '#f1c40f', '#ecf0f1', '#7f8c8d', '#e67e22', '#8e44ad', '#2c3e50', '#16a085'],
     // Cars per 100 m of a lane, per stage (multiplied by the difficulty's density and the lane weight).
     density: {
-      highway: [0.5, 0.78, 1.1],
+      highway: [0.7, 1.05, 1.5],
       countrySame: [0.3, 0.45, 0.62],
       countryOncoming: [0.45, 0.68, 0.95],
     },
@@ -113,7 +113,7 @@ export const CFG = freeze({
     behindSpeed: [28, 40],
     despawnBehind: 150, despawnAhead: 600,
     window: 600,                        // the stretch ahead in which the density is held
-    minSpacing: 55,                     // no spawn within this of another car in the lane
+    minSpacing: 45,                     // no spawn within this of another car in the lane
     startMin: 90,                       // at the start nothing is closer than this ahead
     spawnCooldown: [0.4, 1.4],
     // Following: gap to keep = minGap + speed * headway; speed follows the leader's + (gap - safe) * pull.
