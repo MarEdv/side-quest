@@ -1,12 +1,98 @@
 <!doctype html>
 <html lang="en">
 <head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<title>The Driver</title>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no">
+  <title>The Driver</title>
+  <meta name="description" content="Three minutes behind the wheel: weave through the evening traffic from afternoon to night without a scratch.">
+  <meta name="theme-color" content="#14181f">
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='.9em' font-size='90'%3E%F0%9F%9A%97%3C/text%3E%3C/svg%3E">
+  <link rel="stylesheet" href="style.css">
 </head>
 <body>
-<!-- Placeholder: the browser layer (main.js, render.js, cockpit.js, input.js, ui.js) replaces this page. -->
-<p>The Driver is under construction.</p>
+  <canvas id="game" aria-label="The Driver game view" data-i18n-aria="canvas"></canvas>
+
+  <div id="hud" hidden>
+    <div id="hudTop">
+      <span class="chip" id="hudTime"></span>
+      <span class="chip" id="hudScore"></span>
+      <span class="chip" id="hudMult" hidden></span>
+      <span class="chip" id="hudCrashes"></span>
+      <span class="chip" id="hudSpeed" hidden></span>
+    </div>
+    <div id="hudBtns">
+      <button class="icon-btn" id="fastBtn" type="button" hidden>4×</button>
+      <button class="icon-btn" id="pauseBtn" type="button" aria-label="Pause (P)" data-i18n-aria="pauseBtn" data-i18n-title="pauseBtn">⏸</button>
+    </div>
+    <div id="toasts" role="status" aria-live="polite"></div>
+    <div id="debugLine"></div>
+  </div>
+
+  <div id="touch" hidden>
+    <div id="steerpad" aria-hidden="true">
+      <button type="button" data-d="left" tabindex="-1" aria-label="Left" data-i18n-aria="left">◀</button>
+      <button type="button" data-d="right" tabindex="-1" aria-label="Right" data-i18n-aria="right">▶</button>
+    </div>
+    <div id="pedals">
+      <button type="button" id="brakeBtn" class="pedal" tabindex="-1" data-i18n="brake">Brake</button>
+      <button type="button" id="gasBtn" class="pedal" tabindex="-1" data-i18n="gas">Gas</button>
+    </div>
+  </div>
+
+  <section id="title" class="screen">
+    <div class="card">
+      <div id="langSwitch" class="lang" role="group" aria-label="Language" data-i18n-aria="language">
+        <button type="button" id="lang-en" data-lang="en" lang="en" aria-pressed="true">EN</button>
+        <button type="button" id="lang-sv" data-lang="sv" lang="sv" aria-pressed="false">SV</button>
+      </div>
+      <h1>🚗 The Driver</h1>
+      <p class="tag" data-i18n="tagline">Three minutes behind the wheel.</p>
+      <h3 data-i18n="howtoTitle">How to play</h3>
+      <ul class="howto">
+        <li data-i18n="howto1"></li>
+        <li data-i18n="howto2"></li>
+        <li data-i18n="howto3"></li>
+        <li data-i18n="howto4"></li>
+      </ul>
+      <div class="menu">
+        <button class="big" id="startBtn" type="button" data-i18n="start">Start driving</button>
+        <a class="big secondary linkbtn" id="backLink" href="../../" data-i18n="back">Back to games</a>
+      </div>
+      <div id="bestScores"></div>
+      <p id="controlsHelp" class="small"></p>
+      <p id="flagsLine" class="small"></p>
+    </div>
+  </section>
+
+  <section id="pause" class="screen" hidden role="dialog" aria-modal="true" aria-labelledby="pauseTitle">
+    <div class="card">
+      <h2 id="pauseTitle" data-i18n="paused">⏸ Paused</h2>
+      <div class="menu">
+        <button class="big" id="resumeBtn" type="button" data-i18n="resume">Resume</button>
+        <button class="big secondary" id="soundBtn" type="button">Sound: on</button>
+        <button class="big secondary" id="quitBtn" type="button" data-i18n="quit">Quit to title</button>
+      </div>
+    </div>
+  </section>
+
+  <section id="end" class="screen" hidden role="dialog" aria-modal="true" aria-labelledby="endTitle">
+    <div class="card">
+      <h2 id="endTitle"></h2>
+      <p class="small" id="endText"></p>
+      <p class="endscore"><span class="endlbl" data-i18n="endScore">Score</span> <b id="endScore"></b></p>
+      <p class="stars" id="endStars" aria-hidden="true"></p>
+      <p class="small" id="endStarsText"></p>
+      <div class="stats" id="endStats"></div>
+      <p class="best" id="endRank"></p>
+      <p class="small" id="endNote" hidden></p>
+      <div id="endBest"></div>
+      <div class="menu row2">
+        <button class="big" id="againBtn" type="button" data-i18n="again">Drive again</button>
+        <button class="big secondary" id="endTitleBtn" type="button" data-i18n="title">Title</button>
+      </div>
+    </div>
+  </section>
+
+  <script type="module" src="src/main.js"></script>
 </body>
 </html>
