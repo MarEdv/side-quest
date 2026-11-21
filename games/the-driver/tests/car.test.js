@@ -95,15 +95,15 @@ test('centrifugal drift pushes outward in proportion to speed squared times curv
   assert.ok(free.x < -3, `uncorrected it drifts out: ${free.x}`);
 });
 
-test('the barriers clamp the car at halfWidth + 2.5 m and it is not a crash', () => {
+test('the barriers (halfWidth + 2.5 m) stop the car with its side against them, and it is not a crash', () => {
   const t = flat(), p = createPlayer(t);
   run(p, t, AUTO, { right: true }, 6);
-  assert.equal(p.x, t.halfWidth + 2.5);
+  assert.equal(p.x, t.halfWidth + 2.5 - p.width / 2);
   assert.equal(p.barrier, true);
   assert.equal(p.crashTimer, 0);
   const q = createPlayer(t);
   run(q, t, AUTO, { left: true }, 6);
-  assert.equal(q.x, -(t.halfWidth + 2.5));
+  assert.equal(q.x, -(t.halfWidth + 2.5 - q.width / 2));
 });
 
 test('off the asphalt the speed is capped at 60 km/h and offroad is set', () => {

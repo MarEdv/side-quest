@@ -16,6 +16,9 @@ export function createPlayer(track) {
   };
 }
 
+// How far from the road centre the car's centre can go: its side touches the barrier there.
+export const barrierLimit = (track, p) => track.barrier - p.width / 2;
+
 // Speed for one step: pedals=auto cruises to 110 km/h by itself (gas goes up to 180 km/h, letting go falls back to
 // cruise); pedals=manual accelerates only with gas and coasts down without it. Brake wins over gas.
 export function nextSpeed(v, flags, input, dt) {
@@ -57,8 +60,9 @@ export function updatePlayer(p, track, flags, input, dt) {
   }
   p.steer += clamp(want - p.steer, -P.steerRate * dt, P.steerRate * dt);
 
-  // the barriers stop sideways movement; it is not a crash
-  const wall = track.barrier;
+  // the barriers stop sideways movement (the car's side touches the rail, its centre stays half a width inside); it is
+  // not a crash
+  const wall = barrierLimit(track, p);
   p.barrier = Math.abs(p.x) >= wall;
   p.x = clamp(p.x, -wall, wall);
   p.offroad = Math.abs(p.x) > track.halfWidth;

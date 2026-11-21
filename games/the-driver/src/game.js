@@ -17,7 +17,7 @@ import { CFG, DIFFICULTIES } from './config.js';
 import { DEFAULT_FLAGS } from './flags.js';
 import { createRng } from './kit/rng.js';
 import { createTrack, stageAt } from './track.js';
-import { createPlayer, updatePlayer } from './car.js';
+import { createPlayer, updatePlayer, barrierLimit } from './car.js';
 import { populate, stepTraffic } from './traffic.js';
 import { emit } from './core.js';
 
@@ -70,7 +70,8 @@ function crash(s, c, penetrationX, penetrationZ) {
   if (c.speed < 0 || penetrationX < penetrationZ) {
     // head on, or a side hit: the other car is shoved sideways (away from the player), the player a third as far
     c.x += sideX * K.sidePush;
-    p.x = Math.max(-s.track.barrier, Math.min(s.track.barrier, p.x - sideX * (K.sidePush / 3)));
+    const wall = barrierLimit(s.track, p);
+    p.x = Math.max(-wall, Math.min(wall, p.x - sideX * (K.sidePush / 3)));
     if (c.speed >= 0 && penetrationZ > 0) c.z += Math.sign(dz || 1) * Math.min(penetrationZ, 0.5);
   } else if (dz >= 0) { // hit it from behind: it is shoved forward and clear
     c.z = p.z + (p.length + c.length) / 2 + 0.3;

@@ -39,7 +39,7 @@ Sonnet implements, Haiku looks up docs; never ask the owner questions.
 |----|-------------|--------|
 | C-1 | Speed 0–180 km/h. `pedals=auto` (default): accelerates by itself to a cruising speed of 110 km/h, gas goes up to 180, brake slows down. `pedals=manual`: gas accelerates, letting go coasts down, brake slows down. | ✅ |
 | C-2 | Steering (flag `steer`): `free` (default; hold to steer; curves push the car outward in proportion to speed² × curvature) or `lanes` (a tap slides one lane over; curves need no correction). | 🚧 |
-| C-3 | Off the asphalt the car is limited to 60 km/h and rumbles (shake, sound). Barriers at the road edge stop sideways movement; touching them is not a crash. | 🚧 |
+| C-3 | Off the asphalt the car is limited to 60 km/h and rumbles (shake, sound). Barriers at the road edge stop sideways movement (the car stops with its side against the rail, D20); touching them is not a crash. | 🚧 |
 
 ### 3.3 Traffic
 | ID | Requirement | Status |
