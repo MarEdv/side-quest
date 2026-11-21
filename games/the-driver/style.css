@@ -32,6 +32,7 @@ kbd { font: 700 11px ui-monospace, monospace; background: rgba(255, 255, 255, .1
 @keyframes toast-in { from { opacity: 0; transform: translateY(-6px); } to { opacity: 1; transform: none; } }
 #debugLine { position: absolute; right: calc(8px + var(--safe-r)); top: calc(56px + var(--safe-t)); font: 12px ui-monospace, monospace; color: #9f9; background: rgba(0, 0, 0, .6); padding: 2px 6px; border-radius: 6px; }
 #debugLine:empty { display: none; }
+@media (max-width: 599px) { #debugLine { top: auto; bottom: 26%; } } /* the mirror hangs under the chips there (D16) */
 
 /* Touch controls: ◀ ▶ bottom left, BRAKE and GAS bottom right */
 #touch { position: fixed; inset: 0; pointer-events: none; z-index: 4; }
@@ -42,7 +43,7 @@ kbd { font: 700 11px ui-monospace, monospace; background: rgba(255, 255, 255, .1
 .pedal { width: 88px; height: 100px; border: 2px solid rgba(255, 255, 255, .7); border-radius: 16px; background: rgba(10, 14, 20, .55); color: #fff; font-weight: 900; font-size: 14px; letter-spacing: .04em; text-transform: uppercase; pointer-events: auto; touch-action: none; }
 #gasBtn { height: 124px; background: rgba(40, 140, 80, .6); }
 #brakeBtn { background: rgba(190, 50, 50, .6); }
-.pedal.on { background: #fff; color: #111; transform: scale(.96); }
+#pedals .pedal.on { background: #fff; color: #111; transform: scale(.96); } /* beats the #gasBtn / #brakeBtn colours */
 @media (max-height: 460px) { #steerpad button { width: 66px; height: 66px; font-size: 26px; } .pedal { width: 74px; height: 80px; font-size: 12px; } #gasBtn { height: 100px; } }
 @media (max-width: 560px) and (orientation: portrait) { #steerpad button { width: 68px; height: 68px; } .pedal { width: 66px; height: 76px; font-size: 11px; } #gasBtn { height: 96px; } #steerpad, #pedals { gap: 8px; } }
 
