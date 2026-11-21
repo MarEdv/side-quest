@@ -21,7 +21,7 @@ export function targetCount(flags, track, stage, lane) {
 function pickKind(s, rng, lane) {
   const [truck, van] = T.kinds[s.track.road][s.stage];
   const r = rng.next();
-  if (r < truck && !(s.track.road === 'highway' && lane === 0)) return 'truck';
+  if (r < truck && !(s.track.road === 'highway' && lane < 2)) return 'truck'; // highway trucks keep to the right lane
   if (r < truck + van) return 'van';
   return 'car';
 }

@@ -40,9 +40,9 @@ export function createGame(flags = DEFAULT_FLAGS, seed = null) {
   return s;
 }
 
-// Stars 1..5 from the score per second of the drive's full length (CFG.stars).
-export function starsFor(score, duration) {
-  const perSecond = score / duration;
+// Stars 1..5 from the score per second of the drive's full length (CFG.stars, scaled by the difficulty).
+export function starsFor(score, duration, difficulty = 'normal') {
+  const perSecond = score / duration / (CFG.difficulty[difficulty]?.starScale ?? 1);
   return 1 + CFG.stars.filter((x) => perSecond >= x).length;
 }
 
@@ -51,7 +51,7 @@ export const multiplier = (streak) => Math.min(CFG.score.maxMult, 1 + Math.floor
 function finish(s, reason) {
   s.ended = true; s.endReason = reason;
   s.summary = {
-    score: s.score, stars: starsFor(s.score, s.duration), distance: Math.round(s.distance), topSpeed: s.player.topSpeed,
+    score: s.score, stars: starsFor(s.score, s.duration, s.flags.difficulty), distance: Math.round(s.distance), topSpeed: s.player.topSpeed,
     nearMisses: s.nearMisses, crashes: s.crashes, endReason: reason, seed: s.seed, length: s.flags.length,
     road: s.flags.road, difficulty: DIFFICULTIES.includes(s.flags.difficulty) ? s.flags.difficulty : 'normal',
     time: Math.round(s.time * 100) / 100, passed: [...s.passed],

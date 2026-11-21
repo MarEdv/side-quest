@@ -68,7 +68,7 @@ export const CFG = freeze({
   },
   score: {
     perMetre: 0.1,       // 1 point per 10 m
-    nearMiss: 25,        // base bonus
+    nearMiss: 40,        // base bonus
     streakEvery: 3,      // multiplier = 1 + floor(streak / streakEvery), capped
     maxMult: 5,
     penalty: 100,        // per crash
@@ -77,13 +77,14 @@ export const CFG = freeze({
     lanesBonus: 0.5,
     nearSpeed: 16.7,     // the player must be faster than this (60 km/h)
   },
-  // Stars from points per second of the drive's full length: [2, 3, 4, 5 stars]; below the first is 1 star.
-  stars: [1.2, 3, 5.5, 8],
+  // Stars from points per second of the drive's full length: [2, 3, 4, 5 stars]; below the first is 1 star. The cut-offs
+  // are multiplied by the difficulty's `starScale` (more traffic gives more near misses, so hard asks for more points).
+  stars: [0.6, 1.5, 3.2, 4.6],
 
   difficulty: {
-    easy: { density: 0.7, laneChange: 0.6 },
-    normal: { density: 1, laneChange: 1 },
-    hard: { density: 1.35, laneChange: 1.5 },
+    easy: { density: 0.7, laneChange: 0.6, starScale: 0.85 },
+    normal: { density: 1, laneChange: 1, starScale: 1 },
+    hard: { density: 1.35, laneChange: 1.5, starScale: 1.2 },
   },
 
   // Traffic (traffic.js).
@@ -92,17 +93,17 @@ export const CFG = freeze({
     palette: ['#c0392b', '#2980b9', '#27ae60', '#f1c40f', '#ecf0f1', '#7f8c8d', '#e67e22', '#8e44ad', '#2c3e50', '#16a085'],
     // Cars per 100 m of a lane, per stage (multiplied by the difficulty's density and the lane weight).
     density: {
-      highway: [0.7, 1.05, 1.5],
-      countrySame: [0.3, 0.45, 0.62],
-      countryOncoming: [0.45, 0.68, 0.95],
+      highway: [0.55, 0.85, 1.2],
+      countrySame: [0.2, 0.3, 0.42],
+      countryOncoming: [0.35, 0.5, 0.7],
     },
     laneWeight: [0.8, 1, 1.2], // highway lanes left to right
     // Share of trucks and vans per stage (the rest are cars); country roads have more trucks.
     kinds: { highway: [[0.1, 0.12], [0.16, 0.14], [0.2, 0.14]], country: [[0.25, 0.15], [0.3, 0.15], [0.3, 0.15]] },
     // Cruising speed ranges in m/s. Highway per lane (left, middle, right); a truck is slower, a van a bit slower.
     speeds: {
-      highway: [[26, 33], [21, 27], [16.5, 22]],
-      truck: [15.5, 20],
+      highway: [[27, 31.5], [22.5, 26.5], [18, 22]],
+      truck: [16.5, 19],
       countrySame: [20, 26], countryTruck: [13.5, 17], countryOncoming: [18, 27],
       van: -1.5,
     },
