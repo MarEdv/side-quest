@@ -211,3 +211,84 @@ country  normal  good       253    3.9   0/0/3/3/2        0.0   2.4  1.4    83  
 - `package.json` `"browserModules"` is temporarily `["kit/audio.js", "kit/langdom.js"]` (the conventions check requires every
   listed module to exist and use a browser global); the browser layer adds `main.js`, `render.js`, `cockpit.js`,
   `input.js`, `ui.js` back.
+
+## D15 — 2026-11-21 — Page, HUD and touch layout
+- **Decision:** `index.html` follows Train Attendant's shell (same head tags in the same order, root T-4). One full-screen
+  canvas under three DOM layers: the HUD (chips top left: time, score, a `x{n}` multiplier chip from 2 up, crashes, and in
+  `view=hood` a speed chip; pause and the debug 4× button top right; toasts; a debug line under the buttons), the touch
+  controls and the three screens (title, pause, end). Title: EN/SV switch, tagline, how to play (`howto1..4`), Start, Back to
+  games (`../../?lang=<lang>`), the best scores for the current `length`, the controls line (keys or touch), the flags line.
+  The title shows a still drive (a preview game at seed 7) dimmed behind the card. `crash=hard` shows "Crashes n of 3".
+- **Touch:** ◀ ▶ bottom left (84 px, 66 on short screens, 68 on portrait phones; the side of the pad a finger is on decides
+  the direction, so sliding works), BRAKE (red) and GAS (green, taller) bottom right, side by side. Each pedal is held while
+  a finger is down on it; pointer capture plus per-pointer-id maps give multi-touch. Touch controls show on coarse-pointer
+  devices (`touch=auto`), the key hints (`kbd`) are hidden then.
+- **Toasts** sit centred under the mirror (a CSS variable set from the renderer's mirror bottom); on short landscape screens
+  (height <= 460) they move to the left under the chips so they do not cover the traffic, and the chip labels are dropped
+  so the chips do not run into the mirror. The same message is never stacked twice, at most 3 at once.
+- **Alternatives:** pedals stacked vertically (narrower, but the order brake-left, gas-right matches a real car); a steering
+  wheel drag on the canvas (a gap: no analogue steering).
+
+## D16 — 2026-11-21 — Rendering and cockpit as built (supplements D2)
+- **Camera:** the driver's eye is 1.2 m over the road, 0.35 m left of the car's centre (left-hand drive) and 0.3 m behind it,
+  near plane 0.6 m (the segment under the camera is cut at it). One pixel scale `f = (W/2) / tan(hfov/2)` for both axes
+  (square pixels): hfov 86 degrees landscape, 48 on portrait (a narrower view keeps the cars big on a phone). Horizon at 38 %
+  of the height (36 % on short landscape phones, 43 % portrait, +3 % in `hood`). No camera pitch or roll.
+- **Road:** 230 segments (1150 m), projected near to far; a curve adds `0.045 * curve` m of sideways shift per segment squared
+  (starting with the travelled part of the current segment so there is no jump); a segment is skipped when its far edge is not
+  above everything nearer (crests), and sprites are clipped to that line. Drawn far to near: grass (alternating every 3
+  segments), kerb strips (red/white, 0.7 m outside the asphalt edge), asphalt (alternating shade), edge lines, dashed dividers
+  (2 segments on, 2 off, so 10 m dashes), guardrails at the barrier line (rail band plus posts every 2nd segment). Cars are
+  projected exactly (own depth), not interpolated between the segment corners. Fog is a quantised blend (24 levels, cached per
+  frame) towards the horizon colour with `1 - exp(-(z/620)^2)`; cars up to 470 m with the same fade.
+- **Light per stage:** three palettes (afternoon blue, sunset orange/purple, night navy) blended over the last 22 % of each
+  stage by `state.time`, so the sky follows time while the objects follow metres (D10). Sun (pale high / big low), clouds,
+  stars and a moon at night, two parallax hill ridges (sum of sines, scrolling with the bend of the road), a city skyline with
+  lit windows at night, a warm haze at sunset. Sprites are lit by a tint (night: dark blue). Night adds a headlight pool on
+  the road, lamp glows and light pools, lit windows and glowing tail/head lights.
+- **Sprites:** tree, pine, rock, fence (posts and two rails along the segment), field (flat patch a few segments deep), lamp
+  post, building with a window grid; cars as car/van/truck, seen from behind (body, cabin, tail lights, brighter and glowing
+  brake lights, amber blinkers at 2 Hz from `state.time`, plate) or from the front when oncoming (windscreen, headlights with
+  a glow that grows at dusk). Heights 1.45 / 2.0 / 3.4 m.
+- **Shake:** the world shakes up to 9 px while `crashTimer` runs (the dashboard a third of that, the wheel on its own), and
+  1.5 px while off the road or at the barrier.
+- **Cockpit (`cockpit.js`, DOM-free, so not in `browserModules`):** the dashboard takes 30 % of the height (34 % on short
+  phones, 20 % portrait; `hood` 10 %): A-pillars (slanted, wider at the top), a curved roof edge, a binnacle hump with a
+  speedometer dial (0-180 km/h over 270 degrees, needle, ticks every 10, labels every 40 when big enough) and a digital
+  readout, a 3-spoke wheel (squashed to 0.8, rotated by `steer * 0.95 rad`, a red 12 o'clock mark, shaking on crash) whose
+  top half shows above the bottom edge. The rear-view mirror hangs at the top centre (below the HUD chips when the screen is
+  narrow, < 600 px) and shows a small mirrored road with the cars up to 110 m behind as fronts with headlights (an oncoming
+  car that has passed shows tail lights). `hood`: no wheel; a thin dashboard strip and a bonnet in the car's colour.
+- **Alternatives:** a real camera pitch on hills (more code, little gain), sprite sheets (no image files, D1).
+
+## D17 — 2026-11-21 — Sounds
+- **Decision:** `audio.js` is a sound table on the kit engine: `nearMiss` (falling whoosh), `crash` (three low tones),
+  `stage` (rising chime), `rumble` (low buzz, repeated every 0.11 s while off the road above 3 m/s), `barrier` (a scrape),
+  `finish` (five-note fanfare), `wrecked` (falling saws) and `engine(v)`, which `main.js` calls every `0.25 - 0.19 * v`
+  seconds (v = speed / top speed) as a short quiet sawtooth putt of 46-104 Hz. `audio.js` itself uses no browser global (the
+  kit owns the context), so it is not in `browserModules`. The sound toggle on the pause screen lasts for the session.
+- **Gap:** a continuous engine drone is still impossible on this kit engine (D9).
+
+## D18 — 2026-11-21 — Input and flow details
+- Both steer keys down cancel each other; `*Pressed` edges are raised once per key press or when a finger moves onto the
+  other half of the pad and handed out by `read()` once; extra steps of a frame get `held()` without edges. Space and ↓/S
+  brake; the keys are ignored while a menu is open (except P / Esc, which toggle pause without repeating).
+- Drive end: `end` event -> record the run (not with `debug`, a throwing store is caught), sound, a 1.8 s `ending` phase
+  with the frozen scene, then the end screen. Losing focus or hiding the page pauses; held keys and fingers are cleared.
+- `window.__game` (debug only): `state`, `phase`, `flags`, `setSpeed(n)` (`0` freezes the clock, `4` is the button),
+  `steps(n, input)`.
+
+## D19 — 2026-11-21 — What the Chrome check covered, and gaps
+- Headless Google Chrome (CDP, no HTTP cache): screenshots at 1280x800, 390x844 (DPR 2, touch emulation) and 844x390 (DPR 2) of the
+  title, drives in all three stages, cockpit and `hood`, highway and country road, close-ups of traffic with brake lights,
+  blinkers, oncoming headlights, the pause, completed and wrecked (`crash=hard`) end screens, Swedish. Real key events for
+  every key; touch by `Input.dispatchTouchEvent` (two fingers: ◀ plus GAS, a slide ◀ to ▶, BRAKE, the pause button). A real
+  60 s `length=short` drive without debug stored a score and listed it on the title. No console errors or exceptions.
+- Fixes found by looking: the roof covered the mirror (drawing order), the wheel was a thin dark arc on a dark dash (colours,
+  position), clouds had stray wedges, the headlight pool was too bright on the grass, toasts covered the traffic on short
+  landscape phones, the portrait view was too wide for the cars (hfov 64 -> 48), the first frame crashed with the camera behind
+  the start (segment index -1), near-plane fence posts became huge brown blocks (fences are skipped closer than 2.5 m).
+- **Not verified:** real devices, sound heard by a person, 60 fps on a phone, the full 3 minutes in real time, Safari.
+- **Known roughness:** the guardrail (and its posts) seen from beside it at the barrier is a big grey wall; the title
+  background is a still frame; roadside objects appear and vanish at the 1150 m draw limit behind the fog; the idle car
+  drifts off the road in curves (physics, D10) so screenshots of idle drives often show the grass.
