@@ -9,7 +9,8 @@ import { cockpitLayout, drawCockpit } from './cockpit.js';
 const SEG = CFG.track.segLen;
 const EYE_H = 1.2, EYE_X = -0.35, EYE_BACK = 0.3, NEAR = 0.6;  // the driver's eye: 1.2 m up, 0.35 m left of the car's centre
 const DRAW_SEGS = 230;     // 1150 m
-const CAR_RANGE = 470;     // cars are drawn up to here, with a fog fade
+const CAR_RANGE = CFG.traffic.spawnMin; // cars are drawn up to here (they spawn beyond it, D11) and fade in over CAR_FADE
+const CAR_FADE = 70;
 const FOG_DIST = 620, FOG_LEVELS = 24, FOG_MAX = 0.96;
 const CURVE_K = 0.045;     // metres of sideways shift per segment^2 per unit of curvature
 const CAR_H = { car: 1.45, van: 2.0, truck: 3.4 };
@@ -330,11 +331,12 @@ export function createRenderer(canvas) {
       if (vis[i]) maxY = b.sy;
       buckets[i].length = 0;
     }
-    // traffic into the segment each car is in
+    // traffic into the segment its near face (the rear, or the front of an oncoming car) is in: the sprite is that face
     for (const c of s.cars) {
-      const z = c.z - camZ;
-      if (z < NEAR + c.length / 2 - 2 || z > CAR_RANGE) continue;
-      const i = Math.floor(c.z / SEG) - base;
+      const zf = c.z - c.length / 2;
+      const z = zf - camZ;
+      if (z < NEAR || z > CAR_RANGE) continue;
+      const i = Math.floor(zf / SEG) - base;
       if (i >= 0 && i < DRAW_SEGS) buckets[i].push(c);
     }
 
@@ -384,12 +386,12 @@ export function createRenderer(canvas) {
         ctx.globalAlpha = 1;
       }
       for (const c of buckets[i]) {
-        const zc = c.z - camZ;
+        const zf = c.z - c.length / 2, zc = zf - camZ;
         if (zc < NEAR) continue;
-        const t = (c.z - sg.z) / SEG;
+        const t = (zf - sg.z) / SEG;
         const xa = lerp(a.xa, b.xa, t), yw = lerp(a.y, b.y, t), sc = f / zc;
         const sx = W / 2 + sc * (xa + c.x - camX), sy = hy - sc * (yw - camY);
-        const al = 1 - FOG_MAX * (fogLevel(zc) / (FOG_LEVELS - 1)) * 0.9;
+        const al = (1 - FOG_MAX * (fogLevel(zc) / (FOG_LEVELS - 1)) * 0.9) * clamp((CAR_RANGE - zc) / CAR_FADE, 0, 1);
         const hpx = sc * CAR_H[c.kind];
         if (sy - hpx > clip) continue;
         if (needClip && sy > clip) { ctx.save(); ctx.beginPath(); ctx.rect(-50, -50, W + 100, clip + 50); ctx.clip(); carBack(c, sx, sy, sc, al, o); ctx.restore(); }
