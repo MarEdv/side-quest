@@ -10,6 +10,7 @@ A collection of small single-player browser games about getting distracted, behi
 | [Poo Sandwich](games/poo-sandwich/) | Survive the office work day while your boss throws poo sandwiches at you. |
 | [Gem Miner](games/gem-miner/) | Dig for gems, buy better hatchets and find the Diamond of Your Dreams. |
 | [Train Attendant](games/train-attendant/) | Keep a train full of passengers happy while the train manager radios you side quests. |
+| [The Driver](games/the-driver/) | Three minutes behind the wheel, first person: weave through the traffic from afternoon to night. |
 
 Install it as an app with the **Install app** button (Chrome, Edge, Android), or on iPhone / iPad via Share > **Add to Home
 Screen**. Games open inside the app.

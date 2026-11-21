@@ -406,3 +406,20 @@ Wave 6 (S-11, S-12, S-15) is done, which completes every P1 and P2 task in `docs
 - **No launcher change:** the registry picks the game up; only `games.json`, the README table and this log change.
   `docs/ADDING-A-GAME.md` no longer says "the three games".
 - **Who did what:** Opus planned the game and verified it; Sonnet subagents implemented the logic and the browser layer.
+
+### D-23 — Fifth game: The Driver (2026-11-21)
+- **Chosen:** a new game at `games/the-driver/`, a first-person driving game (owner: "drive a car, avoiding the
+  traffic", "first-person from inside the car", "playable for 3 minutes before completed"). Added the way
+  `docs/ADDING-A-GAME.md` describes: own folder, `game.json` (order 5, icon 🚗), the same six kit modules as Gem Miner
+  and Train Attendant, the shared page shell (T-4), Back to games (T-5), EN/SV (L-9), the conventions check (T-3: the
+  test's list of games now has five). Its own requirements, decisions and flags live in its `docs/`.
+- **Aligned on purpose:** fixed 1/60 s timestep and "losing focus pauses" (S-16), deterministic seeded simulation with
+  balance bots and a balance test, like Train Attendant.
+- **Gaps left:** no service worker / offline and not installable on its own (S-17 is still an owner decision); not tried
+  on a real phone or in Safari. The kit's audio engine only plays short fading tones and hides its context, so the game
+  has no continuous engine sound (a short "putt" at a speed-dependent rate instead); a sustained-tone API in
+  `kit/audio.js` would close that gap for every game. No tilt steering (it needs a motion-permission prompt on iOS).
+- **No launcher change:** the registry picks the game up; only `games.json`, the README table, the conventions test and
+  this log change.
+- **Who did what:** Opus planned the game and verifies it; Haiku fetched the pseudo-3D rendering references; Sonnet
+  subagents implemented the logic and the browser layer.
