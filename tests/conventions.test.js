@@ -23,11 +23,11 @@ function fixture(t, files) {
 
 // ---- the real repo
 
-test('the real repo lists the four games', () => {
-  assert.deepEqual(gameSlugs(ROOT).sort(), ['garden-day', 'gem-miner', 'poo-sandwich', 'train-attendant']);
+test('the real repo lists the five games', () => {
+  assert.deepEqual(gameSlugs(ROOT).sort(), ['garden-day', 'gem-miner', 'poo-sandwich', 'the-driver', 'train-attendant']);
 });
 
-for (const slug of ['garden-day', 'gem-miner', 'poo-sandwich', 'train-attendant']) {
+for (const slug of ['garden-day', 'gem-miner', 'poo-sandwich', 'the-driver', 'train-attendant']) {
   test(`${slug} follows the conventions (relative URLs, imports, package.json, DOM-free logic)`, () => {
     assert.deepEqual(checkGame(ROOT, slug), []);
   });
