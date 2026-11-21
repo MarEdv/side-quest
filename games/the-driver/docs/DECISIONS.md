@@ -334,3 +334,9 @@ country  normal  good       253    3.9   0/0/3/3/2        0.0   2.4  1.4    83  
   - Balance: on the easy highway the sloppy bot scores like on normal (8 seeds).
 - **Not verified:** real phones and real multi-touch, Safari / Firefox, sound heard by a person (V-3, the rumble of C-3),
   60 fps on a mid-range phone (headless Chrome 56-60 fps), traffic behaviour (TF-1..TF-4) by hand in the browser.
+
+## D21 — 2026-11-21 — End text follows the stars; Swedish touch hint fully Swedish
+- **Context:** two text findings left open in D20.
+- **Decision:** a completed drive says "Well driven!" with 3 stars or more and "Fewer bumps next time!" below that
+  (`endDoneTextLow`, EN and SV); the Swedish touch hint starts with "Pekskärm:" instead of "Touch:". Text only, no rule
+  change. Checked by the i18n tests (key parity); not re-checked in a browser.

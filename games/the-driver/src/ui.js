@@ -55,7 +55,7 @@ export function createUI(h) {
   function renderEnd({ summary: s, rank, list, debug, length, saved = true }) {
     const wrecked = s.endReason === 'wrecked';
     $('endTitle').textContent = t(wrecked ? 'endWrecked' : 'endDone');
-    $('endText').textContent = t(wrecked ? 'endWreckedText' : 'endDoneText');
+    $('endText').textContent = t(wrecked ? 'endWreckedText' : s.stars >= 3 ? 'endDoneText' : 'endDoneTextLow');
     $('endScore').textContent = s.score;
     $('endStars').textContent = '★'.repeat(s.stars) + '☆'.repeat(5 - s.stars);
     $('endStarsText').textContent = t('endStars', { n: s.stars });
