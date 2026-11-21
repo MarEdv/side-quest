@@ -24,6 +24,8 @@ export const STRINGS = {
     howtoTitle: 'How to play',
     howto1: 'Steer with ← → (or the ◀ ▶ buttons). In curves the car is pushed outwards, so steer against it.',
     howto2: 'The car cruises at 110 km/h by itself. Hold the gas for more speed, use the brake when the road ahead is full.',
+    howto1Lanes: 'Tap ← → (or the ◀ ▶ buttons) to move one lane over. The car follows the curves by itself.',
+    howto2Manual: 'Hold the gas to speed up; let go and the car coasts. Use the brake when the road ahead is full.',
     howto3: 'Pass close to other cars at speed for near-miss bonuses. Every near miss in a row raises your multiplier.',
     howto4: 'Do not touch anyone. A crash costs points and most of your speed. Stay on the asphalt: the grass limits you to 60 km/h.',
     // HUD
@@ -66,6 +68,8 @@ export const STRINGS = {
     howtoTitle: 'Så spelar du',
     howto1: 'Styr med ← → (eller knapparna ◀ ▶). I kurvorna trycks bilen utåt, så styr emot.',
     howto2: 'Bilen håller 110 km/h av sig själv. Håll gasen för mer fart och bromsa när vägen framför är full.',
+    howto1Lanes: 'Tryck ← → (eller knapparna ◀ ▶) för att byta en fil. Bilen följer kurvorna av sig själv.',
+    howto2Manual: 'Håll gasen för att öka farten; släpp den och bilen rullar ut. Bromsa när vägen framför är full.',
     howto3: 'Passera andra bilar tätt i hög fart för nära-på-bonus. Varje nära-på i rad höjer din multiplikator.',
     howto4: 'Rör ingen. En krock kostar poäng och det mesta av farten. Håll dig på asfalten: gräset begränsar dig till 60 km/h.',
     hudTime: 'Tid', hudScore: 'Poäng', hudCrashes: 'Krockar', hudSpeed: 'km/h', hudStreak: 'x{n}', hudStage: 'Etapp {n} av 3',

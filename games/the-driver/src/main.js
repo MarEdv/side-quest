@@ -42,6 +42,9 @@ const lang = setupLang(i18n, {
   storage, key: 'lang',
   onChange() { setBackLink(); ui.resetHud(); if (phase === 'title') showTitle(); else if (phase === 'pause') ui.renderPause(soundOn); else if (phase === 'end') showEnd(); },
 });
+// How to play follows the steering and pedal flags (the language switch re-reads these keys).
+if (flags.steer === 'lanes') document.querySelector('[data-i18n="howto1"]').dataset.i18n = 'howto1Lanes';
+if (flags.pedals === 'manual') document.querySelector('[data-i18n="howto2"]').dataset.i18n = 'howto2Manual';
 lang.bindSwitch(document.getElementById('langSwitch'));
 lang.apply();
 setBackLink();
