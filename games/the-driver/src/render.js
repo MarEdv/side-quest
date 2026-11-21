@@ -76,9 +76,9 @@ export function createRenderer(canvas) {
     view = flagView; topInset = top;
     layout = cockpitLayout(W, H, view, top);
     const portrait = layout.portrait;
-    const hfov = portrait ? 64 : 86;
+    const hfov = portrait ? 48 : 86;
     f = W / 2 / Math.tan((hfov * Math.PI) / 360);
-    hy = H * (portrait ? 0.4 : H < 460 ? 0.36 : 0.38) + (layout.hood ? H * 0.03 : 0);
+    hy = H * (portrait ? 0.43 : H < 460 ? 0.36 : 0.38) + (layout.hood ? H * 0.03 : 0);
   }
 
   // ---- fog: colours blended towards the horizon colour with distance, cached per level for the frame
@@ -109,7 +109,7 @@ export function createRenderer(canvas) {
     const sunY = lerp(lerp(hy * 0.3, hy * 0.97, clamp(pal.tod, 0, 1)), hy * 1.15, clamp(pal.tod - 1, 0, 1));
     const sunX = wrap(W * 0.65 + bg.x * 0.9);
     if (pal.tod < 2.25) {
-      const sr = lerp(H * 0.035, H * 0.075, clamp(pal.tod, 0, 1));
+      const sr = lerp(Math.min(W, H) * 0.045, Math.min(W, H) * 0.09, clamp(pal.tod, 0, 1));
       const glow = ctx.createRadialGradient(sunX, sunY, sr * 0.5, sunX, sunY, sr * 5);
       glow.addColorStop(0, pal.sunset > 0.3 ? 'rgba(255,180,90,.55)' : 'rgba(255,255,230,.5)'); glow.addColorStop(1, 'rgba(255,200,120,0)');
       ctx.fillStyle = glow; ctx.fillRect(sunX - sr * 5, sunY - sr * 5, sr * 10, sr * 10);
@@ -127,7 +127,7 @@ export function createRenderer(canvas) {
       ctx.fillStyle = `rgba(${Math.round(255 * pal.tint[0])},${Math.round(255 * pal.tint[1])},${Math.round(255 * pal.tint[2])},${(0.8 * cloud).toFixed(2)})`;
       for (let i = 0; i < 7; i++) {
         const cx = wrap(rnd(i, 7) * P + bg.x * 0.55), cy = hy * (0.12 + rnd(i, 8) * 0.5), cw = W * (0.07 + rnd(i, 9) * 0.07);
-        ctx.beginPath(); ctx.ellipse(cx, cy, cw, cw * 0.24, 0, 0, 7); ctx.ellipse(cx - cw * 0.5, cy + cw * 0.06, cw * 0.55, cw * 0.18, 0, 0, 7); ctx.ellipse(cx + cw * 0.55, cy + cw * 0.05, cw * 0.6, cw * 0.19, 0, 0, 7); ctx.fill();
+        ctx.beginPath(); ctx.ellipse(cx, cy, cw, cw * 0.24, 0, 0, 7); ctx.moveTo(cx - cw * 0.05, cy + cw * 0.06); ctx.ellipse(cx - cw * 0.5, cy + cw * 0.06, cw * 0.55, cw * 0.18, 0, 0, 7); ctx.moveTo(cx + cw * 1.15, cy + cw * 0.05); ctx.ellipse(cx + cw * 0.55, cy + cw * 0.05, cw * 0.6, cw * 0.19, 0, 0, 7); ctx.fill();
       }
     }
     // hills: two layers of summed sines that wrap seamlessly, scrolling with the bend of the road
@@ -302,7 +302,7 @@ export function createRenderer(canvas) {
   function drawWorld(s, o) {
     const p = s.player, tr = s.track, segs = tr.segments;
     const camZ = p.z - EYE_BACK, camX = p.x + EYE_X, camY = EYE_H + heightAt(tr, camZ);
-    const base = Math.min(segs.length - 1, Math.floor(camZ / SEG)), pct = (camZ - segs[base].z) / SEG;
+    const base = clamp(Math.floor(camZ / SEG), 0, segs.length - 1), pct = (camZ - segs[base].z) / SEG;
     const hw = tr.halfWidth, B = tr.barrier;
     drawSky(s, o);
 
@@ -401,9 +401,9 @@ export function createRenderer(canvas) {
       ctx.globalCompositeOperation = 'lighter';
       const by = layout.dashTop, top = hy + (by - hy) * 0.18, cx = W / 2 + 0.0;
       const gr = ctx.createLinearGradient(0, by, 0, top);
-      gr.addColorStop(0, `rgba(255,238,170,${0.5 * night})`); gr.addColorStop(1, 'rgba(255,238,170,0)');
+      gr.addColorStop(0, `rgba(255,238,170,${0.3 * night})`); gr.addColorStop(1, 'rgba(255,238,170,0)');
       ctx.fillStyle = gr;
-      ctx.beginPath(); ctx.moveTo(cx - W * 0.42, by); ctx.lineTo(cx - W * 0.05, top); ctx.lineTo(cx + W * 0.05, top); ctx.lineTo(cx + W * 0.42, by); ctx.closePath(); ctx.fill();
+      ctx.beginPath(); ctx.moveTo(cx - W * 0.34, by); ctx.lineTo(cx - W * 0.04, top); ctx.lineTo(cx + W * 0.04, top); ctx.lineTo(cx + W * 0.34, by); ctx.closePath(); ctx.fill();
       ctx.globalCompositeOperation = 'source-over';
     }
     // sunset haze over everything far away is part of the fog colour; a faint warm vignette at sunset
@@ -416,7 +416,7 @@ export function createRenderer(canvas) {
 
   // A wooden fence on one side: posts and two rails running along the segment.
   function drawFence(a, b, e, lvl, clip) {
-    if (a.sy - 2 * a.sc > clip) return;
+    if (a.Z < 2.5 || a.sy - 2 * a.sc > clip) return;
     const xw = e.side * e.offset, ax = a.cx + a.sc * xw, bx = b.cx + b.sc * xw;
     ctx.strokeStyle = lit([140, 106, 70]); ctx.globalAlpha = 1 - FOG_MAX * (lvl / (FOG_LEVELS - 1));
     ctx.lineWidth = Math.max(1, a.sc * 0.1);

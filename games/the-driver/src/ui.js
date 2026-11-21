@@ -88,6 +88,7 @@ export function createUI(h) {
 
   // kind: 'good' | 'bad' | 'info'. At most 3 toasts at once, each fades after ~2.4 s.
   function toast(msg, kind = 'info') {
+    for (const o of el.toasts.children) if (o.textContent === msg && !o.classList.contains('out')) return; // the same message is not stacked
     const n = document.createElement('div');
     n.className = `toast ${kind}`; n.textContent = msg;
     el.toasts.appendChild(n);

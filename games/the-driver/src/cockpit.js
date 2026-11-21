@@ -20,16 +20,16 @@ export function cockpitLayout(W, H, view, top = 0) {
   const mw = Math.round(Math.min(W * 0.5, Math.max(W * 0.2, 170)));
   const mh = Math.round(mw * 0.27);
   const narrow = W < 600;
-  const my = narrow ? Math.round(top + 4) : Math.round(roofH * 0.55);
+  const my = narrow ? Math.round(top + 4) : Math.round(roofH * 0.95);
   // wheel: its top rim sits a bit below the dial; roughly half of it shows above the bottom edge
-  const R = Math.min(W * 0.3, dashH * 1.05);
-  const wheelTop = dashTop + dashH * 0.46;
-  const dialR = Math.max(14, dashH * 0.19);
+  const R = Math.min(W * 0.3, dashH * 1.3);
+  const wheelTop = dashTop + dashH * 0.4;
+  const dialR = Math.max(14, dashH * 0.17);
   return {
     W, H, hood, portrait, dashH, dashTop, roofH, pillarTop: W * (hood ? 0.045 : portrait ? 0.1 : 0.1), pillarBot: W * (hood ? 0.01 : 0.04),
     mirror: { x: Math.round(W / 2 - mw / 2), y: my, w: mw, h: mh },
-    wheel: { cx: W / 2, cy: wheelTop + R, r: R },
-    dial: { cx: W / 2, cy: dashTop + dashH * 0.17, r: dialR },
+    wheel: { cx: W / 2, cy: wheelTop + R * 0.8, r: R },
+    dial: { cx: W / 2, cy: dashTop + dashH * 0.14, r: dialR },
   };
 }
 
@@ -38,8 +38,8 @@ export function cockpitLayout(W, H, view, top = 0) {
 export function drawCockpit(ctx, L, s, o) {
   const dk = 1 - 0.5 * o.night - 0.08 * o.sunset; // darkness of the plastics
   const g = (v, a = 1) => `rgba(${Math.round(v * dk)},${Math.round(v * dk * 1.02)},${Math.round(v * dk * 1.08)},${a})`;
-  drawMirror(ctx, L, s, o);
   drawPillars(ctx, L, g);
+  drawMirror(ctx, L, s, o);
   if (L.hood) drawHood(ctx, L, o, g);
   else drawDash(ctx, L, s, o, g);
 }
@@ -88,7 +88,7 @@ function drawDash(ctx, L, s, o, g) {
   const { W, H, dashTop, dashH } = L;
   // dashboard body with a binnacle hump over the instruments
   const dg = ctx.createLinearGradient(0, dashTop - dashH * 0.15, 0, H);
-  dg.addColorStop(0, g(58)); dg.addColorStop(0.25, g(34)); dg.addColorStop(1, g(12));
+  dg.addColorStop(0, g(74)); dg.addColorStop(0.2, g(40)); dg.addColorStop(1, g(14));
   ctx.fillStyle = dg;
   ctx.beginPath(); ctx.moveTo(0, dashTop + dashH * 0.1); ctx.quadraticCurveTo(W * 0.25, dashTop + dashH * 0.02, W * 0.4, dashTop - dashH * 0.02);
   ctx.quadraticCurveTo(W / 2, dashTop - dashH * 0.2, W * 0.6, dashTop - dashH * 0.02); ctx.quadraticCurveTo(W * 0.75, dashTop + dashH * 0.02, W, dashTop + dashH * 0.1);
@@ -98,7 +98,7 @@ function drawDash(ctx, L, s, o, g) {
   ctx.quadraticCurveTo(W / 2, dashTop - dashH * 0.2, W * 0.6, dashTop - dashH * 0.02); ctx.quadraticCurveTo(W * 0.75, dashTop + dashH * 0.02, W, dashTop + dashH * 0.1); ctx.stroke();
   // vents on the passenger side
   ctx.fillStyle = g(8);
-  for (let i = 0; i < 3; i++) ctx.fillRect(W * 0.72, dashTop + dashH * (0.3 + i * 0.1), W * 0.14, Math.max(2, dashH * 0.035));
+  for (let i = 0; i < 3; i++) { ctx.beginPath(); ctx.roundRect(W * 0.72, dashTop + dashH * (0.3 + i * 0.1), W * 0.14, Math.max(2, dashH * 0.04), 3); ctx.fill(); }
   drawDial(ctx, L, o);
   drawWheel(ctx, L, s, o, g);
 }
@@ -149,17 +149,19 @@ function drawWheel(ctx, L, s, o, g) {
   ctx.rotate(s.player.steer * 0.95);
   const t = r * 0.16;
   // spokes (left, right, down) and hub
-  ctx.strokeStyle = g(30); ctx.lineCap = 'round'; ctx.lineWidth = t * 0.9;
+  ctx.strokeStyle = g(52); ctx.lineCap = 'round'; ctx.lineWidth = t * 0.9;
   for (const a of [Math.PI, 0, Math.PI / 2]) { ctx.beginPath(); ctx.moveTo(0, 0); ctx.lineTo(Math.cos(a) * (r - t), Math.sin(a) * (r - t)); ctx.stroke(); }
   // rim
-  ctx.strokeStyle = g(22); ctx.lineWidth = t;
+  ctx.strokeStyle = g(8); ctx.lineWidth = t * 1.14;
   ctx.beginPath(); ctx.arc(0, 0, r - t / 2, 0, Math.PI * 2); ctx.stroke();
-  ctx.strokeStyle = g(70, 0.55); ctx.lineWidth = Math.max(1, t * 0.18);
-  ctx.beginPath(); ctx.arc(0, 0, r - t * 0.78, Math.PI * 1.15, Math.PI * 1.85); ctx.stroke();
+  ctx.strokeStyle = g(58); ctx.lineWidth = t;
+  ctx.beginPath(); ctx.arc(0, 0, r - t / 2, 0, Math.PI * 2); ctx.stroke();
+  ctx.strokeStyle = g(130, 0.6); ctx.lineWidth = Math.max(1, t * 0.16);
+  ctx.beginPath(); ctx.arc(0, 0, r - t * 0.85, Math.PI * 1.1, Math.PI * 1.9); ctx.stroke();
   // 12 o'clock marker, so the turn can be seen
   ctx.fillStyle = '#d63b2f'; ctx.fillRect(-t * 0.18, -r, t * 0.36, t);
-  ctx.fillStyle = g(34); ctx.beginPath(); ctx.arc(0, 0, r * 0.24, 0, Math.PI * 2); ctx.fill();
-  ctx.fillStyle = g(70); ctx.beginPath(); ctx.arc(0, 0, r * 0.12, 0, Math.PI * 2); ctx.fill();
+  ctx.fillStyle = g(56); ctx.beginPath(); ctx.arc(0, 0, r * 0.24, 0, Math.PI * 2); ctx.fill();
+  ctx.fillStyle = g(96); ctx.beginPath(); ctx.arc(0, 0, r * 0.12, 0, Math.PI * 2); ctx.fill();
   ctx.lineCap = 'butt';
   ctx.restore();
 }
@@ -214,7 +216,7 @@ function drawMirror(ctx, L, s, o) {
     ctx.fillRect(px - cw / 2 + cw * 0.05, py - ch * 0.38, lw, lh); ctx.fillRect(px + cw / 2 - cw * 0.05 - lw, py - ch * 0.38, lw, lh);
     if (c.speed >= 0 && (o.night > 0.3 || dist < 40)) {
       ctx.globalCompositeOperation = 'lighter'; ctx.fillStyle = `rgba(255,240,180,${0.18 + 0.3 * o.night})`;
-      const gr = Math.max(3, cw * 0.35);
+      const gr = Math.max(2, cw * 0.2);
       ctx.beginPath(); ctx.arc(px - cw * 0.36, py - ch * 0.32, gr, 0, 7); ctx.arc(px + cw * 0.36, py - ch * 0.32, gr, 0, 7); ctx.fill();
       ctx.globalCompositeOperation = 'source-over';
     }
