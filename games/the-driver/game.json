@@ -1,0 +1,10 @@
+{
+  "title": "The Driver",
+  "description": "Three minutes behind the wheel: weave through the evening traffic from afternoon to night without a scratch.",
+  "icon": "🚗",
+  "tags": ["keyboard", "touch"],
+  "order": 5,
+  "i18n": {
+    "sv": { "description": "Tre minuter bakom ratten: väj dig fram genom kvällstrafiken från eftermiddag till natt utan en skråma." }
+  }
+}
