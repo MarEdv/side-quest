@@ -18,7 +18,7 @@ without changing the launcher.
 | PR-1 | One project, "Side Quest Project", in one git repo containing every game. | ✅ D-1 |
 | PR-2 | The git history of each imported game is kept. | ✅ D-1: `git log --follow games/<slug>/…` reaches each game's first commit. |
 | PR-3 | A web app lets the player pick one of the games. | ✅ Launcher at the site root (L-1). |
-| PR-4 | More games can be added dynamically. | ✅ Folder + `game.json` + `npm run registry` (R-1..R-3, `docs/ADDING-A-GAME.md`). Proved again by D-22: Train Attendant was added with no launcher change; its card shows in EN and SV, at the root and under `/side-quest/`, and opens the game with `?lang=`. The Driver (D-23) was added the same way, as the fifth card (🚧 its card not yet checked in a browser). |
+| PR-4 | More games can be added dynamically. | ✅ Folder + `game.json` + `npm run registry` (R-1..R-3, `docs/ADDING-A-GAME.md`). Proved again by D-22: Train Attendant was added with no launcher change; its card shows in EN and SV, at the root and under `/side-quest/`, and opens the game with `?lang=`. The Driver (D-23) was added the same way, as the fifth card; checked in headless Chrome (the game's D20): it shows in EN and SV and opens the game with `?lang=`. |
 | PR-5 | Published on GitHub Pages. | ✅ https://maredv.github.io/side-quest/ (DP-1). |
 
 ## 3. Launcher

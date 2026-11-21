@@ -292,3 +292,45 @@ country  normal  good       253    3.9   0/0/3/3/2        0.0   2.4  1.4    83  
 - **Known roughness:** the guardrail (and its posts) seen from beside it at the barrier is a big grey wall; the title
   background is a still frame; roadside objects appear and vanish at the 1150 m draw limit behind the fog; the idle car
   drifts off the road in curves (physics, D10) so screenshots of idle drives often show the grass.
+
+## D20 — 2026-11-21 — Independent verification: method, findings, fixes, what stays open
+- **Method:** code review of every `src/`, `tests/` and `tools/` file against `REQUIREMENTS.md` and `FLAGS.md`, compared with
+  Train Attendant; `npm test` here (69 pass) and at the root (all pass); `node tools/sim.mjs --seeds 8` (within the D13
+  ranges: normal highway idle 1.0 / sloppy 2.9 / good 4.0 stars, country good 3.6; hard below normal for every bot except
+  sloppy on the easy highway, 3.0 vs 2.9); a Node probe of 60 drives with the good bot (no car ever spawned within 250 m
+  ahead or 60 m behind the player). Then headless Google Chrome 158 over CDP (its own profile, HTTP cache off), the repo
+  root served by `python3 -m http.server 8012`, screenshots looked at one by one.
+- **Seen working in Chrome:** the launcher's fifth card (EN and SV) opening the game with `?lang=`, title EN/SV, the switch
+  and the back link (root PR-4 note updated); a real drive without debug by key events (↑ gas to 165 km/h, ← onto the
+  grass and the 60 km/h cap, D, Space brake, P and Esc pause and resume; the clock did not move in a 3 s and a 10 s
+  pause); **a full real-time 3-minute drive** (end screen after 192 s wall clock = 180 s play + 10 s pause + the 1.8 s
+  ending; score stored and listed on the title); a debug drive through all three stages in `cockpit`, `view=hood` and
+  `road=country`; `steer=lanes` with real taps (one lane per tap, none for key repeat or while paused, right at 4×);
+  three `crash=hard` crashes (shake, speed to 25 %, wrecked end screen, "not saved" for debug); near misses with the x2
+  chip; a crest and a dip with cars beyond them (no clipping errors seen; the hills are gentle); 390x844 DPR 2 with touch
+  emulation (two fingers ◀ + GAS, BRAKE, ⏸) and 844x390; every flag (`length`, `road`, `steer`, `pedals` manual coasts,
+  `crash`, `view`, `difficulty` 7/10/13 cars at the start, `seed` and an invalid seed, `touch=on/off`, `sound=0` creates no
+  AudioContext, `debug` 0/1). No console errors or exceptions in any run.
+- **Findings fixed:**
+  1. `fafc4db` (medium) The player's centre was clamped at the barrier line (`car.js`), so half the car went through the
+     rail and on the left the eye (0.35 m left of the centre) ended up outside it: the "big grey wall" of D19. The limit
+     is now `barrier - width / 2` (also after a side crash). C-3 text says so. Balance unchanged.
+  2. `47a34c1` (medium) Traffic was projected at the depth of the car's centre (`render.js`), so a car looked 2.2 m (a
+     truck 5 m) farther than its bumper: at a crash the car ahead still showed asphalt under its wheels, which makes crashes
+     feel unfair. Sprites are now projected at their near face. Cars were also drawn up to 470 m although they spawn at
+     320-450 m (D11), so they popped up at 81 % opacity; they are now drawn up to 320 m and fade in over 70 m. Supersedes
+     the "own depth" and "up to 470 m" parts of D16.
+  3. `9e33ffc` (low) A held pedal never lit up: `#gasBtn` / `#brakeBtn` colours beat `.pedal.on`. The debug line covered
+     the mirror on screens under 600 px wide; it now sits above the dashboard there.
+  4. `16a8b79` (low) The how-to-play lines were wrong with `steer=lanes` (curves push you out) and `pedals=manual` (the car
+     cruises by itself); they now follow those flags (EN and SV).
+- **Open, not fixed (listed for the owner):**
+  - Portrait phones: the 48° view leaves ~40 % of the screen to the sky, distant cars are small, and the wheel sits almost
+    wholly under the touch controls (cosmetic; the wheel is decoration there).
+  - Scenery by metres vs sky by time (D10): a slow or often crashing driver sees the forest or fields in the night sky.
+  - The idle car drifts off the road in curves (free steering by design, D6/D10).
+  - Cars in the same 5 m segment are not depth-sorted, and a car alongside (its near face behind the eye) is not drawn;
+    both rarely visible. The end text "Well driven!" shows whatever the score; the Swedish touch hint starts with "Touch:".
+  - Balance: on the easy highway the sloppy bot scores like on normal (8 seeds).
+- **Not verified:** real phones and real multi-touch, Safari / Firefox, sound heard by a person (V-3, the rumble of C-3),
+  60 fps on a mid-range phone (headless Chrome 56-60 fps), traffic behaviour (TF-1..TF-4) by hand in the browser.

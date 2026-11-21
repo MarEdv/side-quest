@@ -15,8 +15,8 @@ the higher the score.
 | PR-1 | Game called **"The Driver"**, one player. | ✅ |
 | PR-2 | The player drives a car, avoiding the traffic. | ✅ |
 | PR-3 | First person, looking out from inside the car. | ✅ |
-| PR-4 | Playable for 3 minutes before it is completed. | 🚧 |
-| PR-5 | Listed side by side with the existing games in the Side Quest Project launcher. | 🚧 |
+| PR-4 | Playable for 3 minutes before it is completed. | ✅ D20 |
+| PR-5 | Listed side by side with the existing games in the Side Quest Project launcher. | ✅ D20 |
 | TR-1 | Runs in any modern browser; tested in Chrome. | 🚧 |
 | TR-2 | Minimal dependencies (D1: none). | ✅ |
 
@@ -29,7 +29,7 @@ Sonnet implements, Haiku looks up docs; never ask the owner questions.
 ### 3.1 The drive
 | ID | Requirement | Status |
 |----|-------------|--------|
-| G-1 | A drive lasts 180 s of game time (flag `length`: `normal` 180 s, `short` 60 s), then it is completed ("You made it home") and the end screen shows. Pausing stops the clock. | 🚧 |
+| G-1 | A drive lasts 180 s of game time (flag `length`: `normal` 180 s, `short` 60 s), then it is completed ("You made it home") and the end screen shows. Pausing stops the clock. | ✅ D20 |
 | G-2 | The drive has three equal stages: afternoon (fields), sunset (forest), night (city lights; headlights and tail lights). Each stage has more traffic than the one before; a toast announces it. | ✅ |
 | G-3 | The road is generated from the seed: straights, left and right curves of varying sharpness, hills and dips. The same seed gives the same road and traffic for the same inputs. | 🚧 |
 | G-4 | Road type (flag `road`): `highway` (default, three lanes one way) or `country` (two lanes, oncoming traffic in the left lane). | ✅ |
@@ -38,7 +38,7 @@ Sonnet implements, Haiku looks up docs; never ask the owner questions.
 | ID | Requirement | Status |
 |----|-------------|--------|
 | C-1 | Speed 0–180 km/h. `pedals=auto` (default): accelerates by itself to a cruising speed of 110 km/h, gas goes up to 180, brake slows down. `pedals=manual`: gas accelerates, letting go coasts down, brake slows down. | ✅ |
-| C-2 | Steering (flag `steer`): `free` (default; hold to steer; curves push the car outward in proportion to speed² × curvature) or `lanes` (a tap slides one lane over; curves need no correction). | 🚧 |
+| C-2 | Steering (flag `steer`): `free` (default; hold to steer; curves push the car outward in proportion to speed² × curvature) or `lanes` (a tap slides one lane over; curves need no correction). | ✅ D20 |
 | C-3 | Off the asphalt the car is limited to 60 km/h and rumbles (shake, sound). Barriers at the road edge stop sideways movement (the car stops with its side against the rail, D20); touching them is not a crash. | 🚧 |
 
 ### 3.3 Traffic
@@ -52,8 +52,8 @@ Sonnet implements, Haiku looks up docs; never ask the owner questions.
 ### 3.4 Crashes, score and end
 | ID | Requirement | Status |
 |----|-------------|--------|
-| S-1 | Touching another car is a crash: the screen shakes, the player's car loses most of its speed, steering is locked for a moment, the other car is pushed away, a crash sound plays and the crash count rises. Flag `crash`: `soft` (default: the drive goes on) or `hard` (the 3rd crash wrecks the car and ends the drive). | 🚧 |
-| S-2 | Score: points for distance driven, a bonus for each **near miss** (passing a car at speed with less than ~0.8 m between the cars), minus a penalty per crash. A clean streak (no crash) raises a multiplier for near misses. | 🚧 |
+| S-1 | Touching another car is a crash: the screen shakes, the player's car loses most of its speed, steering is locked for a moment, the other car is pushed away, a crash sound plays and the crash count rises. Flag `crash`: `soft` (default: the drive goes on) or `hard` (the 3rd crash wrecks the car and ends the drive). | ✅ D20 (the sound: V-3) |
+| S-2 | Score: points for distance driven, a bonus for each **near miss** (passing a car at speed with less than ~0.8 m between the cars), minus a penalty per crash. A clean streak (no crash) raises a multiplier for near misses. | ✅ D20 |
 | S-3 | HUD: time left, score, crashes; the speedometer is on the dashboard (and a speed chip in the `hood` view). Toasts for near misses, crashes and stages. | ✅ |
 | S-4 | End screen: completed or wrecked, score, 1–5 stars, distance, top speed, near misses, crashes. | ✅ |
 | S-5 | The 5 best scores per `length` are kept on the device (localStorage, keys prefixed `the-driver.`) and shown on the title and end screens. Storage failures never break the game; when scores cannot be kept, the end screen says so. Runs with `debug` on are not recorded. | ✅ |
@@ -92,6 +92,13 @@ Sonnet implements, Haiku looks up docs; never ask the owner questions.
   through `window.__game.steps`; the full 3 minutes in real time were not watched), PR-5 (the launcher card was not opened).
 - C-2 `steer=lanes`, C-3 (the rumble shake, the barrier scrape sound), S-1 (the crash shake and sound) and the traffic rows
   are unit-tested logic; the renderer showed their effects in the screenshots but each was not exercised by hand.
+- **Independent verification (D20)** in headless Chrome 158: PR-4 and G-1 (a real 3-minute drive without debug, by key
+  events, ended on "You made it home" after 180 s of play plus a 10 s pause that held the clock, and stored its score),
+  PR-5 (the fifth card in EN and SV opens the game with `?lang=`), C-2 (`steer=lanes` taps by real key events: one lane
+  per tap, none for auto-repeat or while paused, also at 4×), S-1 (shake, speed loss, steering lock, `crash=hard` wrecked),
+  S-2 (near misses and the x2 multiplier chip), every flag in `docs/FLAGS.md`. Still 🚧 after D20: C-3 (the rumble shake
+  and sound were not judged), the traffic rows TF-1..TF-4 (unit tests and a 60-drive Node probe: no car ever appeared
+  within 250 m ahead or 60 m behind; not exercised by hand in Chrome), G-3, V-1, V-3, K-2, K-3, TR-1 (as above).
 
 ## 4. Out of scope (for now)
 - Offline play / service worker and install as an app (same as the siblings; root `docs/STREAMLINING.md` S-17).
